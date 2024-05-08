@@ -22,6 +22,4 @@ yarn-error.log
 npm-debug.log
 !/public/docs/collection.json
 /storage/logs/*
-database/factories/*
-database/migrations/*
-database/seeders/*
+composer.lock

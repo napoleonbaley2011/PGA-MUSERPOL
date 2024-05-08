@@ -71,4 +71,3 @@ docker-compose logs nginx
 
 docker-compose -f nginx
 ```
->>>>>>> master
