@@ -1,11 +1,25 @@
-# MICROSERVICIOS DE BENEFICIARIOS MUSERPOL
+# PLANTILLA DE TRABAJO PARA LA CREACION DE PROYECTOS
 
-## Requirements
+##
+## Requerimientos
 
 * Docker
 * docker-compose
 
-## Install
+## Clonar el proyecto
+
+```sh
+git clone https://github.com/MUTUAL-DE-SERVICIOS-AL-POLICIA/PlantillaDeTrabajo.git
+``
+
+# Apuntar el proyecto al nuevo repositorio y subir los archivos
+
+```sh
+git remote set-url https://github.com/MUTUAL-DE-SERVICIOS-AL-POLICIA/{NombreProyecto}.git
+git push -u origin main
+``
+
+## Instalación
 
 ```sh
 sudo apt update
@@ -32,7 +46,8 @@ cp -f docs/env-example laradock/.env
 ```
 
 * Modificar el archivo `.env` con las credenciales de acceso a la base de datos.
-* Modificar el archivo `.env` de la carpeta laradock de acuerdo a los puertos que se irán a utilizar.
+* Modificar el archivo `.env` de la carpeta laradock de acuerdo a los puertos que se irán a utilizar y el nombre del proyecto.
+* Actualizar la documentacion README.md segun el proyecto
 
 ```sh
 NGINX_HOST_HTTP_PORT=80
