@@ -12,6 +12,7 @@ class GroupsController extends Controller
      */
     public function index()
     {
+        
         $groups = Group::all();
         if($groups){
             return response()->json([
@@ -39,13 +40,17 @@ class GroupsController extends Controller
      */
     public function store(Request $request)
     {
+        
+        //return $request;
+        
         $validate = $request->validate([
             'code' => 'required|string|max:255',
             'name_group'=>'required|string|max:255',
-            'state'=>'required|string|max:10',
+            'state'=>'required|string|max:1',
             'classifier_id'=>'required'
         ]);
-
+       
+       
         $group = Group::create($validate);
         return response()->json(['data'=>$group],201);
     }

@@ -19,8 +19,11 @@ test('list_groups', function(){
 });
 
 test('register_groups', function(){
+    
     $this->authenticateUser();
+
     $data = Group::factory()->make()->toArray();
+    
     $response = $this->postJson('/api/auth/groups', $data);
 
     $response->assertStatus(201)

@@ -13,6 +13,7 @@ class Group extends Model
         'code',
         'name_group',
         'state',
+        'classifier_id'
     ];
 
 

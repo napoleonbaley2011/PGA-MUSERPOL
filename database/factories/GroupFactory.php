@@ -21,10 +21,10 @@ class GroupFactory extends Factory
     {
         $classifier = Classifier::inRandomOrder()->first();
         return [
-            'code' => $this->faker->unique()->numerify('###'), // Código único generado aleatoriamente
-            'name_group' => $this->faker->word, // Nombre generado aleatoriamente
-            'state' => $this->faker->randomElement(['activo', 'inactivo']), // Estado válido aleatorio
-            'classifier_id' => $classifier->id, // ID de un Classifier existente
+            'code' => $this->faker->unique()->numerify('###'), 
+            'name_group' => $this->faker->word, 
+            'state' => $this->faker->randomElement(['1', '0']),
+            'classifier_id' => $classifier->id, 
         ];
     }
 }
