@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Classifier;
 use App\Models\Group;
 use Illuminate\Http\Request;
+use PhpParser\Builder\Class_;
 
 class GroupsController extends Controller
 {
@@ -52,7 +54,9 @@ class GroupsController extends Controller
        
        
         $group = Group::create($validate);
-        return response()->json(['data'=>$group],201);
+        return response()->json([
+            'data'=>$group
+        ],201);
     }
 
     /**
@@ -60,7 +64,12 @@ class GroupsController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $group = Group::findOrFail($id);
+        $classifier= Classifier::find($group->classifier_id);
+        return response()->json([
+            'data'=>$group,
+            'classifier'=>$classifier
+        ],200);
     }
 
     /**
@@ -76,7 +85,15 @@ class GroupsController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $validate = $request->validate([
+            'code' => 'string|max:255',
+            'name_group'=>'string|max:255',
+            'state'=>'string|max:1',
+        ]);
+
+        $group = Group::findOrFail($id);
+        $group->update($validate);
+        return response()->json(['data'=>$group],200);
     }
 
     /**
@@ -84,6 +101,8 @@ class GroupsController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $group = Group::findOrFail($id);
+        $group->delete();
+        return response()->json(['message'=>'Eliminado'],200);
     }
 }
