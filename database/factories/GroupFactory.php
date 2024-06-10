@@ -19,7 +19,7 @@ class GroupFactory extends Factory
      */
     public function definition(): array
     {
-        $classifier = Classifier::inRandomOrder()->first();
+        $classifier = Classifier::inRandomOrder()->first() ?: Classifier::factory()->create();
         return [
             'code' => $this->faker->unique()->numerify('###'), 
             'name_group' => $this->faker->word, 

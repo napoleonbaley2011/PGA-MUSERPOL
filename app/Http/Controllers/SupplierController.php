@@ -13,9 +13,8 @@ class SupplierController extends Controller
      */
     public function index()
     {
-        //return "Hola Supplier";
         $suppliers = Supplier::all();
-        return response()->json($suppliers);
+        return response()->json(['data'=>$suppliers],200);
     }
 
     /**
@@ -35,8 +34,9 @@ class SupplierController extends Controller
         $supplier -> save();
         return response()->json([
             'status'=>true,
-            'message'=> 'Proveedor Creado con Exito'
-        ],400);
+            'message'=> 'Proveedor Creado con Exito',
+            'data'=>$supplier
+        ],201);
     
     }
 
@@ -45,7 +45,7 @@ class SupplierController extends Controller
      */
     public function show(Supplier $supplier)
     {
-        return response()->json(['status'=> true, 'data'=>$supplier]);
+        return response()->json(['status'=> true, 'data'=>$supplier],200);
     }
 
     /**
@@ -61,7 +61,9 @@ class SupplierController extends Controller
      */
     public function update(SupplierRequest $request, Supplier $supplier)
     {   
-        return $request;
+        $update_supplier = Supplier::findOrFail($supplier->id);
+        $update_supplier->update($request->all());
+        return response()->json(['data' => $update_supplier],200);
     }
 
     /**
@@ -70,9 +72,6 @@ class SupplierController extends Controller
     public function destroy(Supplier $supplier)
     {
         $supplier->delete();
-        return response()->json([
-            'status'=> true,
-            'message'=> 'Eliminado correctamente'
-        ],200);
+        return response()->json(['message'=>'Eliminado'],200);
     }
 }

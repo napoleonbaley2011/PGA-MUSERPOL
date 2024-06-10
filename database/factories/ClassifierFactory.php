@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Classifier>
  */
+//Clasificador a partir del 30000 Materiales y Suministros
+//Los Clasificadores son: 31000,32000,33000,34000,39000 
 class ClassifierFactory extends Factory
 {
     protected $model = Classifier::class;

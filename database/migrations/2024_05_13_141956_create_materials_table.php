@@ -20,7 +20,6 @@ return new class extends Migration
             $table->integer('amount')->nullable();
             $table->integer('min');
             $table->string('barcode')->nullable();
-            $table->integer('total');
             $table->foreignId('group_id')->constrained('groups')->onUpdate('cascade')->onDelete('restrict');
             $table->timestamps();
         });
