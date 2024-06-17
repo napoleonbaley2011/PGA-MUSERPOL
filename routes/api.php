@@ -23,5 +23,7 @@ Route::group([
         Route::resource('classifiers',ClassifierController::class);
         Route::resource('groups', GroupsController::class);
         Route::resource('suppliers', SupplierController::class);
+        //Nota de entrada
+        Route::get('/notes', [App\Http\Controllers\NoteEntriesController::class, 'list_note_entries']);
     });
 });

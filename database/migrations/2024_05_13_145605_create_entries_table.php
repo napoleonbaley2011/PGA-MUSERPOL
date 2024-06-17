@@ -3,7 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-
+// ELIMINAR ESTA TABLA NO VA
 return new class extends Migration
 {
     /**
@@ -14,9 +14,9 @@ return new class extends Migration
         Schema::create('entries', function (Blueprint $table) {
             $table->id();
             $table->datetime('entry_date')->nullable(); //fecha de ingreso del material
-            $table->string('invoice_number',255)->nullable();
-            $table->datetime('invoice_data')->nullable();
-            $table->unsignedBigInteger('suppliers_id')->nullable();
+            $table->string('invoice_number',255)->nullable();//posi
+            $table->datetime('invoice_data')->nullable();//fecha de ingreso
+            $table->unsignedBigInteger('suppliers_id')->nullable();//id del proveedor
             $table->foreign('suppliers_id')->references('id')->on('suppliers')->onUpdate('cascade')->onDelete('restrict');
             $table->decimal('total',10,2)->default(0.00);
             $table->foreignId('employees_id')->constrained('public.employees')->nullable()->onUpdate('cascade')->onDelete('restrict'); //Sea almacena el id de la persona que recepciona o maneja el so

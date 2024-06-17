@@ -20,4 +20,9 @@ class Supplier extends Model
     ];
 
     protected $dates = ['deleted_at'];
+
+
+    public function Note_entries(){
+        return $this->hasMany(Note_Entrie::class);
+    }
 }

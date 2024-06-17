@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('supplier_material', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('supplier_id')->constrained('suppliers')->onUpdate('cascade')->onDelete('restrict');
-            $table->foreignId('materials_id')->constrained('materials')->onUpdate('cascade')->onDelete('restrict');
+            $table->foreignId('supplier_id')->constrained('suppliers')->onUpdate('cascade')->onDelete('cascade');
+            $table->foreignId('materials_id')->constrained('materials')->onUpdate('cascade')->onDelete('cascade');
             $table->decimal('cost',8,2);
             $table->timestamps();
         });

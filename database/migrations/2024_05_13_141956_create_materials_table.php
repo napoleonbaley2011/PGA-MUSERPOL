@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('description');
             $table->string('unit_material');
             $table->string('state');
-            $table->integer('amount')->nullable();
+            $table->integer('stock')->nullable();
             $table->integer('min');
             $table->string('barcode')->nullable();
             $table->foreignId('group_id')->constrained('groups')->onUpdate('cascade')->onDelete('restrict');

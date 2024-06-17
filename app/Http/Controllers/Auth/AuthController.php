@@ -43,6 +43,7 @@ class AuthController extends Controller
         if ($employee == null) {
             //return $user;
             $id = $user->employee_id;
+            //  $name_employes = Employee::find($id);
             $username = $user->username;
             $role = $user->roles[0]->name;
             $permissions = array_unique(array_merge($user->roles[0]->permissions->pluck('name')->toArray(), $user->permissions->pluck('name')->toArray()));
@@ -63,6 +64,7 @@ class AuthController extends Controller
 
         
         return response()->json([
+            //'employes'=>$name_employes,
             'token' => $token,
             'token_type' => 'Bearer',
             'expires_in' => config('sanctum.expiration') ? now()->addMinutes(config('sanctum.expiration'))->timestamp : null,
@@ -81,7 +83,6 @@ class AuthController extends Controller
 
     public function login(AuthForm $request)
     {
-        //$user = User::whereUsername($request->username)->where('active', true)->first();
         $user = User::whereUsername($request['username'])->first();
         if ($user) {
             if (!$user->active) {
@@ -92,11 +93,25 @@ class AuthController extends Controller
                     ],
                 ], 401);
             }
+        }else{
+            return response()->json([
+                'message' => 'No autorizado',
+                'errors' => [
+                    'type' => ['Usuario desactivado'],
+                ],
+            ], 401);
         }
 
         if (!env("LDAP_AUTHENTICATION")) {
             if ($user && Hash::check($request['password'], $user->password)) {
                 return $this->respondWithToken($user->createToken('api')->plainTextToken, $user);
+            }else{
+                return response()->json([
+                    'message'=> 'No autorizado',
+                    'errors' => [
+                        'type' => ['Usuario no Correcto']
+                    ]
+                ]);
             }
         } else {
             //Con Ldap
