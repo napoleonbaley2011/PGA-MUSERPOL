@@ -19,6 +19,7 @@ return new class extends Migration
             //$table->string('id_classifier');
             $table->foreignId('classifier_id')->constrained('classifiers')->onUpdate('cascade')->onDelete('restrict');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

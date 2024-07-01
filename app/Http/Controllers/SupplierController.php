@@ -14,7 +14,14 @@ class SupplierController extends Controller
     public function index()
     {
         $suppliers = Supplier::all();
-        return response()->json(['data'=>$suppliers],200);
+
+        $total = $suppliers->count();
+
+        return response()->json([
+            'status'=>"success",
+            'total'=>$total,
+            'suppliers'=>$suppliers
+        ],200);
     }
 
     /**
@@ -30,13 +37,27 @@ class SupplierController extends Controller
      */
     public function store(SupplierRequest $request)
     {   
-        $supplier = new Supplier($request->input());
-        $supplier -> save();
-        return response()->json([
-            'status'=>true,
-            'message'=> 'Proveedor Creado con Exito',
-            'data'=>$supplier
-        ],201);
+        try {
+            $supplier = new Supplier($request->input());
+    
+            if($supplier->save()) {
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Proveedor Creado con Exito',
+                    'data' => $supplier
+                ], 201);
+            } else {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Sin Exito'
+                ], 403);
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Ocurrió un error: ' . $e->getMessage()
+            ], 500);
+        }
     
     }
 
@@ -59,11 +80,25 @@ class SupplierController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(SupplierRequest $request, Supplier $supplier)
+    public function update(Request $request, Supplier $supplier)
     {   
-        $update_supplier = Supplier::findOrFail($supplier->id);
-        $update_supplier->update($request->all());
-        return response()->json(['data' => $update_supplier],200);
+        //logger($supplier->id);
+        logger($request->all());
+        //logger($request->getContent());
+        $validatedData = $request->validate([
+            'name' => 'nullable|string|max:255',
+            'nit' => 'nullable|string|max:255',
+            'cellphone' => 'string|max:20',
+            'sales_representative' => 'nullable|string|max:255',
+            'address' => 'nullable|string|max:255',
+            'email' => 'nullable|email|max:255',
+        ]);
+        
+        $supplier->update($validatedData);
+
+        logger($supplier);
+        return response()->json(['data' => $supplier], 200);
+
     }
 
     /**

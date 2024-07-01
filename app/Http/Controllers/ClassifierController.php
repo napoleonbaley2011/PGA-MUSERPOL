@@ -12,8 +12,25 @@ class ClassifierController extends Controller
      */
     public function index()
     {
-        $classifiers = Classifier::all();
-        return response()->json($classifiers);
+        // $classifiers = Classifier::orderBy('code_class')->get();
+        // return response()->json([
+        //     'status'=>"success",
+        //     'classifiers'=>$classifiers
+        // ], 200);
+
+        // $classifiers = Classifier::with('groups')->orderBy('code_class')->get();
+        // return response()->json([
+        //     'status' => "success",
+        //     'classifiers' => $classifiers
+        // ], 200);
+        $classifiers = Classifier::with(['groups' => function ($query) {
+            $query->withCount('materials');
+        }])->orderBy('code_class')->get();
+
+        return response()->json([
+            'status' => "success",
+            'classifiers' => $classifiers
+        ], 200);
     }
 
     /**
@@ -30,14 +47,14 @@ class ClassifierController extends Controller
     public function store(Request $request)
     {
         $validate = $request->validate([
-            'code_class' => 'required|string|max:255',
+            'code_class' => 'required|string|max:5',
             'nombre' => 'required|string|max:255',
             'description' => 'required|string'
         ]);
 
         $classifier = Classifier::create($validate);
 
-        return response()->json(['data'=>$classifier],201);
+        return response()->json(['data' => $classifier], 201);
     }
 
     /**
@@ -46,7 +63,7 @@ class ClassifierController extends Controller
     public function show(string $id)
     {
         $classifiers = Classifier::findOrFail($id);
-        return response()->json(['data'=>$classifiers],200);
+        return response()->json(['data' => $classifiers], 200);
     }
 
     /**
@@ -71,7 +88,7 @@ class ClassifierController extends Controller
         $classifier = Classifier::findOrFail($id);
         $classifier->update($validated);
 
-        return response()->json(['data'=>$classifier],200);
+        return response()->json(['data' => $classifier], 200);
     }
 
     /**
@@ -81,7 +98,7 @@ class ClassifierController extends Controller
     {
         $classifier = Classifier::findOrFail($id);
         $classifier->delete();
-        return response()->json(['message'=>'Eliminado'],200);
+        return response()->json(['message' => 'Eliminado'], 200);
     }
 }
 

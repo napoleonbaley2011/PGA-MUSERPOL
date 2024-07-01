@@ -58,10 +58,6 @@ class AuthController extends Controller
             $permissions = [];
             $consultant = $employee->consultant();
         }
-
-
-
-
         
         return response()->json([
             //'employes'=>$name_employes,

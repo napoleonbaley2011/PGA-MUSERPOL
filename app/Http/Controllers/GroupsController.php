@@ -14,18 +14,22 @@ class GroupsController extends Controller
      */
     public function index()
     {
-        
-        $groups = Group::all();
-        if($groups){
+        // $groups = Group::all();
+        $groups = Group::join('classifiers', 'groups.classifier_id', '=', 'classifiers.id')
+            ->select('groups.*', 'classifiers.code_class', 'classifiers.nombre as classifier_name')
+            ->get();
+
+        if ($groups->isNotEmpty()) {
             return response()->json([
                 'status' => true,
+                'total' => $groups->count(), // Incluye el total de grupos
                 'data' => $groups
-            ],200);
-        }else{
+            ], 200);
+        } else {
             return response()->json([
-                'status'=>false,
-                'message'=>"no "
-            ],404);
+                'status' => false,
+                'message' => "No groups found"
+            ], 404);
         }
     }
 
@@ -42,21 +46,21 @@ class GroupsController extends Controller
      */
     public function store(Request $request)
     {
-        
+
         //return $request;
-        
+
         $validate = $request->validate([
             'code' => 'required|string|max:255',
-            'name_group'=>'required|string|max:255',
-            'state'=>'required|string|max:1',
-            'classifier_id'=>'required'
+            'name_group' => 'required|string|max:255',
+            'state' => 'required|string|max:1',
+            'classifier_id' => 'required'
         ]);
-       
-       
+
+
         $group = Group::create($validate);
         return response()->json([
-            'data'=>$group
-        ],201);
+            'data' => $group
+        ], 201);
     }
 
     /**
@@ -65,11 +69,11 @@ class GroupsController extends Controller
     public function show(string $id)
     {
         $group = Group::findOrFail($id);
-        $classifier= Classifier::find($group->classifier_id);
+        $classifier = Classifier::find($group->classifier_id);
         return response()->json([
-            'data'=>$group,
-            'classifier'=>$classifier
-        ],200);
+            'data' => $group,
+            'classifier' => $classifier
+        ], 200);
     }
 
     /**
@@ -87,13 +91,13 @@ class GroupsController extends Controller
     {
         $validate = $request->validate([
             'code' => 'string|max:255',
-            'name_group'=>'string|max:255',
-            'state'=>'string|max:1',
+            'name_group' => 'string|max:255',
+            'state' => 'string|max:1',
         ]);
 
         $group = Group::findOrFail($id);
         $group->update($validate);
-        return response()->json(['data'=>$group],200);
+        return response()->json(['data' => $group], 200);
     }
 
     /**
@@ -103,6 +107,6 @@ class GroupsController extends Controller
     {
         $group = Group::findOrFail($id);
         $group->delete();
-        return response()->json(['message'=>'Eliminado'],200);
+        return response()->json(['message' => 'Eliminado'], 200);
     }
 }

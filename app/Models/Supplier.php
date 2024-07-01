@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Supplier extends Model
 {
     use HasFactory;
+    use SoftDeletes; //Eliminacion Logica, laravel sabe lo que ya se ha eliminado;
 
     protected $fillable = [
         'name',

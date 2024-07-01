@@ -27,7 +27,7 @@ class SupplierRequest extends FormRequest
             'cellphone' => 'nullable|string|max:20',
             'sales_representative' => 'nullable|string|max:255',
             'address' => 'nullable|string',
-            'email' => 'required|string|email|max:255|unique:suppliers,email',
+            'email' => 'required|string|email|max:255',
         ];
     }
 }
