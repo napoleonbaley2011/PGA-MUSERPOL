@@ -14,15 +14,20 @@ class GroupsController extends Controller
      */
     public function index()
     {
-        // $groups = Group::all();
-        $groups = Group::join('classifiers', 'groups.classifier_id', '=', 'classifiers.id')
-            ->select('groups.*', 'classifiers.code_class', 'classifiers.nombre as classifier_name')
-            ->get();
+        $groups = Group::with(['materials', 'classifier' => function ($query) {
+            $query->select('id', 'code_class', 'nombre as classifier_name');
+        }])
+            ->get()
+            ->map(function ($group) {
+                // Remove 'id' from classifier to avoid confusion since it's not necessary in the response
+                unset($group->classifier->id);
+                return $group;
+            });
 
         if ($groups->isNotEmpty()) {
             return response()->json([
                 'status' => true,
-                'total' => $groups->count(), // Incluye el total de grupos
+                'total' => $groups->count(),
                 'data' => $groups
             ], 200);
         } else {
