@@ -10,14 +10,14 @@ class Material extends Model
     use HasFactory;
 
     protected $fillable = [
-        'amount',
-        'cost',
-        'subtotal',
-        'entrydate',
-        'material_id',
-        'entries_id',
-        'invalidate',
+        'code_material',
+        'description',
+        'unit_material',
         'state',
+        'stock',
+        'min',
+        'barcode',
+        'group_id'
     ];
 
     public function group(){
