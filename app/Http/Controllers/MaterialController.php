@@ -70,7 +70,7 @@ class MaterialController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        
     }
 
     /**
@@ -78,15 +78,32 @@ class MaterialController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $material = Material::find($id);
+        if($request['state'] == "Habilitado"){
+            $upState = "Inhabilitado";
+        }else{
+            if($material->stock > 0){
+                $upState = "Habilitado";
+            }else{
+                return response()->json([
+                    'status' => false,
+                    'message' => "Debe existir Stock para poder Habilitar el material"
+                ],400);
+            }
+        }
+        $material->state = $upState;
+        logger($material);
+        $material->save();
+        return response()->json(['status'=> true,'data' => $material], 200);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Material $material)
     {
-        //
+        $material->delete();
+        return response()->json(['message'=>'Eliminado'],200);
     }
 
     public function materialslist(Request $request)

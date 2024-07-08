@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('barcode')->nullable();
             $table->foreignId('group_id')->constrained('groups')->onUpdate('cascade')->onDelete('restrict');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
