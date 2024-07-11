@@ -4,6 +4,7 @@ use App\Http\Controllers\ClassifierController;
 use App\Http\Controllers\GroupsController;
 use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\TypeController;
 use App\Models\Material;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -26,6 +27,7 @@ Route::group([
         Route::resource('groups', GroupsController::class);
         Route::resource('suppliers', SupplierController::class);
         Route::resource('materials', MaterialController::class);
+        Route::resource('types', TypeController::class);
         //Nota de entrada
         Route::get('/notes', [App\Http\Controllers\NoteEntriesController::class, 'list_note_entries']);
         Route::get('/materialslist', [MaterialController::class, 'materialslist']);

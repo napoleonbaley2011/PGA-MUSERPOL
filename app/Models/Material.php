@@ -19,6 +19,7 @@ class Material extends Model
         'stock',
         'min',
         'barcode',
+        'type',
         'group_id'
     ];
 

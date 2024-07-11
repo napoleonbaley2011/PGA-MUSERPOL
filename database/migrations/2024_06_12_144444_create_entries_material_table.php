@@ -15,10 +15,11 @@ return new class extends Migration
             $table->id();
             $table->foreignId('note_id')->constrained('note_entries')->onDelete('cascade');
             $table->foreignId('material_id')->constrained()->onDelete('cascade');
-            $table->integer('amount_entries');
-            $table->double('cost_unit',2,8);
+            $table->integer('amount_entries')->nullable();
+            $table->double('cost_unit',2,8)->nullable();
             $table->string('brand')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
