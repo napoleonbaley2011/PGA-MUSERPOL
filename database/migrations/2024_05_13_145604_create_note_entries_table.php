@@ -19,8 +19,8 @@ return new class extends Migration
             $table->string('state');
             $table->string('invoice_auth');
             $table->string('user_register');
-            $table->string('observation');
-            $table->integer('amount_articles');
+            $table->string('observation')->nullable();
+            //$table->integer('amount_articles');
             $table->foreignId('type_id')->constrained('types')->onDelete('restrict')->onUpdate('cascade');
             $table->unsignedBigInteger('suppliers_id')->nullable();//id del proveedor
             $table->foreign('suppliers_id')->references('id')->on('suppliers')->onUpdate('cascade')->onDelete('cascade');

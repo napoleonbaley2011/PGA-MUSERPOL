@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('material_id')->constrained()->onDelete('cascade');
             $table->integer('amount_entries')->nullable();
             $table->double('cost_unit',2,8)->nullable();
-            $table->string('brand')->nullable();
+            $table->decimal('cost_total',10,2)->default(0.00)->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

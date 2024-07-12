@@ -8,8 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Material extends Model
 {
-    use HasFactory;
-    use SoftDeletes;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'code_material',
@@ -23,14 +22,14 @@ class Material extends Model
         'group_id'
     ];
 
-    public function group(){
+    public function group()
+    {
         return $this->belongsTo(Group::class);
     }
 
-    public function entry(){
-        return $this->belongsTo(Entry::class);
-    }
-    public function note_entries(){
-        return $this->belongsToMany(Note_Entrie::class, 'entries_material', 'note_id', 'material_id')->withPivot('amount_entries', 'cost_unit', 'brand');
+    public function noteEntries()
+    {
+        return $this->belongsToMany(Note_Entrie::class, 'entries_material', 'material_id', 'note_id')->withPivot('amount_entries', 'cost_unit', 'cost_total');
     }
 }
+

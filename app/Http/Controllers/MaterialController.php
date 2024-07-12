@@ -125,7 +125,7 @@ class MaterialController extends Controller
 
         $materials = $query->skip($start)->take($limit)->get();
 
-        logger($materials);
+        //logger($materials);
         return response()->json([
             'status' => 'success',
             'total' => $totalmateriales,

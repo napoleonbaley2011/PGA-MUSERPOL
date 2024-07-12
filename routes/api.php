@@ -30,6 +30,7 @@ Route::group([
         Route::resource('types', TypeController::class);
         //Nota de entrada
         Route::get('/notes', [App\Http\Controllers\NoteEntriesController::class, 'list_note_entries']);
+        Route::post('/createNoteEntry', [App\Http\Controllers\NoteEntriesController::class, 'create_note']);
         Route::get('/materialslist', [MaterialController::class, 'materialslist']);
     });
 });
