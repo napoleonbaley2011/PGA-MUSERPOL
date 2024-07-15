@@ -11,18 +11,31 @@ class SupplierController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $suppliers = Supplier::all();
+        $page = $request->get('page', 0); // Default page is 0 if not provided
+        $limit = $request->get('limit', Supplier::count()); // Default limit is the total count of suppliers if not provided
+        $start = $page * $limit;
+        $search = $request->input('search', '');
 
-        $total = $suppliers->count();
+        $query = Supplier::orderBy('id');
+
+        if (!empty($search)) {
+            $query->where('name', 'like', '%' . $search . '%'); // Adjust field name as needed for search criteria
+        }
+
+        $totalSuppliers = $query->count();
+        $suppliers = $query->skip($start)->take($limit)->get();
 
         return response()->json([
-            'status'=>"success",
-            'total'=>$total,
-            'suppliers'=>$suppliers
-        ],200);
+            'status' => 'success',
+            'total' => $totalSuppliers,
+            'page' => $page,
+            'last_page' => ceil($totalSuppliers / $limit),
+            'suppliers' => $suppliers
+        ], 200);
     }
+
 
     /**
      * Show the form for creating a new resource.
@@ -36,11 +49,11 @@ class SupplierController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(SupplierRequest $request)
-    {   
+    {
         try {
             $supplier = new Supplier($request->input());
-    
-            if($supplier->save()) {
+
+            if ($supplier->save()) {
                 return response()->json([
                     'status' => true,
                     'message' => 'Proveedor Creado con Exito',
@@ -58,7 +71,6 @@ class SupplierController extends Controller
                 'message' => 'Ocurrió un error: ' . $e->getMessage()
             ], 500);
         }
-    
     }
 
     /**
@@ -66,7 +78,7 @@ class SupplierController extends Controller
      */
     public function show(Supplier $supplier)
     {
-        return response()->json(['status'=> true, 'data'=>$supplier],200);
+        return response()->json(['status' => true, 'data' => $supplier], 200);
     }
 
     /**
@@ -81,7 +93,7 @@ class SupplierController extends Controller
      * Update the specified resource in storage.
      */
     public function update(Request $request, Supplier $supplier)
-    {   
+    {
         //logger($supplier->id);
         logger($request->all());
         //logger($request->getContent());
@@ -93,12 +105,11 @@ class SupplierController extends Controller
             'address' => 'nullable|string|max:255',
             'email' => 'nullable|email|max:255',
         ]);
-        
+
         $supplier->update($validatedData);
 
         logger($supplier);
         return response()->json(['data' => $supplier], 200);
-
     }
 
     /**
@@ -107,6 +118,6 @@ class SupplierController extends Controller
     public function destroy(Supplier $supplier)
     {
         $supplier->delete();
-        return response()->json(['message'=>'Eliminado'],200);
+        return response()->json(['message' => 'Eliminado'], 200);
     }
 }

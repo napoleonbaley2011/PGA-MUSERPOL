@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->integer('number_note');//numero de nota
             $table->string('invoice_number');//numero de factura
-            $table->datetime('delivery_date')->nullable();//fecha de ingreso
+            $table->date('delivery_date')->nullable();//fecha de ingreso
             $table->string('state');
             $table->string('invoice_auth');
             $table->string('user_register');

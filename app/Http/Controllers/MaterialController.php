@@ -116,7 +116,7 @@ class MaterialController extends Controller
 
         $search = $request->input('search', '');
 
-        $query = Material::orderBy('id');
+        $query = Material::orderBy('id')->where('type', 'Almacen');
         if ($query) {
             $query->where('description', 'like', '%' . $search . '%');
         }

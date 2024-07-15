@@ -2,21 +2,45 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Material;
 use App\Models\Note_Entrie;
 use App\Models\Supplier;
 use Illuminate\Http\Request;
 
 class NoteEntriesController extends Controller
 {
-    public function list_note_entries(){
-        $notes = Note_Entrie::all();
-        return response()->json([
-            'data'=>$notes,
-        ],200);
+    public function list_note_entries(Request $request)
+    {
+        $page = $request->get('page', -1);
+        $limit = $request->get('limit', Note_Entrie::count());
+        $start = $page * $limit;
+        $end = $limit * ($page + 1);
 
+        $date = $request->input('date', '');
+
+        $query = Note_Entrie::with(['materials' => function ($query) {
+            $query->withPivot('amount_entries', 'cost_unit', 'cost_total');
+        }])->orderBy('id');
+
+        if ($date) {
+            $query->whereDate('delivery_date', $date);
+        }
+
+        $totalNotes = $query->count();
+
+        $notes = $query->skip($start)->take($limit)->get();
+
+        return response()->json([
+            'status' => 'success',
+            'total' => $totalNotes,
+            'page' => $page,
+            'last_page' => ceil($totalNotes / $limit),
+            'data' => $notes,
+        ], 200);
     }
 
-    public function create_note(Request $request){
+    public function create_note(Request $request)
+    {
         // logger($request);
 
         $validateData = $request->validate([
@@ -42,9 +66,9 @@ class NoteEntriesController extends Controller
         //logger($validateData);
 
         $noteEntrie = Note_Entrie::create([
-            'number_note'=>$number_note,
-            'invoice_number'=>$validateData['invoice_number'],
-            'delivery_date' =>$validateData['date_entry'],
+            'number_note' => $number_note,
+            'invoice_number' => $validateData['invoice_number'],
+            'delivery_date' => $validateData['date_entry'],
             'state' => 'Creado',
             'invoice_auth' => $validateData['authorization_number'],
             'user_register' => $validateData['id_user'],
@@ -54,8 +78,13 @@ class NoteEntriesController extends Controller
         ]);
 
 
-        foreach ($validateData['materials'] as $materialData){
-            $noteEntrie->materials()->attach($materialData['id'],[
+        foreach ($validateData['materials'] as $materialData) {
+
+            $material = Material::find($materialData['id']);
+            $material->stock += $materialData['quantity'];
+            $material->save();
+
+            $noteEntrie->materials()->attach($materialData['id'], [
                 'amount_entries' => $materialData['quantity'],
                 'cost_unit' => $materialData['price'],
                 'cost_total' => $materialData['quantity'] * $materialData['price'],
@@ -63,6 +92,5 @@ class NoteEntriesController extends Controller
         }
 
         return response()->json($noteEntrie->load('materials'), 201);
-
     }
 }

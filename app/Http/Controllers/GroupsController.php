@@ -12,22 +12,41 @@ class GroupsController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $groups = Group::with(['materials', 'classifier' => function ($query) {
-            $query->select('id', 'code_class', 'nombre as classifier_name');
-        }])
-            ->get()
-            ->map(function ($group) {
-                // Remove 'id' from classifier to avoid confusion since it's not necessary in the response
-                unset($group->classifier->id);
-                return $group;
-            });
+        $page = $request->get('page', 0);
+        $limit = $request->get('limit', Group::count());
+        $start = $page * $limit;
+        $search = $request->input('search', '');
 
+        // Construimos la consulta inicial
+        $query = Group::with(['materials', 'classifier' => function ($query) {
+            $query->select('id', 'code_class', 'nombre as classifier_name');
+        }]);
+
+        // Aplicamos la búsqueda si existe el parámetro
+        if (!empty($search)) {
+            $query->whereHas('materials', function ($materialQuery) use ($search) {
+                $materialQuery->where('description', 'like', '%' . $search . '%');
+            });
+        }
+
+        // Contamos el total de grupos que cumplen con los criterios de búsqueda
+        $totalGroups = $query->count();
+
+        // Obtenemos los grupos aplicando paginación
+        $groups = $query->skip($start)->take($limit)->get()->map(function ($group) {
+            unset($group->classifier->id);
+            return $group;
+        });
+
+        // Verificamos si hay resultados y devolvemos la respuesta adecuada
         if ($groups->isNotEmpty()) {
             return response()->json([
-                'status' => true,
-                'total' => $groups->count(),
+                'status' => 'success',
+                'total' => $totalGroups,
+                'page' => $page,
+                'last_page' => ceil($totalGroups / $limit),
                 'data' => $groups
             ], 200);
         } else {
@@ -37,7 +56,6 @@ class GroupsController extends Controller
             ], 404);
         }
     }
-
     /**
      * Show the form for creating a new resource.
      */
