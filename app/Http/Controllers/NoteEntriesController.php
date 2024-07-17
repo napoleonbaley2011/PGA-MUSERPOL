@@ -19,7 +19,7 @@ class NoteEntriesController extends Controller
         $date = $request->input('date', '');
 
         $query = Note_Entrie::with(['materials' => function ($query) {
-            $query->withPivot('amount_entries', 'cost_unit', 'cost_total');
+            $query->withPivot('amount_entries', 'cost_unit', 'cost_total')->withTrashed();
         }])->orderBy('id');
 
         if ($date) {
@@ -92,5 +92,21 @@ class NoteEntriesController extends Controller
         }
 
         return response()->json($noteEntrie->load('materials'), 201);
+    }
+
+
+    public function destroy(Note_Entrie $note_entry)
+    {
+        $note_entry->state = "Eliminado";
+        $note_entry->observation = "Eliminado";
+        $note_entry->save();
+
+        $materials = $note_entry->materials;
+        foreach ($materials as $material) {
+            $material->stock -= $material->pivot->amount_entries;
+            $material->save();
+        }
+        $note_entry->delete();
+        return response()->json(['message' => 'Eliminado'], 200);
     }
 }

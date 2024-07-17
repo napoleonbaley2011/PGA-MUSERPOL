@@ -34,7 +34,7 @@ class MaterialController extends Controller
     public function store(Request $request)
     {
         try {
-            logger($request);
+            //logger($request);
             $material = new Material($request->input());
 
             if ($material->save()) {
@@ -53,7 +53,7 @@ class MaterialController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Ocurrio un error' . $e->getMessage()
-            ],500);
+            ], 500);
         }
     }
 
@@ -62,7 +62,30 @@ class MaterialController extends Controller
      */
     public function show(string $id)
     {
-        //
+
+        $material = Material::findOrFail($id);
+
+
+        $entries = $material->noteEntries()->withPivot('amount_entries', 'cost_unit', 'cost_total')->get();
+
+
+        $response = $entries->map(function ($entry) {
+            return [
+                'note_id' => $entry->id,
+                'note_number' => $entry->number_note,
+                'date' => $entry->delivery_date,
+                'amount_entries' => $entry->pivot->amount_entries,
+                'cost_unit' => $entry->pivot->cost_unit,
+                'cost_total' => $entry->pivot->cost_total,
+            ];
+        });
+
+
+        return response()->json([
+            'material_id' => $material->id,
+            'material_description' => $material->description,
+            'entries' => $response,
+        ], 200);
     }
 
     /**
@@ -70,7 +93,6 @@ class MaterialController extends Controller
      */
     public function edit(string $id)
     {
-        
     }
 
     /**
@@ -79,22 +101,22 @@ class MaterialController extends Controller
     public function update(Request $request, string $id)
     {
         $material = Material::find($id);
-        if($request['state'] == "Habilitado"){
+        if ($request['state'] == "Habilitado") {
             $upState = "Inhabilitado";
-        }else{
-            if($material->stock > 0){
+        } else {
+            if ($material->stock > 0) {
                 $upState = "Habilitado";
-            }else{
+            } else {
                 return response()->json([
                     'status' => false,
                     'message' => "Debe existir Stock para poder Habilitar el material"
-                ],400);
+                ], 400);
             }
         }
         $material->state = $upState;
         logger($material);
         $material->save();
-        return response()->json(['status'=> true,'data' => $material], 200);
+        return response()->json(['status' => true, 'data' => $material], 200);
     }
 
     /**
@@ -103,7 +125,7 @@ class MaterialController extends Controller
     public function destroy(Material $material)
     {
         $material->delete();
-        return response()->json(['message'=>'Eliminado'],200);
+        return response()->json(['message' => 'Eliminado'], 200);
     }
 
     public function materialslist(Request $request)
