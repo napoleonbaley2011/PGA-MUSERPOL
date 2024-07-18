@@ -132,4 +132,17 @@ class GroupsController extends Controller
         $group->delete();
         return response()->json(['message' => 'Eliminado'], 200);
     }
+
+    public function list_groups(string $id_classifier){
+        {
+            $groups = Group::with('materials')
+                ->where('classifier_id', $id_classifier)
+                ->get();
+    
+            return response()->json([
+                'status' => 'success',
+                'groups' => $groups,
+            ], 200);
+        }
+    }
 }

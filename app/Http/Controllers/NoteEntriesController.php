@@ -20,7 +20,7 @@ class NoteEntriesController extends Controller
 
         $query = Note_Entrie::with(['materials' => function ($query) {
             $query->withPivot('amount_entries', 'cost_unit', 'cost_total')->withTrashed();
-        }])->orderBy('id');
+        }, 'supplier'])->orderBy('id');
 
         if ($date) {
             $query->whereDate('delivery_date', $date);
@@ -29,6 +29,8 @@ class NoteEntriesController extends Controller
         $totalNotes = $query->count();
 
         $notes = $query->skip($start)->take($limit)->get();
+
+        logger($notes);
 
         return response()->json([
             'status' => 'success',

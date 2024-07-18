@@ -27,6 +27,7 @@ Route::group([
     Route::group(['middleware' => ['auth:sanctum']], function(){
         Route::resource('classifiers',ClassifierController::class);
         Route::resource('groups', GroupsController::class);
+        Route::get('/listgroup/{id_classifier}', [GroupsController::class, 'list_groups']);
         Route::resource('suppliers', SupplierController::class);
         Route::resource('materials', MaterialController::class);
         Route::resource('types', TypeController::class);
