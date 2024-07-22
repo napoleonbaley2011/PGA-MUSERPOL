@@ -18,6 +18,7 @@ return new class extends Migration
             $table->integer('amount_entries')->nullable();
             $table->double('cost_unit',2,8)->nullable();
             $table->decimal('cost_total',10,2)->default(0.00)->nullable();
+            $table->string('name_material')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

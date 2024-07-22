@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
         ClassifierSeader::class,
         GroupTableSeeder::class,
         TypesTableSeeder::class,
+        MaterialTableSeerder::class,
        ]);
     }
 }

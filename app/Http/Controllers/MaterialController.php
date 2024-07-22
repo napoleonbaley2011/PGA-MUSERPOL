@@ -130,7 +130,7 @@ class MaterialController extends Controller
 
     public function materialslist(Request $request)
     {
-        logger($request);
+        //logger($request);
         $page = $request->get('page', -1);
         $limit = $request->get('limit', Material::count());
         $start = $page * $limit;
@@ -138,7 +138,7 @@ class MaterialController extends Controller
 
         $search = $request->input('search', '');
 
-        $query = Material::orderBy('id')->where('type', 'Almacen');
+        $query = Material::orderBy('id');
         if ($query) {
             $query->where('description', 'like', '%' . $search . '%');
         }
@@ -148,6 +148,38 @@ class MaterialController extends Controller
         $materials = $query->skip($start)->take($limit)->get();
 
         //logger($materials);
+        return response()->json([
+            'status' => 'success',
+            'total' => $totalmateriales,
+            'page' => $page,
+            'last_page' => ceil($totalmateriales / $limit),
+            'materials' => $materials,
+        ]);
+    }
+
+    public function materialslist_petty_cash(Request $request)
+    {
+        logger($request);
+        $page = $request->get('page', -1);
+        $limit = $request->get('limit', Material::count());
+        $start = $page * $limit;
+        $end = $limit * ($page + 1);
+
+        $search = $request->input('search', '');
+
+        $query = Material::orderBy('id')
+            ->where(function ($query) {
+                $query->where('type', 'Caja Chica')
+                    ->orWhere('type', 'Fondo de Avance');
+            });
+
+        if ($search) {
+            $query->where('description', 'like', '%' . $search . '%');
+        }
+
+        $totalmateriales = $query->count();
+        $materials = $query->skip($start)->take($limit)->get();
+
         return response()->json([
             'status' => 'success',
             'total' => $totalmateriales,

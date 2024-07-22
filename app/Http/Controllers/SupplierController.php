@@ -13,15 +13,15 @@ class SupplierController extends Controller
      */
     public function index(Request $request)
     {
-        $page = $request->get('page', 0); // Default page is 0 if not provided
-        $limit = $request->get('limit', Supplier::count()); // Default limit is the total count of suppliers if not provided
+        $page = $request->get('page', 0); 
+        $limit = $request->get('limit', Supplier::count()); 
         $start = $page * $limit;
         $search = $request->input('search', '');
 
         $query = Supplier::orderBy('id');
 
         if (!empty($search)) {
-            $query->where('name', 'like', '%' . $search . '%'); // Adjust field name as needed for search criteria
+            $query->where('name', 'like', '%' . $search . '%'); 
         }
 
         $totalSuppliers = $query->count();

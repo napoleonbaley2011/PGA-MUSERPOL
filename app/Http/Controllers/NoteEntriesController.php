@@ -43,7 +43,7 @@ class NoteEntriesController extends Controller
 
     public function create_note(Request $request)
     {
-        // logger($request);
+        logger($request);
 
         $validateData = $request->validate([
             'type' => 'required|integer',
@@ -90,6 +90,7 @@ class NoteEntriesController extends Controller
                 'amount_entries' => $materialData['quantity'],
                 'cost_unit' => $materialData['price'],
                 'cost_total' => $materialData['quantity'] * $materialData['price'],
+                'name_material' => $materialData['name'],
             ]);
         }
 
