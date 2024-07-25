@@ -31,5 +31,9 @@ class Material extends Model
     {
         return $this->belongsToMany(Note_Entrie::class, 'entries_material', 'material_id', 'note_id')->withPivot('amount_entries', 'cost_unit', 'cost_total', 'name_material');
     }
-}
 
+    public function noteRequests()
+    {
+        return $this->belongsToMany(NoteRequest::class, 'request_material', 'material_id', 'note_id')->withPivot('amount_request', 'name_material','delivered_quantity');
+    }
+}

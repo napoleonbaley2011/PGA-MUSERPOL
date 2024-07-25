@@ -140,7 +140,7 @@ class MaterialController extends Controller
 
         $query = Material::orderBy('id');
         if ($query) {
-            $query->where('description', 'like', '%' . $search . '%');
+            $query->where('description', 'like', '%' . $search . '%')->orWhere('code_material', 'like', '%' . $search . '%');;
         }
 
         $totalmateriales = $query->count();
@@ -187,5 +187,12 @@ class MaterialController extends Controller
             'last_page' => ceil($totalmateriales / $limit),
             'materials' => $materials,
         ]);
+    }
+
+
+    public function list_materials_pva(){
+        $query = Material::where('state', 'Habilitado')->get();
+        // logger($query);
+        return $query;
     }
 }

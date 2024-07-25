@@ -37,7 +37,7 @@ class AuthController extends Controller
         ], 201);
     }
 
-    protected function respondWithToken($token,$user=null ,$employee = null)
+    protected function respondWithToken($token, $user = null, $employee = null)
     {
         $consultant = null;
         if ($employee == null) {
@@ -58,7 +58,7 @@ class AuthController extends Controller
             $permissions = [];
             $consultant = $employee->consultant();
         }
-        
+
         return response()->json([
             //'employes'=>$name_employes,
             'token' => $token,
@@ -71,8 +71,7 @@ class AuthController extends Controller
             'consultant' => $consultant,
             'message' => 'Indentidad verificada',
 
-        ],200);
-        
+        ], 200);
     }
 
 
@@ -89,7 +88,7 @@ class AuthController extends Controller
                     ],
                 ], 401);
             }
-        }else{
+        } else {
             return response()->json([
                 'message' => 'No autorizado',
                 'errors' => [
@@ -101,9 +100,9 @@ class AuthController extends Controller
         if (!env("LDAP_AUTHENTICATION")) {
             if ($user && Hash::check($request['password'], $user->password)) {
                 return $this->respondWithToken($user->createToken('api')->plainTextToken, $user);
-            }else{
+            } else {
                 return response()->json([
-                    'message'=> 'No autorizado',
+                    'message' => 'No autorizado',
                     'errors' => [
                         'type' => ['Usuario no Correcto']
                     ]

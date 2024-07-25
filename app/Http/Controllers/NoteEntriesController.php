@@ -43,7 +43,7 @@ class NoteEntriesController extends Controller
 
     public function create_note(Request $request)
     {
-        logger($request);
+        //logger($request);
 
         $validateData = $request->validate([
             'type' => 'required|integer',

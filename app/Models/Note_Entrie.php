@@ -12,7 +12,7 @@ class Note_Entrie extends Model
 
     protected $table = 'note_entries';
 
-    protected $guarded = []; 
+    protected $guarded = [];
 
     public function type()
     {

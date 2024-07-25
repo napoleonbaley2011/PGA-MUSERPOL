@@ -56,4 +56,8 @@ class User extends Authenticatable
     public function employee(){
         return $this->belongsTo(Employee::class);
     }    
+
+    public function note_requests(){
+        return $this->hasMany(NoteRequest::class);
+    }
 }
