@@ -7,10 +7,53 @@ use Illuminate\Http\Request;
 
 class NoteRequestController extends Controller
 {
-    public function list_note_request()
+    public function list_note_request(Request $request)
     {
-        $noteRequests = NoteRequest::with('materials')->get();
-        return response()->json($noteRequests);
+        $page = $request->get('page', 0); // Default to page 0 if not provided
+        $limit = $request->get('limit', 15); // Default limit to 15 if not provided
+        $start = $page * $limit;
+
+        // Optional: Apply additional filters if needed
+        $state = $request->input('state', '');
+
+        $query = NoteRequest::with('materials')->orderBy('id');
+
+        if ($state) {
+            $query->where('state', $state);
+        }
+
+        $totalNoteRequests = $query->count();
+
+        $noteRequests = $query->skip($start)->take($limit)->get();
+
+        if ($noteRequests->isEmpty()) {
+            return response()->json(['message' => 'No note requests found'], 404);
+        }
+
+        $response = $noteRequests->map(function ($noteRequest) {
+            return [
+                'number_note' => $noteRequest->number_note,
+                'state' => $noteRequest->state,
+                'request_date' => $noteRequest->request_date,
+                'materials' => $noteRequest->materials->map(function ($material) {
+                    return [
+                        'code_material' => $material->code_material,
+                        'description' => $material->description,
+                        'amount_request' => $material->pivot->amount_request,
+                        'delivered_quantity' => $material->pivot->delivered_quantity,
+                        'name_material' => $material->pivot->name_material,
+                    ];
+                }),
+            ];
+        });
+
+        return response()->json([
+            'status' => 'success',
+            'total' => $totalNoteRequests,
+            'page' => $page,
+            'last_page' => ceil($totalNoteRequests / $limit),
+            'data' => $response,
+        ], 200);
     }
 
     public function listUserNoteRequests($userId)
@@ -45,8 +88,8 @@ class NoteRequestController extends Controller
     public function create_note_request(Request $request)
     {
         $number_note = NoteRequest::count() + 1;
-        
-        $noteRequest =NoteRequest::create([
+
+        $noteRequest = NoteRequest::create([
             'number_note' => $number_note,
             'state' => 'En Revision',
             'observation' => 'Ninguno',
@@ -56,7 +99,7 @@ class NoteRequestController extends Controller
         // logger($noteRequest);
 
         foreach ($request['material_request'] as $materialData) {
-            $noteRequest->materials()->attach($materialData['id'],[
+            $noteRequest->materials()->attach($materialData['id'], [
                 'amount_request' => $materialData['quantity'],
                 'name_material' => $materialData['description']
             ]);

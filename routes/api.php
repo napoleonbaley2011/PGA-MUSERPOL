@@ -49,6 +49,7 @@ Route::group([
         Route::delete('/deleteNoteEntry/{note_entry}/', [NoteEntriesController::class, 'destroy']);
         //Notas de Solicitud
         
+        
 
     });
 });
