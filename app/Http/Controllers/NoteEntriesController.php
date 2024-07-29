@@ -64,7 +64,7 @@ class NoteEntriesController extends Controller
         ]);
 
         $supplier_note = Supplier::find($request['id_supplier']);
-        
+
 
         $number_note = Note_Entrie::count() + 1;
         //logger($number_note);
@@ -93,9 +93,12 @@ class NoteEntriesController extends Controller
 
             $noteEntrie->materials()->attach($materialData['id'], [
                 'amount_entries' => $materialData['quantity'],
+                'request' => $materialData['quantity'],
                 'cost_unit' => $materialData['price'],
                 'cost_total' => $materialData['quantity'] * $materialData['price'],
                 'name_material' => $materialData['name'],
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
         }
 
@@ -111,7 +114,7 @@ class NoteEntriesController extends Controller
 
         $materials = $note_entry->materials;
         foreach ($materials as $material) {
-            $material->stock -= $material->pivot->amount_entries;
+            $material->stock -= $material->pivot->request;
             $material->save();
         }
         $note_entry->delete();

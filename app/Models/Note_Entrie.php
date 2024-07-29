@@ -10,6 +10,8 @@ class Note_Entrie extends Model
 {
     use HasFactory, SoftDeletes;
 
+    public $timestamps = true;
+
     protected $table = 'note_entries';
 
     protected $guarded = [];
@@ -26,6 +28,6 @@ class Note_Entrie extends Model
 
     public function materials()
     {
-        return $this->belongsToMany(Material::class, 'entries_material', 'note_id', 'material_id')->withPivot('amount_entries', 'cost_unit', 'cost_total', 'name_material', 'request');
+        return $this->belongsToMany(Material::class, 'entries_material', 'note_id', 'material_id')->withPivot('amount_entries', 'cost_unit', 'cost_total', 'name_material', 'request')->withTimestamps();
     }
 }

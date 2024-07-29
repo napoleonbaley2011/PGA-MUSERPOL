@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Employee;
+use App\Models\Entrie_Material;
+use App\Models\Entry;
+use App\Models\Note_Entrie;
 use App\Models\NoteRequest;
 use Illuminate\Http\Request;
 
@@ -35,7 +38,7 @@ class NoteRequestController extends Controller
 
         $response = $noteRequests->map(function ($noteRequest) {
             return [
-                'id_note'=>$noteRequest->id,
+                'id_note' => $noteRequest->id,
                 'number_note' => $noteRequest->number_note,
                 'state' => $noteRequest->state,
                 'request_date' => $noteRequest->request_date,
@@ -115,5 +118,32 @@ class NoteRequestController extends Controller
             ]);
         }
         return response()->json($noteRequest->load('materials'), 201);
+    }
+
+
+    public function delivered_of_material(Request $request)
+    {
+        $noteRequest = NoteRequest::find($request->noteRequestId);
+
+        foreach ($request->materials as $materialRequest) {
+            $materialId = $materialRequest['id_material'];
+            $amountRequested = (int) $materialRequest['amount_to_deliver'];
+            $entries = Entrie_Material::where('material_id', $materialId)->orderBy('id', 'asc')->get();
+            $totalDelivered = 0;
+
+            foreach ($entries as $entry) {
+                if ($totalDelivered >= $amountRequested) {
+                    break;
+                }
+                $remaining = $amountRequested - $totalDelivered;
+
+                $deliverAmount = min($entry->amount_entries, $remaining);
+
+                $entry->request -= $deliverAmount;
+
+
+                logger($entry);
+            }
+        }
     }
 }

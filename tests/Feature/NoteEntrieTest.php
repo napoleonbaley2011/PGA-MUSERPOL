@@ -20,36 +20,36 @@ test('list_note_entries', function () {
     $response = $this->getJson('/api/notes-entries?page=0&limit=10');
 
     $response->assertStatus(Response::HTTP_OK)
-             ->assertJsonStructure([
-                 'status',
-                 'total',
-                 'page',
-                 'last_page',
-                 'data' => [
-                     '*' => [
-                         'id',
-                         'number_note',
-                         'invoice_number',
-                         'delivery_date',
-                         'state',
-                         'invoice_auth',
-                         'user_register',
-                         'observation',
-                         'type_id',
-                         'suppliers_id',
-                         'name_supplier',
-                         'materials' => [
-                             '*' => [
-                                 'id',
-                                 'amount_entries',
-                                 'cost_unit',
-                                 'cost_total',
-                                 'name_material'
-                             ]
-                         ]
-                     ]
-                 ]
-             ]);
+        ->assertJsonStructure([
+            'status',
+            'total',
+            'page',
+            'last_page',
+            'data' => [
+                '*' => [
+                    'id',
+                    'number_note',
+                    'invoice_number',
+                    'delivery_date',
+                    'state',
+                    'invoice_auth',
+                    'user_register',
+                    'observation',
+                    'type_id',
+                    'suppliers_id',
+                    'name_supplier',
+                    'materials' => [
+                        '*' => [
+                            'id',
+                            'amount_entries',
+                            'cost_unit',
+                            'cost_total',
+                            'name_material'
+                        ]
+                    ]
+                ]
+            ]
+        ]);
 });
 
 test('create_note', function () {
@@ -82,18 +82,18 @@ test('create_note', function () {
     $response = $this->postJson('/api/notes-entries', $data);
 
     $response->assertStatus(Response::HTTP_CREATED)
-             ->assertJson([
-                 'number_note' => 1,
-                 'invoice_number' => $data['invoice_number'],
-                 'delivery_date' => $data['date_entry'],
-                 'state' => 'Creado',
-                 'invoice_auth' => $data['authorization_number'],
-                 'user_register' => $data['id_user'],
-                 'observation' => 'Creado recientemente',
-                 'type_id' => $data['type'],
-                 'suppliers_id' => $data['id_supplier'],
-                 'name_supplier' => $supplier->name,
-             ]);
+        ->assertJson([
+            'number_note' => 1,
+            'invoice_number' => $data['invoice_number'],
+            'delivery_date' => $data['date_entry'],
+            'state' => 'Creado',
+            'invoice_auth' => $data['authorization_number'],
+            'user_register' => $data['id_user'],
+            'observation' => 'Creado recientemente',
+            'type_id' => $data['type'],
+            'suppliers_id' => $data['id_supplier'],
+            'name_supplier' => $supplier->name,
+        ]);
 
     foreach ($data['materials'] as $material) {
         $this->assertDatabaseHas('material_note', [
@@ -122,17 +122,16 @@ test('delete_note_entry', function () {
     $response = $this->deleteJson('/api/notes-entries/' . $noteEntry->id);
 
     $response->assertStatus(Response::HTTP_OK)
-             ->assertJson([
-                 'message' => 'Eliminado'
-             ]);
+        ->assertJson([
+            'message' => 'Eliminado'
+        ]);
 
     $this->assertDatabaseMissing('note_entries', [
         'id' => $noteEntry->id
     ]);
 
-    // Verificar el stock del material
     $this->assertDatabaseHas('materials', [
         'id' => $material->id,
-        'stock' => $material->stock // Ajusta esto si es necesario
+        'stock' => $material->stock
     ]);
 });

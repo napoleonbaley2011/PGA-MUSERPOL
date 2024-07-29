@@ -49,8 +49,6 @@ Route::group([
         Route::get('/materialslistpettycash', [MaterialController::class, 'materialslist_petty_cash']);
         Route::delete('/deleteNoteEntry/{note_entry}/', [NoteEntriesController::class, 'destroy']);
         //Notas de Solicitud
-        
-        
-
+        Route::post('/delivered_material',[NoteRequestController::class, 'delivered_of_material']);
     });
 });
