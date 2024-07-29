@@ -16,10 +16,10 @@ class NoteRequest extends Model
 
     public function materials()
     {
-        return $this->belongsToMany(Material::class, 'request_material', 'note_id', 'material_id')->withPivot('amount_request', 'name_material','delivered_quantity');
+        return $this->belongsToMany(Material::class, 'request_material', 'note_id', 'material_id')->withPivot('amount_request', 'name_material', 'delivered_quantity');
     }
-    public function employees()
+    public function employee()
     {
-        return $this->belongsTo(Employee::class);
+        return $this->belongsTo(Employee::class, 'user_register');
     }
 }

@@ -95,7 +95,7 @@ class SupplierController extends Controller
     public function update(Request $request, Supplier $supplier)
     {
         //logger($supplier->id);
-        logger($request->all());
+        //logger($request->all());
         //logger($request->getContent());
         $validatedData = $request->validate([
             'name' => 'nullable|string|max:255',
@@ -108,7 +108,7 @@ class SupplierController extends Controller
 
         $supplier->update($validatedData);
 
-        logger($supplier);
+        //slogger($supplier);
         return response()->json(['data' => $supplier], 200);
     }
 

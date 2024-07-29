@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Employee;
 use App\Models\Material;
 use App\Models\Note_Entrie;
 use App\Models\Supplier;
@@ -30,7 +31,7 @@ class NoteEntriesController extends Controller
 
         $notes = $query->skip($start)->take($limit)->get();
 
-        logger($notes);
+        //logger($notes);
 
         return response()->json([
             'status' => 'success',
@@ -62,6 +63,9 @@ class NoteEntriesController extends Controller
             'id_user' => 'required|string'
         ]);
 
+        $supplier_note = Supplier::find($request['id_supplier']);
+        
+
         $number_note = Note_Entrie::count() + 1;
         //logger($number_note);
 
@@ -77,6 +81,7 @@ class NoteEntriesController extends Controller
             'observation' => 'Creado recientemente',
             'type_id' => $validateData['type'],
             'suppliers_id' => $validateData['id_supplier'],
+            'name_supplier' => $supplier_note->name,
         ]);
 
 

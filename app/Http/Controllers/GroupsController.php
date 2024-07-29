@@ -138,7 +138,7 @@ class GroupsController extends Controller
             $groups = Group::with('materials')
                 ->where('classifier_id', $id_classifier)
                 ->get();
-            logger($groups);
+            //logger($groups);
             return response()->json([
                 'status' => 'success',
                 'groups' => $groups,

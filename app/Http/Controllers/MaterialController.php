@@ -114,7 +114,7 @@ class MaterialController extends Controller
             }
         }
         $material->state = $upState;
-        logger($material);
+        //logger($material);
         $material->save();
         return response()->json(['status' => true, 'data' => $material], 200);
     }
@@ -159,7 +159,7 @@ class MaterialController extends Controller
 
     public function materialslist_petty_cash(Request $request)
     {
-        logger($request);
+        //logger($request);
         $page = $request->get('page', -1);
         $limit = $request->get('limit', Material::count());
         $start = $page * $limit;
@@ -190,9 +190,22 @@ class MaterialController extends Controller
     }
 
 
-    public function list_materials_pva(){
+    public function list_materials_pva()
+    {
         $query = Material::where('state', 'Habilitado')->get();
         // logger($query);
         return $query;
+    }
+
+    public function updateName(Request $request, string $id)
+    {
+        $material = Material::find($id);
+
+
+        $material->description = $request['description'];
+        $material->unit_material = $request['unit_material'];
+
+        $material->save();
+        return response()->json(['status' => true, 'data' => $material], 200);
     }
 }

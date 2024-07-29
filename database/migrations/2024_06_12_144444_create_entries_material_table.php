@@ -16,8 +16,9 @@ return new class extends Migration
             $table->foreignId('note_id')->constrained('note_entries')->onDelete('cascade');
             $table->foreignId('material_id')->constrained()->onDelete('cascade');
             $table->integer('amount_entries')->nullable();
-            $table->double('cost_unit',2,8)->nullable();
-            $table->decimal('cost_total',10,2)->default(0.00)->nullable();
+            $table->integer('request')->nullable();
+            $table->double('cost_unit', 2, 8)->nullable();
+            $table->decimal('cost_total', 10, 2)->default(0.00)->nullable();
             $table->string('name_material')->nullable();
             $table->timestamps();
             $table->softDeletes();
