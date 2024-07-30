@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Employee;
+use App\Models\Entrie_Material;
 use App\Models\Material;
 use App\Models\Note_Entrie;
 use App\Models\Supplier;
@@ -116,6 +117,12 @@ class NoteEntriesController extends Controller
         foreach ($materials as $material) {
             $material->stock -= $material->pivot->request;
             $material->save();
+
+            $entryMaterial = Entrie_Material::where('note_id', $note_entry->id)->where('material_id', $material->id)->first();
+
+            if ($entryMaterial) {
+                $entryMaterial->delete();
+            }
         }
         $note_entry->delete();
         return response()->json(['message' => 'Eliminado'], 200);

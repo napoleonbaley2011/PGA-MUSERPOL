@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Employee;
 use App\Models\Entrie_Material;
 use App\Models\Entry;
+use App\Models\Material;
 use App\Models\Note_Entrie;
 use App\Models\NoteRequest;
+use App\Models\Request_Material;
 use Illuminate\Http\Request;
 
 class NoteRequestController extends Controller
@@ -123,27 +125,58 @@ class NoteRequestController extends Controller
 
     public function delivered_of_material(Request $request)
     {
-        $noteRequest = NoteRequest::find($request->noteRequestId);
+        if ($request->status == "Approved") {
+            $noteRequestId = $request->input('noteRequestId');
+            $materialsToDeliver = $request->input('materials');
 
-        foreach ($request->materials as $materialRequest) {
-            $materialId = $materialRequest['id_material'];
-            $amountRequested = (int) $materialRequest['amount_to_deliver'];
-            $entries = Entrie_Material::where('material_id', $materialId)->orderBy('id', 'asc')->get();
-            $totalDelivered = 0;
+            foreach ($materialsToDeliver as $material) {
+                $materialId = $material['id_material'];
+                $amountToDeliver = (int) $material['amount_to_deliver'];
+                $amount_to_be_reduced = $amountToDeliver;
+                $entries = Note_Entrie::whereHas('materials', function ($query) use ($materialId) {
+                    $query->where('materials.id', $materialId);
+                })
+                    ->where('state', '!=', 'Eliminado')
+                    ->orderBy('created_at', 'asc')
+                    ->get();
 
-            foreach ($entries as $entry) {
-                if ($totalDelivered >= $amountRequested) {
-                    break;
+
+                foreach ($entries as $entry) {
+                    $entryMaterialPivot = $entry->materials()->where('materials.id', $materialId)->first()->pivot;
+                    $availableAmount = $entryMaterialPivot->request;
+                    if ($availableAmount >= $amountToDeliver) {
+                        $entryMaterialPivot->request -= $amountToDeliver;
+                        $entryMaterialPivot->save();
+                        break;
+                    } else {
+                        $amountToDeliver -= $availableAmount;
+                        $entryMaterialPivot->request = 0;
+                        $entryMaterialPivot->save();
+                    }
                 }
-                $remaining = $amountRequested - $totalDelivered;
+                $requestMaterial = Request_Material::where('note_id', $noteRequestId)
+                    ->where('material_id', $materialId)
+                    ->first();
 
-                $deliverAmount = min($entry->amount_entries, $remaining);
+                $requestMaterial->delivered_quantity = $amountToDeliver;
+                $requestMaterial->save();
 
-                $entry->request -= $deliverAmount;
 
-
-                logger($entry);
+                logger($amountToDeliver);
+                $material = Material::find($materialId);
+                $material->stock -= $amount_to_be_reduced;
+                $material->save();
+                logger($material);
             }
+
+            $noteRequest = NoteRequest::find($noteRequestId);
+            $noteRequest->state = 'Aceptado';
+            $noteRequest->save();
+        } else {
+            $noteRequestId = $request->input('noteRequestId');
+            $noteRequest = NoteRequest::find($noteRequestId);
+            $noteRequest->state = 'Cancelado';
+            $noteRequest->save();
         }
     }
 }
