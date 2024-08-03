@@ -15,14 +15,14 @@ class NoteRequestController extends Controller
 {
     public function list_note_request(Request $request)
     {
-        $page = $request->get('page', -1);
+        //logger($request);
+        $page = $request->get('page', 0);
         $limit = $request->get('limit', NoteRequest::count());
         $start = $page * $limit;
-
         $state = $request->input('state', '');
 
-        $query = NoteRequest::with(['materials', 'employee'])->orderByDesc('number_note');
 
+        $query = NoteRequest::with(['materials', 'employee'])->orderByDesc('number_note');
 
         if ($state) {
             $query->where('state', $state);
@@ -31,8 +31,6 @@ class NoteRequestController extends Controller
         $totalNoteRequests = $query->count();
 
         $noteRequests = $query->skip($start)->take($limit)->get();
-
-        //logger($noteRequests);
 
         if ($noteRequests->isEmpty()) {
             return response()->json(['message' => 'No note requests found'], 404);
@@ -44,6 +42,7 @@ class NoteRequestController extends Controller
                 'number_note' => $noteRequest->number_note,
                 'state' => $noteRequest->state,
                 'request_date' => $noteRequest->request_date,
+                'observation' => $noteRequest->observation,
                 'employee' => $noteRequest->employee
                     ? "{$noteRequest->employee->first_name} {$noteRequest->employee->last_name} {$noteRequest->employee->mothers_last_name}"
                     : null,
@@ -70,7 +69,6 @@ class NoteRequestController extends Controller
             'data' => $response,
         ], 200);
     }
-
     public function listUserNoteRequests($userId)
     {
         $noteRequests = NoteRequest::where('user_register', $userId)->with('materials')->get();
@@ -126,6 +124,15 @@ class NoteRequestController extends Controller
     public function delivered_of_material(Request $request)
     {
         if ($request->status == "Approved") {
+            $materials_validate = $request->input('materials');
+
+            foreach ($materials_validate as $material) {
+                $material_stock = Material::find($material['id_material']);
+
+                if ($material_stock->stock < $material['amount_to_deliver']) {
+                    return response()->json(['status' => false, 'message' => 'No hay suficiente stock en almacenes'], 404);
+                }
+            }
             $noteRequestId = $request->input('noteRequestId');
             $materialsToDeliver = $request->input('materials');
 
@@ -162,21 +169,25 @@ class NoteRequestController extends Controller
                 $requestMaterial->save();
 
 
-                logger($amountToDeliver);
+                //logger($amountToDeliver);
                 $material = Material::find($materialId);
                 $material->stock -= $amount_to_be_reduced;
                 $material->save();
-                logger($material);
+                //logger($material);
             }
 
             $noteRequest = NoteRequest::find($noteRequestId);
             $noteRequest->state = 'Aceptado';
             $noteRequest->save();
+            return response()->json(['status' => true, 'message' => 'Solicitud Aceptada'], 200);
         } else {
+
             $noteRequestId = $request->input('noteRequestId');
             $noteRequest = NoteRequest::find($noteRequestId);
+            $noteRequest->observation = $request->input('cancelComment');
             $noteRequest->state = 'Cancelado';
             $noteRequest->save();
+            return response()->json(['status' => true, 'message' => 'Solicitud Cancelada'], 200);
         }
     }
 }

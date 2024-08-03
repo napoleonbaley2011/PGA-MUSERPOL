@@ -23,11 +23,6 @@ Route::group([
 
     Route::get('/pva_list_material', [MaterialController::class, 'list_materials_pva']);
 
-    Route::get('/saludos', function () {
-        return response()->json([
-            "data" => "saludos"
-        ]);
-    });
     //Notas de Solicitud
     Route::get('/noteRequest', [NoteRequestController::class, 'list_note_request']);
     Route::get('/noteRequest/{id_user}', [NoteRequestController::class, 'listUserNoteRequests']);
@@ -49,6 +44,6 @@ Route::group([
         Route::get('/materialslistpettycash', [MaterialController::class, 'materialslist_petty_cash']);
         Route::delete('/deleteNoteEntry/{note_entry}/', [NoteEntriesController::class, 'destroy']);
         //Notas de Solicitud
-        Route::post('/delivered_material',[NoteRequestController::class, 'delivered_of_material']);
+        Route::post('/delivered_material', [NoteRequestController::class, 'delivered_of_material']);
     });
 });

@@ -13,26 +13,29 @@ class NoteEntriesController extends Controller
 {
     public function list_note_entries(Request $request)
     {
-        $page = $request->get('page', -1);
-        $limit = $request->get('limit', Note_Entrie::count());
+        logger($request);
+        $page = max(0, $request->get('page', 0));
+        $limit = max(1, $request->get('limit', Note_Entrie::count()));
         $start = $page * $limit;
-        $end = $limit * ($page + 1);
 
-        $date = $request->input('date', '');
+        $startDate = $request->input('start_date', '');
+        $endDate = $request->input('end_date', '');
 
         $query = Note_Entrie::with(['materials' => function ($query) {
             $query->withPivot('amount_entries', 'cost_unit', 'cost_total')->withTrashed();
-        }, 'supplier'])->orderBy('id');
+        }, 'supplier'])->orderByDesc('id');
 
-        if ($date) {
-            $query->whereDate('delivery_date', $date);
+        if ($startDate && $endDate) {
+            $query->whereBetween('delivery_date', [$startDate, $endDate]);
+        } elseif ($startDate) {
+            $query->whereDate('delivery_date', '>=', $startDate);
+        } elseif ($endDate) {
+            $query->whereDate('delivery_date', '<=', $endDate);
         }
 
         $totalNotes = $query->count();
 
         $notes = $query->skip($start)->take($limit)->get();
-
-        //logger($notes);
 
         return response()->json([
             'status' => 'success',

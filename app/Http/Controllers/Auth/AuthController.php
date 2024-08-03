@@ -37,45 +37,6 @@ class AuthController extends Controller
         ], 201);
     }
 
-    protected function respondWithToken($token, $user = null, $employee = null)
-    {
-        $consultant = null;
-        if ($employee == null) {
-            //return $user;
-            $id = $user->employee_id;
-            //  $name_employes = Employee::find($id);
-            $username = $user->username;
-            $role = $user->roles[0]->name;
-            $permissions = array_unique(array_merge($user->roles[0]->permissions->pluck('name')->toArray(), $user->permissions->pluck('name')->toArray()));
-            //$permissions = array_unique(array_merge($user->roles[0]->permissions->pluck('name')->toArray(), $user->permissions->pluck('name')->toArray()));
-            //return $permissions;
-        } else {
-            $user = null;
-            //return "papa";
-            $id = $employee->id;
-            $username = $employee->username;
-            $role = 'guest';
-            $permissions = [];
-            $consultant = $employee->consultant();
-        }
-
-        return response()->json([
-            //'employes'=>$name_employes,
-            'token' => $token,
-            'token_type' => 'Bearer',
-            'expires_in' => config('sanctum.expiration') ? now()->addMinutes(config('sanctum.expiration'))->timestamp : null,
-            'id' => $id,
-            'user' => $username,
-            'role' => $role,
-            'permissions' => $permissions,
-            'consultant' => $consultant,
-            'message' => 'Indentidad verificada',
-
-        ], 200);
-    }
-
-
-
     public function login(AuthForm $request)
     {
         $user = User::whereUsername($request['username'])->first();
@@ -92,7 +53,7 @@ class AuthController extends Controller
             return response()->json([
                 'message' => 'No autorizado',
                 'errors' => [
-                    'type' => ['Usuario desactivado'],
+                    'type' => ['Usuario no encontrado'],
                 ],
             ], 401);
         }
@@ -104,12 +65,11 @@ class AuthController extends Controller
                 return response()->json([
                     'message' => 'No autorizado',
                     'errors' => [
-                        'type' => ['Usuario no Correcto']
+                        'type' => ['Contraseña incorrecta']
                     ]
-                ]);
+                ], 401);
             }
         } else {
-            //Con Ldap
             $ldap = new Ldap();
 
             if ($ldap->connection && $ldap->verify_open_port()) {
@@ -122,7 +82,7 @@ class AuthController extends Controller
                         }
                         $token = $user->createToken('api')->plainTextToken;
                         $ldap->unbind();
-                        return $this->respondWithToken($token);
+                        return $this->respondWithToken($token, $user);
                     } else {
                         $employee = Employee::find($ldap->get_entry($request['username'], 'uid')['employeeNumber']);
                         if ($employee) {
@@ -142,16 +102,54 @@ class AuthController extends Controller
                         $ldap->unbind();
                         return $this->respondWithToken($token, $employee);
                     }
+                } else {
+                    return response()->json([
+                        'message' => 'No autorizado',
+                        'errors' => [
+                            'type' => ['Usuario o contraseña incorrectos'],
+                        ],
+                    ], 401);
                 }
+            } else {
                 return response()->json([
-                    'message' => 'No autorizado',
+                    'message' => 'No se pudo conectar con el servidor LDAP',
                     'errors' => [
-                        'type' => ['Usuario o contraseña incorrectos'],
+                        'type' => ['Error de conexión'],
                     ],
-                ], 401);
+                ], 500);
             }
         }
     }
+
+    protected function respondWithToken($token, $user = null, $employee = null)
+    {
+        $consultant = null;
+        if ($employee == null) {
+            $id = $user->employee_id;
+            $username = $user->username;
+            $role = $user->roles[0]->name;
+            $permissions = array_unique(array_merge($user->roles[0]->permissions->pluck('name')->toArray(), $user->permissions->pluck('name')->toArray()));
+        } else {
+            $id = $employee->id;
+            $username = $employee->username;
+            $role = 'guest';
+            $permissions = [];
+            $consultant = $employee->consultant();
+        }
+
+        return response()->json([
+            'token' => $token,
+            'token_type' => 'Bearer',
+            'expires_in' => config('sanctum.expiration') ? now()->addMinutes(config('sanctum.expiration'))->timestamp : null,
+            'id' => $id,
+            'user' => $username,
+            'role' => $role,
+            'permissions' => $permissions,
+            'consultant' => $consultant,
+            'message' => 'Identidad verificada',
+        ], 200);
+    }
+
 
     public function guard()
     {

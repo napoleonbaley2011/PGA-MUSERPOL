@@ -131,10 +131,9 @@ class MaterialController extends Controller
 
     public function materialslist(Request $request)
     {
-        $page = $request->get('page', -1);
-        $limit = $request->get('limit', Material::count());
+        $page = max(0, $request->get('page', 0)); // Asegurarse de que la página sea al menos 0
+        $limit = max(1, $request->get('limit', Material::count())); // Asegurarse de que el límite sea al menos 1
         $start = $page * $limit;
-        $end = $limit * ($page + 1);
 
         $search = $request->input('search', '');
 
@@ -144,12 +143,12 @@ class MaterialController extends Controller
                 ->orWhere('code_material', 'like', '%' . $search . '%');
         }
 
-        $totalmateriales = $query->count();
+        $totalMaterials = $query->count();
 
         $materials = $query->skip($start)->take($limit)->get();
 
         $materials->each(function ($material) {
-            if ($material->stock <= 0) {
+            if ($material->stock <= 0 && $material->state !== 'Inhabilitado') {
                 $material->state = 'Inhabilitado';
                 $material->save();
             }
@@ -157,9 +156,9 @@ class MaterialController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'total' => $totalmateriales,
+            'total' => $totalMaterials,
             'page' => $page,
-            'last_page' => ceil($totalmateriales / $limit),
+            'last_page' => ceil($totalMaterials / $limit),
             'materials' => $materials,
         ]);
     }
