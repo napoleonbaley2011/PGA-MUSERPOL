@@ -123,6 +123,7 @@ class NoteRequestController extends Controller
 
     public function delivered_of_material(Request $request)
     {
+        //logger($request);
         if ($request->status == "Approved") {
             $materials_validate = $request->input('materials');
 
@@ -147,6 +148,7 @@ class NoteRequestController extends Controller
                     ->orderBy('created_at', 'asc')
                     ->get();
 
+                //logger($entries);
 
                 foreach ($entries as $entry) {
                     $entryMaterialPivot = $entry->materials()->where('materials.id', $materialId)->first()->pivot;
@@ -164,14 +166,15 @@ class NoteRequestController extends Controller
                 $requestMaterial = Request_Material::where('note_id', $noteRequestId)
                     ->where('material_id', $materialId)
                     ->first();
-
-                $requestMaterial->delivered_quantity = $amountToDeliver;
+                //logger($amountToDeliver);
+                $requestMaterial->delivered_quantity = $amount_to_be_reduced;
                 $requestMaterial->save();
 
 
                 //logger($amountToDeliver);
                 $material = Material::find($materialId);
                 $material->stock -= $amount_to_be_reduced;
+                
                 $material->save();
                 //logger($material);
             }

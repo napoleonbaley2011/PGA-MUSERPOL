@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Material;
 use Illuminate\Http\Request;
+use App\Http\Requests\MaterialRequest;
 
 class MaterialController extends Controller
 {
@@ -31,11 +32,12 @@ class MaterialController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(MaterialRequest $request)
     {
         try {
-            //logger($request);
-            $material = new Material($request->input());
+            // Extrae los datos de la solicitud y crea una nueva instancia de Material
+            $data = $request->validated(); // Asegura que solo se validen los datos
+            $material = new Material($data);
 
             if ($material->save()) {
                 return response()->json([
@@ -46,16 +48,18 @@ class MaterialController extends Controller
             } else {
                 return response()->json([
                     'status' => false,
-                    'message' => 'Sin Exito'
+                    'message' => 'No se pudo crear el material.',
                 ], 403);
             }
         } catch (\Exception $e) {
+            // Manejo de errores más específico si es necesario
             return response()->json([
                 'status' => false,
-                'message' => 'Ocurrio un error' . $e->getMessage()
+                'message' => 'Ocurrió un error: ' . $e->getMessage(),
             ], 500);
         }
     }
+
 
     /**
      * Display the specified resource.
@@ -66,7 +70,7 @@ class MaterialController extends Controller
         $material = Material::findOrFail($id);
 
 
-        $entries = $material->noteEntries()->withPivot('amount_entries', 'request', 'cost_unit', 'cost_total')->get();
+        $entries = $material->noteEntries()->withPivot('amount_entries', 'request', 'cost_unit', 'cost_total')->wherePivot('request ', '>', 0)->get();
 
 
         $response = $entries->map(function ($entry) {

@@ -13,7 +13,7 @@ class NoteEntriesController extends Controller
 {
     public function list_note_entries(Request $request)
     {
-        logger($request);
+        //logger($request);
         $page = max(0, $request->get('page', 0));
         $limit = max(1, $request->get('limit', Note_Entrie::count()));
         $start = $page * $limit;
@@ -48,7 +48,7 @@ class NoteEntriesController extends Controller
 
     public function create_note(Request $request)
     {
-        //logger($request);
+        logger($request);
 
         $validateData = $request->validate([
             'type' => 'required|integer',
