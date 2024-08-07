@@ -41,7 +41,6 @@ Route::group([
         Route::get('/notes', [App\Http\Controllers\NoteEntriesController::class, 'list_note_entries']);
         Route::post('/createNoteEntry', [App\Http\Controllers\NoteEntriesController::class, 'create_note']);
         Route::get('/materialslist', [MaterialController::class, 'materialslist']);
-        Route::get('/materialslistpettycash', [MaterialController::class, 'materialslist_petty_cash']);
         Route::delete('/deleteNoteEntry/{note_entry}/', [NoteEntriesController::class, 'destroy']);
         //Notas de Solicitud
         Route::post('/delivered_material', [NoteRequestController::class, 'delivered_of_material']);

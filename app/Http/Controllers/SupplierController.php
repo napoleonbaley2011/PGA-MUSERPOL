@@ -13,15 +13,16 @@ class SupplierController extends Controller
      */
     public function index(Request $request)
     {
-        $page = $request->get('page', 0); 
-        $limit = $request->get('limit', Supplier::count()); 
+        $page = $request->get('page', 0);
+        $totalSuppliers = Supplier::count();
+        $limit = $request->get('limit', $totalSuppliers > 0 ? $totalSuppliers : 1); // Asegurarse de que el límite no sea 0
         $start = $page * $limit;
         $search = $request->input('search', '');
 
         $query = Supplier::orderBy('id');
 
         if (!empty($search)) {
-            $query->where('name', 'like', '%' . $search . '%'); 
+            $query->where('name', 'like', '%' . $search . '%');
         }
 
         $totalSuppliers = $query->count();
@@ -35,6 +36,7 @@ class SupplierController extends Controller
             'suppliers' => $suppliers
         ], 200);
     }
+
 
 
     /**

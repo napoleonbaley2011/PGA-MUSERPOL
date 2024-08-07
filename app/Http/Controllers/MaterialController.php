@@ -34,9 +34,9 @@ class MaterialController extends Controller
      */
     public function store(MaterialRequest $request)
     {
+        logger($request);
         try {
-            // Extrae los datos de la solicitud y crea una nueva instancia de Material
-            $data = $request->validated(); // Asegura que solo se validen los datos
+            $data = $request->validated();
             $material = new Material($data);
 
             if ($material->save()) {
@@ -52,7 +52,6 @@ class MaterialController extends Controller
                 ], 403);
             }
         } catch (\Exception $e) {
-            // Manejo de errores más específico si es necesario
             return response()->json([
                 'status' => false,
                 'message' => 'Ocurrió un error: ' . $e->getMessage(),
@@ -105,6 +104,7 @@ class MaterialController extends Controller
      */
     public function update(Request $request, string $id)
     {
+        //logger($request);
         $material = Material::find($id);
         if ($request['state'] == "Habilitado") {
             $upState = "Inhabilitado";
@@ -112,6 +112,7 @@ class MaterialController extends Controller
             if ($material->stock > 0) {
                 $upState = "Habilitado";
             } else {
+                //logger($material);
                 return response()->json([
                     'status' => false,
                     'message' => "Debe existir Stock para poder Habilitar el material"
@@ -119,7 +120,6 @@ class MaterialController extends Controller
             }
         }
         $material->state = $upState;
-        //logger($material);
         $material->save();
         return response()->json(['status' => true, 'data' => $material], 200);
     }
@@ -135,8 +135,8 @@ class MaterialController extends Controller
 
     public function materialslist(Request $request)
     {
-        $page = max(0, $request->get('page', 0)); // Asegurarse de que la página sea al menos 0
-        $limit = max(1, $request->get('limit', Material::count())); // Asegurarse de que el límite sea al menos 1
+        $page = max(0, $request->get('page', 0));
+        $limit = max(1, $request->get('limit', Material::count()));
         $start = $page * $limit;
 
         $search = $request->input('search', '');
@@ -166,39 +166,6 @@ class MaterialController extends Controller
             'materials' => $materials,
         ]);
     }
-
-    public function materialslist_petty_cash(Request $request)
-    {
-        //logger($request);
-        $page = $request->get('page', -1);
-        $limit = $request->get('limit', Material::count());
-        $start = $page * $limit;
-        $end = $limit * ($page + 1);
-
-        $search = $request->input('search', '');
-
-        $query = Material::orderBy('id')
-            ->where(function ($query) {
-                $query->where('type', 'Caja Chica')
-                    ->orWhere('type', 'Fondo de Avance');
-            });
-
-        if ($search) {
-            $query->where('description', 'like', '%' . $search . '%');
-        }
-
-        $totalmateriales = $query->count();
-        $materials = $query->skip($start)->take($limit)->get();
-
-        return response()->json([
-            'status' => 'success',
-            'total' => $totalmateriales,
-            'page' => $page,
-            'last_page' => ceil($totalmateriales / $limit),
-            'materials' => $materials,
-        ]);
-    }
-
 
     public function list_materials_pva()
     {

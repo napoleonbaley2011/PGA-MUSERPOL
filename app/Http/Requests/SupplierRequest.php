@@ -24,9 +24,9 @@ class SupplierRequest extends FormRequest
         return [
             'name' => 'required|string|max:255|unique:suppliers,name',
             'nit' => 'required|string|max:50|unique:suppliers,nit',
-            'cellphone' => 'nullable|string|max:20',
-            'sales_representative' => 'nullable|string|max:255',
-            'address' => 'nullable|string',
+            'cellphone' => 'required|string|max:20',
+            'sales_representative' => 'required|string|max:255',
+            'address' => 'required|string',
             'email' => 'required|string|email|max:255',
         ];
     }

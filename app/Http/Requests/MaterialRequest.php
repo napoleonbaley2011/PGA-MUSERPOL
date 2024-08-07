@@ -22,13 +22,15 @@ class MaterialRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'group_id' => 'required|integer|exists:groups,id',
             'code_material' => 'required|string|max:10|unique:materials,code_material',
-            'description' => 'required|string|max:255',
+            'description' => 'required|string|max:255|unique:materials,description',
             'unit_material' => 'required|string|max:50',
-            'barcode' => 'required|string|max:255|unique:materials,barcode',
+            'state' => 'required|string|max:50',
             'stock' => 'required|integer|min:0',
             'min' => 'required|integer|min:0',
+            'barcode' => 'required|string|max:255|unique:materials,barcode',
+            'type'=>'required|string|max:25',
+            'group_id' => 'required|integer|exists:groups,id',
         ];
     }
 

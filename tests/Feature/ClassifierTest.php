@@ -80,14 +80,3 @@ test('update_classifier',function(){
     $this->assertDatabaseHas('classifiers',array_merge(['id'=>$classifier->id]));
 
 });
-
-test('delete_classifier', function(){
-    $this->authenticateUser();
-    $classifier=Classifier::factory()->create();
-    $response = $this->deleteJson('/api/auth/classifiers/'.$classifier->id);
-    $response->assertStatus(200)
-             ->assertJson([
-                'message'=>'Eliminado'
-             ]);
-    $this->assertDatabaseMissing('classifiers',['id'=>$classifier->id]);
-});

@@ -48,65 +48,68 @@ class NoteEntriesController extends Controller
 
     public function create_note(Request $request)
     {
-        logger($request);
+        try {
 
-        $validateData = $request->validate([
-            'type' => 'required|integer',
-            'id_supplier' => 'requered|integer',
-            'materials' => 'required|array',
-            'materials.*.id' => 'required|exists:materials,id',
-            'materials.*.name' => 'required|string',
-            'materials.*.quantity' => 'required|integer',
-            'materials.*.price' => 'required|numeric',
-            'materials.*.unit_material' => 'required|string',
-            'date_entry' => 'required|date',
-            'total' => 'required|numeric',
-            'invoice_number' => 'required|string',
-            'authorization_number' => 'required|string',
-            'id_supplier' => 'required|exists:suppliers,id',
-            'id_user' => 'required|string'
-        ]);
-
-        $supplier_note = Supplier::find($request['id_supplier']);
-
-
-        $number_note = Note_Entrie::count() + 1;
-        //logger($number_note);
-
-        //logger($validateData);
-
-        $noteEntrie = Note_Entrie::create([
-            'number_note' => $number_note,
-            'invoice_number' => $validateData['invoice_number'],
-            'delivery_date' => $validateData['date_entry'],
-            'state' => 'Creado',
-            'invoice_auth' => $validateData['authorization_number'],
-            'user_register' => $validateData['id_user'],
-            'observation' => 'Creado recientemente',
-            'type_id' => $validateData['type'],
-            'suppliers_id' => $validateData['id_supplier'],
-            'name_supplier' => $supplier_note->name,
-        ]);
-
-
-        foreach ($validateData['materials'] as $materialData) {
-
-            $material = Material::find($materialData['id']);
-            $material->stock += $materialData['quantity'];
-            $material->save();
-
-            $noteEntrie->materials()->attach($materialData['id'], [
-                'amount_entries' => $materialData['quantity'],
-                'request' => $materialData['quantity'],
-                'cost_unit' => $materialData['price'],
-                'cost_total' => $materialData['quantity'] * $materialData['price'],
-                'name_material' => $materialData['name'],
-                'created_at' => now(),
-                'updated_at' => now(),
+            $validateData = $request->validate([
+                'type' => 'required|integer',
+                'id_supplier' => 'required|integer',
+                'materials' => 'required|array',
+                'materials.*.id' => 'required|exists:materials,id',
+                'materials.*.name' => 'required|string',
+                'materials.*.quantity' => 'required|integer',
+                'materials.*.price' => 'required|numeric',
+                'materials.*.unit_material' => 'required|string',
+                'date_entry' => 'required|date',
+                'total' => 'required|numeric',
+                'invoice_number' => 'required|string',
+                'authorization_number' => 'required|string',
+                'id_user' => 'required|string'
             ]);
-        }
 
-        return response()->json($noteEntrie->load('materials'), 201);
+            $supplier_note = Supplier::find($request['id_supplier']);
+
+
+            $number_note = Note_Entrie::count() + 1;
+            //logger($number_note);
+
+            //logger($validateData);
+
+            $noteEntrie = Note_Entrie::create([
+                'number_note' => $number_note,
+                'invoice_number' => $validateData['invoice_number'],
+                'delivery_date' => $validateData['date_entry'],
+                'state' => 'Creado',
+                'invoice_auth' => $validateData['authorization_number'],
+                'user_register' => $validateData['id_user'],
+                'observation' => 'Creado recientemente',
+                'type_id' => $validateData['type'],
+                'suppliers_id' => $validateData['id_supplier'],
+                'name_supplier' => $supplier_note->name,
+            ]);
+
+
+            foreach ($validateData['materials'] as $materialData) {
+
+                $material = Material::find($materialData['id']);
+                $material->stock += $materialData['quantity'];
+                $material->save();
+
+                $noteEntrie->materials()->attach($materialData['id'], [
+                    'amount_entries' => $materialData['quantity'],
+                    'request' => $materialData['quantity'],
+                    'cost_unit' => $materialData['price'],
+                    'cost_total' => $materialData['quantity'] * $materialData['price'],
+                    'name_material' => $materialData['name'],
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+
+            return response()->json($noteEntrie->load('materials'), 201);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            logger($e->errors());
+            return response()->json($e->errors(), 422);
+        }
     }
 
 
