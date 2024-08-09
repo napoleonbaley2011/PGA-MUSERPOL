@@ -69,7 +69,7 @@ class MaterialController extends Controller
         $material = Material::findOrFail($id);
 
 
-        $entries = $material->noteEntries()->withPivot('amount_entries', 'request', 'cost_unit', 'cost_total')->wherePivot('request', '>', 0)->get();
+        $entries = $material->noteEntries()->withPivot('amount_entries', 'request', 'cost_unit', 'cost_total')->get();
 
 
         $response = $entries->map(function ($entry) {

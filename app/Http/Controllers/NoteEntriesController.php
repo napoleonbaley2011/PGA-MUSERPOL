@@ -7,6 +7,7 @@ use App\Models\Entrie_Material;
 use App\Models\Material;
 use App\Models\Note_Entrie;
 use App\Models\Supplier;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 
 class NoteEntriesController extends Controller
@@ -132,5 +133,39 @@ class NoteEntriesController extends Controller
         }
         $note_entry->delete();
         return response()->json(['message' => 'Eliminado'], 200);
+    }
+
+    public function print_note_entry(Note_Entrie $note_entry)
+    {
+        //logger($note_entry);
+        $materials = $note_entry->materials()->get()->map(function ($material) {
+            return [
+                'code_material' => $material->code_material,
+                'unit_material' => $material->unit_material,
+                'description' => $material->description,
+                'amount_entries' => $material->pivot->amount_entries,
+                'cost_unit' => $material->pivot->cost_unit,
+                'cost_total' => $material->pivot->cost_total,
+            ];
+        });
+        $data = [
+            'supplier_name' => $note_entry->name_supplier,
+            'number_note' => $note_entry->number_note,
+            'invoice_number' => $note_entry->invoice_number,
+            'delivery_date' => $note_entry->delivery_date,
+            'materials' => $materials,
+        ];
+
+        $pdf = Pdf::loadView('Note_Entry.NoteEntries', $data);
+        
+        
+        return $pdf->download('formulario_nota_entrada.pdf');
+
+    }
+
+    public function services_note()
+    {
+        $noteEntry = Note_Entrie::factory()->create();
+        return $noteEntry;
     }
 }

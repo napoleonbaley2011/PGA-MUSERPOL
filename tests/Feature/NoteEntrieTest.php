@@ -131,34 +131,3 @@ test('create_note', function () {
         ]);
     }
 });
-
-
-// test('delete_note_entry', function () {
-//     $this->authenticateUser();
-
-//     // Crear una nota de prueba
-//     $noteEntry = Note_Entrie::factory()->create();
-//     $material = Material::factory()->create();
-//     $noteEntry->materials()->attach($material->id, [
-//         'amount_entries' => 5,
-//         'cost_unit' => 10,
-//         'cost_total' => 50,
-//         'name_material' => $material->name,
-//     ]);
-
-//     $response = $this->deleteJson('/api/notes-entries/' . $noteEntry->id);
-
-//     $response->assertStatus(Response::HTTP_OK)
-//         ->assertJson([
-//             'message' => 'Eliminado'
-//         ]);
-
-//     $this->assertDatabaseMissing('note_entries', [
-//         'id' => $noteEntry->id
-//     ]);
-
-//     $this->assertDatabaseHas('materials', [
-//         'id' => $material->id,
-//         'stock' => $material->stock
-//     ]);
-// });

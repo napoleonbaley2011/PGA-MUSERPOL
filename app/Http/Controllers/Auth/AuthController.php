@@ -14,6 +14,7 @@ class AuthController extends Controller
 {
     public function login(AuthForm $request)
     {
+        logger($request);
         $user = User::whereUsername($request['username'])->first();
 
         if (!$user) {
