@@ -7,8 +7,10 @@ use App\Models\Entrie_Material;
 use App\Models\Material;
 use App\Models\Note_Entrie;
 use App\Models\Supplier;
+use App\Models\Type;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class NoteEntriesController extends Controller
 {
@@ -137,7 +139,7 @@ class NoteEntriesController extends Controller
 
     public function print_note_entry(Note_Entrie $note_entry)
     {
-        //logger($note_entry);
+        $file_title = 'NOTA DE INGRESO ALMACÉN';
         $materials = $note_entry->materials()->get()->map(function ($material) {
             return [
                 'code_material' => $material->code_material,
@@ -148,19 +150,31 @@ class NoteEntriesController extends Controller
                 'cost_total' => $material->pivot->cost_total,
             ];
         });
+        $total_cost = $materials->sum('cost_total');
         $data = [
+            'header' => [
+                'direction' => 'DIRECCIÓN DE ASUNTOS ADMINISTRATIVOS',
+                'unity' => 'UNIDAD ADMINISTRATIVA',
+                'table' => [
+                    ['Tipo', 'NOTA DE INGRESO'],
+                    ['Nota', $note_entry->number_note],
+                    ['Año', Carbon::now()->format('Y')],
+                ]
+            ],
+            'title' => 'NOTA DE INGRESO ALMACÉN',
+            'file_title' => $file_title,
             'supplier_name' => $note_entry->name_supplier,
             'number_note' => $note_entry->number_note,
             'invoice_number' => $note_entry->invoice_number,
             'delivery_date' => $note_entry->delivery_date,
             'materials' => $materials,
+            'total_cost' => number_format($total_cost, 2),
         ];
 
         $pdf = Pdf::loadView('Note_Entry.NoteEntries', $data);
-        
-        
-        return $pdf->download('formulario_nota_entrada.pdf');
 
+
+        return $pdf->download('formulario_nota_entrada.pdf');
     }
 
     public function services_note()

@@ -2,65 +2,72 @@
 <html>
 
 <head>
-    <title>Reporte de Nota de Entrada</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th,
-        td {
-            border: 1px solid #ddd;
-            padding: 8px;
-        }
-
-        th {
-            background-color: #f2f2f2;
-        }
-
-        h1 {
-            text-align: center;
-        }
-    </style>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>{{$file_title}}</title>
+    <link rel="stylesheet" href="{{ public_path("/css/report-print.min.css") }}" media="all" />
 </head>
 
 <body>
-    @include('partials.header_pga')
-    <h1>Reporte de Nota de Entrada</h1>
-    <p><strong>Proveedor:</strong> {{ $supplier_name }}</p>
-    <p><strong>Número de Factura:</strong> {{ $invoice_number }}</p>
-    <p><strong>Fecha de Entrega:</strong> {{ $delivery_date }}</p>
-
-    <h2>Materiales</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Código Material</th>
-                <th>Unidad</th>
-                <th>Descripción</th>
-                <th>Cantidad</th>
-                <th>Costo Unitario</th>
-                <th>Costo Total</th>
-            </tr>
-        </thead>
+    @include('partials.header_pga', $header)
+    <div class="block">
+        <div class="leading-tight text-center m-b-10 text-xs">{{ $title }}</div>
+    </div>
+    <table class="table-code no-paddings text-xs no-margins uppercase">
         <tbody>
-            @foreach ($materials as $material)
             <tr>
-                <td>{{ $material['code_material'] }}</td>
-                <td>{{ $material['unit_material'] }}</td>
-                <td>{{ $material['description'] }}</td>
-                <td>{{ $material['amount_entries'] }}</td>
-                <td>{{ $material['cost_unit'] }}</td>
-                <td>{{ $material['cost_total'] }}</td>
+                <td class="text-center bg-grey-darker text-white">DATOS DE PROVEEDOR</td>
+                <td>{{ $supplier_name }}</td>
             </tr>
-            @endforeach
+            <tr>
+                <td class="text-center bg-grey-darker text-white">N° DE FACTURA</td>
+                <td>{{ $invoice_number }}</td>
+            </tr>
+            <tr>
+                <td class="text-center bg-grey-darker text-white">FECHA</td>
+                <td>{{ $delivery_date }}</td>
+            </tr>
         </tbody>
     </table>
-</body>
+    <div class="table-container uppercase">
+        <table class="table-info">
+            <thead>
+                <tr>
+                    <th class="bg-grey-darker" rowspan="2">Nro.</th>
+                    <th rowspan="2">Código</th>
+                    <th rowspan="2">Unidad</th>
+                    <th rowspan="2">Detalle</th>
+                    <th rowspan="2">Cantidad</th>
+                    <th colspan="2">Importe</th>
+                </tr>
+                <tr>
+                    <th>Unitario</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($materials as $index => $material)
+                <tr>
+                    <td>{{ $index + 1 }}</td>
+                    <td>{{ $material['code_material'] }}</td>
+                    <td>{{ $material['unit_material'] }}</td>
+                    <td>{{ $material['description'] }}</td>
+                    <td>{{ $material['amount_entries'] }}</td>
+                    <td>{{ $material['cost_unit'] }}</td>
+                    <td>{{ $material['cost_total'] }}</td>
+                </tr>
+                @endforeach
+                <tr class="total-row">
+                    <td colspan="5">Total</td>
+                    <td></td>
+                    <td>{{ $total_cost }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="signature-container">
+        <div class="signature-line"></div>
+        <p><strong>FIRMA ENCARGADO DE ALMACENES</strong></p>
+    </div>
 
 </html>
