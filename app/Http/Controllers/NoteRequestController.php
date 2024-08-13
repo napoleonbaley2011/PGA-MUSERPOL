@@ -9,6 +9,9 @@ use App\Models\Material;
 use App\Models\Note_Entrie;
 use App\Models\NoteRequest;
 use App\Models\Request_Material;
+use App\Models\User;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class NoteRequestController extends Controller
@@ -61,6 +64,8 @@ class NoteRequestController extends Controller
             ];
         });
 
+
+
         return response()->json([
             'status' => 'success',
             'total' => $totalNoteRequests,
@@ -78,6 +83,7 @@ class NoteRequestController extends Controller
         }
         $response = $noteRequests->map(function ($noteRequest) {
             return [
+                'id' => $noteRequest->id,
                 'number_note' => $noteRequest->number_note,
                 'state' => $noteRequest->state,
                 'request_date' => $noteRequest->request_date,
@@ -174,7 +180,7 @@ class NoteRequestController extends Controller
                 //logger($amountToDeliver);
                 $material = Material::find($materialId);
                 $material->stock -= $amount_to_be_reduced;
-                
+
                 $material->save();
                 //logger($material);
             }
@@ -192,5 +198,45 @@ class NoteRequestController extends Controller
             $noteRequest->save();
             return response()->json(['status' => true, 'message' => 'Solicitud Cancelada'], 200);
         }
+    }
+
+    public function print_request(NoteRequest $note_request)
+    {
+        // logger($note_request);
+        $user = User::where('employee_id', $note_request->user_register)->first();
+
+        $position = $user->position;
+        $employee = Employee::find($note_request->user_register);
+        $file_title = 'SOLICITUD DE MATERIAL DE ALMACÉN';
+        $materials = $note_request->materials()->get()->map(function ($material) {
+            return [
+                'description' => $material->description,
+                'unit_material' => $material->unit_material,
+                'amount_request' => $material->pivot->amount_request,
+            ];
+        });
+
+        $data = [
+            'title' => 'SOLICITUD DE MATERIAL DE ALMACÉN',
+            'number_note' => $note_request->number_note,
+            'date' => Carbon::now()->format('Y'),
+            'employee' => $employee
+                ? "{$employee->first_name} {$employee->last_name} {$employee->mothers_last_name}"
+                : null,
+            'position' => $user->position,
+            'materials' => $materials,
+        ];
+        $options = [
+            'page-width' => '216',
+            'page-height' => '279',
+            'margin-top' => '4',
+            'margin-bottom' => '4',
+            'margin-left' => '5',
+            'margin-right' => '5',
+            'encoding' => 'UTF-8',
+        ];
+
+        $pdf = Pdf::loadView('Material_Request.MaterialRequest', $data);
+        return $pdf->download('formulario_solicitud_de_material_de_almacén.pdf');
     }
 }

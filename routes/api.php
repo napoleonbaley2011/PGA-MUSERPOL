@@ -29,6 +29,7 @@ Route::group([
     Route::get('/noteRequest', [NoteRequestController::class, 'list_note_request']);
     Route::get('/noteRequest/{id_user}', [NoteRequestController::class, 'listUserNoteRequests']);
     Route::post('/createNoteRequest', [NoteRequestController::class, 'create_note_request']);
+    Route::get('/printRequest/{note_request}', [NoteRequestController::class, 'print_request']);
 
 
     Route::group(['middleware' => ['auth:sanctum']], function () {
