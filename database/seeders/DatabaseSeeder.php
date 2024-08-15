@@ -13,12 +13,13 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-       $this->call([
-        //PermissionAlmacenesSeeder::class,
-        ClassifierSeader::class,
-        GroupTableSeeder::class,
-        TypesTableSeeder::class,
-        MaterialTableSeerder::class,
-       ]);
+        $this->call([
+            //PermissionAlmacenesSeeder::class,
+            ClassifierSeader::class,
+            GroupTableSeeder::class,
+            TypesTableSeeder::class,
+            MaterialTableSeerder::class,
+            SupplierSeeder::class,
+        ]);
     }
 }

@@ -25,7 +25,7 @@ class NoteRequestController extends Controller
         $state = $request->input('state', '');
 
 
-        $query = NoteRequest::with(['materials', 'employee'])->orderByDesc('number_note');
+        $query = NoteRequest::with(['materials', 'employee'])->orderBy('number_note');
 
         if ($state) {
             $query->where('state', $state);
@@ -154,26 +154,35 @@ class NoteRequestController extends Controller
                     ->orderBy('created_at', 'asc')
                     ->get();
 
+                $costDetails = [];
+
                 //logger($entries);
 
                 foreach ($entries as $entry) {
                     $entryMaterialPivot = $entry->materials()->where('materials.id', $materialId)->first()->pivot;
                     $availableAmount = $entryMaterialPivot->request;
+                    $costUnit = $entryMaterialPivot->cost_unit;
                     if ($availableAmount >= $amountToDeliver) {
                         $entryMaterialPivot->request -= $amountToDeliver;
+                        $costDetails[] = "$amountToDeliver @ $costUnit";
                         $entryMaterialPivot->save();
                         break;
                     } else {
                         $amountToDeliver -= $availableAmount;
+                        $costDetails[] = "$availableAmount @ $costUnit";
                         $entryMaterialPivot->request = 0;
                         $entryMaterialPivot->save();
                     }
                 }
+
+                $costDetailsString = implode(', ', $costDetails);
+
                 $requestMaterial = Request_Material::where('note_id', $noteRequestId)
                     ->where('material_id', $materialId)
                     ->first();
                 //logger($amountToDeliver);
                 $requestMaterial->delivered_quantity = $amount_to_be_reduced;
+                $requestMaterial->costDetails = $costDetailsString;
                 $requestMaterial->save();
 
 
@@ -238,5 +247,46 @@ class NoteRequestController extends Controller
 
         $pdf = Pdf::loadView('Material_Request.MaterialRequest', $data);
         return $pdf->download('formulario_solicitud_de_material_de_almacén.pdf');
+    }
+
+
+    public function print_post_request(NoteRequest $note_request)
+    {   //logger($note_request);
+        $user = User::where('employee_id', $note_request->user_register)->first();
+
+        $position = $user->position;
+        $employee = Employee::find($note_request->user_register);
+        $file_title = 'SOLICITUD DE MATERIAL DE ALMACÉN';
+        $materials = $note_request->materials()->get()->map(function ($material) {
+            return [
+                'description' => $material->description,
+                'unit_material' => $material->unit_material,
+                'amount_request' => $material->pivot->amount_request,
+                'delivered_quantity' => $material->pivot->delivered_quantity,
+            ];
+        });
+
+        $data = [
+            'title' => 'ENTREGA DE MATERIAL DE ALMACÉN',
+            'number_note' => $note_request->number_note,
+            'date' => Carbon::now()->format('Y'),
+            'employee' => $employee
+                ? "{$employee->first_name} {$employee->last_name} {$employee->mothers_last_name}"
+                : null,
+            'position' => $user->position,
+            'materials' => $materials,
+        ];
+        $options = [
+            'page-width' => '216',
+            'page-height' => '279',
+            'margin-top' => '4',
+            'margin-bottom' => '4',
+            'margin-left' => '5',
+            'margin-right' => '5',
+            'encoding' => 'UTF-8',
+        ];
+
+        $pdf = Pdf::loadView('Material_Request.MaterialDelivery', $data);
+        return $pdf->download('formulario_entrega_de_material_de_almacén.pdf');
     }
 }

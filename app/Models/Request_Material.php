@@ -13,7 +13,7 @@ class Request_Material extends Model
     protected $table = 'request_material';
 
     protected $fillable = [
-        'note_id', 'material_id', 'amount_request', 'delivered_quantity', 'name_material'
+        'note_id', 'material_id', 'amount_request', 'delivered_quantity', 'name_material', 'costDetails'
     ];
 
     public function material()

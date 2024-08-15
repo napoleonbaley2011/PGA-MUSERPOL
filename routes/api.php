@@ -5,6 +5,7 @@ use App\Http\Controllers\GroupsController;
 use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\NoteEntriesController;
 use App\Http\Controllers\NoteRequestController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\TypeController;
 use App\Models\Material;
@@ -48,5 +49,8 @@ Route::group([
         Route::get('/printNoteEntry/{note_entry}/', [NoteEntriesController::class, 'print_note_entry']);
         //Notas de Solicitud
         Route::post('/delivered_material', [NoteRequestController::class, 'delivered_of_material']);
+        Route::get('/print_post_request/{note_request}', [NoteRequestController::class, 'print_post_request']);
+        //Reportes
+        Route::get('/ReportPrintKardex/{material}', [ReportController::class, 'kardex']);
     });
 });

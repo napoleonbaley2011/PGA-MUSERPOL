@@ -107,8 +107,7 @@ class NoteEntriesController extends Controller
                     'updated_at' => now(),
                 ]);
             }
-
-            return response()->json($noteEntrie->load('materials'), 201);
+            return response()->json($noteEntrie, 201);
         } catch (\Illuminate\Validation\ValidationException $e) {
             logger($e->errors());
             return response()->json($e->errors(), 422);

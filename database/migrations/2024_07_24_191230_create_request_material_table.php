@@ -18,6 +18,7 @@ return new class extends Migration
             $table->integer('amount_request');
             $table->integer('delivered_quantity')->nullable();
             $table->string('name_material');
+            $table->string('costDetails')->nullable();
             $table->softDeletes();
             $table->timestamps();
         });

@@ -116,6 +116,7 @@ $dns = new DNS2D();
                         <th class="text-center bg-grey-darker text-white border-left-white">DESCRIPCIÓN</th>
                         <th class="text-center bg-grey-darker text-white border-left-white">UNIDAD</th>
                         <th class="text-center bg-grey-darker text-white border-left-white">SOLICITADO</th>
+                        <th class="text-center bg-grey-darker text-white border-left-white">ENTREGADO</th>
                     </tr>
                 </thead>
                 <tbody class="table-striped">
@@ -125,6 +126,7 @@ $dns = new DNS2D();
                         <td class="text-center">{{$material['description']}}</td>
                         <td class="text-center">{{$material['unit_material']}}</td>
                         <td class="text-center">{{$material['amount_request']}}</td>
+                        <td class="text-center">{{$material['delivered_quantity']}}</td>
                     </tr>
                     @endforeach
                     @for($i = sizeof($materials) + 1; $i <= $max_requests; $i++)
@@ -137,9 +139,8 @@ $dns = new DNS2D();
             <table class="w-100" style="margin-top: 50px;">
                 <tbody>
                     <tr class="align-bottom text-center text-xxxs" style="height: 120px; vertical-align: bottom;">
-                        <td class="rounded w-33">&nbsp;Solicitante</td>
-                        <td class="rounded w-33">&nbsp;Inmediato Superior</td>
-                        <td class="rounded w-33">&nbsp;Autorizado</td>
+                        <td class="rounded w-50">&nbsp;Recibi conforme</td>
+                        <td class="rounded w-50">&nbsp;Entregado por</td>
                     </tr>
                 </tbody>
             </table>

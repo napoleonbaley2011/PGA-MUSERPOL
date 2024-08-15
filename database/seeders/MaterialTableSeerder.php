@@ -147,17 +147,6 @@ class MaterialTableSeerder extends Seeder
                 'group_id' => 4
             ],
             [
-                'code_material' => '3210041',
-                'description' => 'PAPEL BOND TAMAÑO OFICIO',
-                'unit_material' => 'PIEZA',
-                'state' => 'Inhabilitado',
-                'stock' => 0,
-                'min' => 5,
-                'barcode' => '1013',
-                'type' => 'Almacen',
-                'group_id' => 4
-            ],
-            [
                 'code_material' => '3210042',
                 'description' => 'PAPEL TAMAÑO OFICIO',
                 'unit_material' => 'PIEZA',
