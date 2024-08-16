@@ -94,6 +94,7 @@ class NoteEntriesController extends Controller
             foreach ($validateData['materials'] as $materialData) {
 
                 $material = Material::find($materialData['id']);
+                $material->state = 'Habilitado';
                 $material->stock += $materialData['quantity'];
                 $material->save();
 

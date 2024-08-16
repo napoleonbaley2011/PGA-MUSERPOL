@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Employee;
 use App\Models\Material;
 use Illuminate\Http\Request;
 
@@ -26,17 +27,18 @@ class ReportController extends Controller
                 $movements[] = [
                     'date' => $entry->pivot->created_at,
                     'type' => 'entry',
-                    'description' => 'Nota de Entrada #' . $entry->number_note,
+                    'description' => $entry->name_supplier . ' - Nota de Entrada #' . $entry->number_note,
                     'quantity' => $entry->pivot->amount_entries,
-                    'cost_unit' => number_format($entry->pivot->cost_unit, 2), // Formato con 2 decimales
+                    'cost_unit' => number_format($entry->pivot->cost_unit, 2),
                 ];
             }
 
             foreach ($requests as $request) {
+                $employee = Employee::find($request->user_register);
                 $movements[] = [
                     'date' => $request->pivot->created_at,
                     'type' => 'exit',
-                    'description' => 'Solicitud #' . $request->id,
+                    'description' => ucwords(strtolower("{$employee->first_name} {$employee->last_name} {$employee->mothers_last_name}")) . ' - Solicitud #' . $request->id,
                     'quantity' => $request->pivot->delivered_quantity,
                     'cost_unit' => null,
                 ];
@@ -63,8 +65,8 @@ class ReportController extends Controller
                         'entradas' => $movement['quantity'],
                         'salidas' => 0,
                         'stock_fisico' => $stock,
-                        'cost_unit' => number_format($movement['cost_unit'], 2), // Formato con 2 decimales
-                        'cost_total' => number_format(max($totalValuation, 0), 2), // Formato con 2 decimales, asegura no negativo
+                        'cost_unit' => number_format($movement['cost_unit'], 2),
+                        'cost_total' => number_format(max($totalValuation, 0), 2),
                     ];
                 } elseif ($movement['type'] === 'exit') {
                     $quantityToDeliver = $movement['quantity'];
@@ -79,7 +81,7 @@ class ReportController extends Controller
 
                             $kardex[] = [
                                 'date' => date('Y-m-d', strtotime($movement['date'])),
-                                'description' => $movement['description'] . ' (Parte del lote)',
+                                'description' => $movement['description'],
                                 'entradas' => 0,
                                 'salidas' => $quantityToDeliver,
                                 'stock_fisico' => $stock - $quantityToDeliver,
@@ -98,7 +100,7 @@ class ReportController extends Controller
 
                             $kardex[] = [
                                 'date' => date('Y-m-d', strtotime($movement['date'])),
-                                'description' => $movement['description'] . ' (Lote completo)',
+                                'description' => $movement['description'],
                                 'entradas' => 0,
                                 'salidas' => $fifoItem['quantity'],
                                 'stock_fisico' => $stock - $fifoItem['quantity'],
@@ -118,7 +120,7 @@ class ReportController extends Controller
                 'code_material' => $material->code_material,
                 'description' => $material->description,
                 'unit_material' => $material->unit_material,
-                'group' => $group_material,
+                'group' => strtoupper($group_material),
                 'kardex_de_existencia' => $kardex
             ]);
         } catch (\Exception $e) {
