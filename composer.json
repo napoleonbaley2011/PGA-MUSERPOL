@@ -9,6 +9,7 @@
         "adldap2/adldap2": "^5.0",
         "barryvdh/laravel-dompdf": "^3.0",
         "darkaonline/l5-swagger": "^8.6",
+        "directorytree/ldaprecord": "^3.7",
         "laravel/framework": "^11.0",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",

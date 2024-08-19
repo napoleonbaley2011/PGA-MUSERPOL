@@ -14,9 +14,7 @@ class AuthController extends Controller
 {
     public function login(AuthForm $request)
     {
-        //logger($request);
         $user = User::whereUsername($request['username'])->first();
-
         if (!$user) {
             return $this->unauthorizedResponse('Usuario no encontrado');
         }
@@ -25,20 +23,18 @@ class AuthController extends Controller
             return $this->unauthorizedResponse('Usuario desactivado');
         }
 
-        logger(env("LDAP_AUTHENTICATION"));
-
         if (!env("LDAP_AUTHENTICATION")) {
-            // logger("leo");
+            //logger("leo");
             return $this->handleDatabaseAuthentication($request, $user);
         } else {
-            logger("leo1");
+            //logger("leo1");
             return $this->handleLdapAuthentication($request, $user);
         }
     }
 
     private function handleDatabaseAuthentication($request, $user)
     {
-        logger($request);
+        //logger($request);
         if (Hash::check($request['password'], $user->password)) {
             return $this->respondWithToken($user->createToken('api')->plainTextToken, $user);
         } else {
@@ -48,17 +44,17 @@ class AuthController extends Controller
 
     private function handleLdapAuthentication($request, $user)
     {
-        logger($request);
+        //logger($request);
         $ldap = new Ldap();
-        // if ($ldap->connection && $ldap->verify_open_port()) {
-        //     if ($ldap->bind($request['username'], $request['password'])) {
-        //         return $this->processLdapUser($request, $user, $ldap);
-        //     } else {
-        //         return $this->unauthorizedResponse('Usuario o contraseña incorrectos');
-        //     }
-        // } else {
-        //     return $this->serverErrorResponse('No se pudo conectar con el servidor LDAP');
-        // }
+        if ($ldap->connection && $ldap->verify_open_port()) {
+            if ($ldap->bind($request['username'], $request['password'])) {
+                return $this->processLdapUser($request, $user, $ldap);
+            } else {
+                return $this->unauthorizedResponse('Usuario o contraseña incorrectos');
+            }
+        } else {
+            return $this->serverErrorResponse('No se pudo conectar con el servidor LDAP');
+        }
     }
 
     private function processLdapUser($request, $user, $ldap)

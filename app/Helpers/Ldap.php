@@ -3,7 +3,7 @@
 namespace App\Helpers;
 
 use App\Helpers\Util as HelpersUtil;
-use LdapRecord\Connection;
+use Adldap\Adldap;
 
 class Ldap
 {
@@ -21,7 +21,7 @@ class Ldap
       'admin_username' => env("LDAP_ADMIN_USERNAME"),
       'admin_password' => env("LDAP_ADMIN_PASSWORD"),
       'base_dn' => env("LDAP_BASEDN"),
-      'timeout' => env("LDAP_TIMEOUT")
+      'timeout' => env("LDAP_TIMEOUT"),
     );
 
     $this->config['account_suffix'] = implode(',', [env("LDAP_ACCOUNT_SUFFIX"), $this->config['base_dn']]);
@@ -29,9 +29,12 @@ class Ldap
     $this->config['ldap_url'] = $this->config['ldap_ssl'] ? 'ldaps://' : 'ldap://';
     $this->config['ldap_url'] .= $this->config['ldap_host'];
     $this->config['ldap_url'] = implode(':', [$this->config['ldap_url'], $this->config['ldap_port']]);
-    logger($this->config);
-    $this->connection = ldap_connect($this->config['ldap_url']);
-
+    $this->connection = @ldap_connect($this->config['ldap_url']);
+    if($this->connection){
+      logger("bueno");
+    }else{
+      logger("bueno2");
+    };
     ldap_set_option($this->connection, LDAP_OPT_PROTOCOL_VERSION, 3);
     ldap_set_option($this->connection, LDAP_OPT_REFERRALS, 0);
   }
@@ -110,7 +113,8 @@ class Ldap
         $result = [];
 
         foreach ($entries as $key => $value) {
-          if (is_array($value) && $value[$this->config['user_id_key']]) {
+          //if (is_array($value) && $value[$this->config['user_id_key']]) {
+          if ($value[$this->config['user_id_key']]) {
             $result[] = [
               $this->config['user_id_key'] => $value[$this->config['user_id_key']][0],
               'employeeNumber' => (int)$value['employeenumber'][0],
@@ -129,6 +133,87 @@ class Ldap
         } else {
           return null;
         }
+      }
+    }
+  }
+
+  public function delete_entry($id, $type = 'id')
+  {
+    if ($type == 'id') {
+      $entry = $this->get_entry($id);
+      if ($entry) {
+        $uid = $entry['uid'];
+      } else {
+        return null;
+      }
+    } else {
+      $uid = $id;
+    }
+
+    if ($this->connection && $this->verify_open_port()) {
+      if ($this->bind_admin()) {
+        $deleted = @ldap_delete($this->connection, $this->config['user_id_key'] . '=' . $uid . ',' . $this->config['account_suffix']);
+
+        return $deleted;
+      }
+    }
+  }
+
+  public function create_group()
+  {
+    if ($this->connection && $this->verify_open_port()) {
+      if ($this->bind_admin()) {
+        $search = ldap_list($this->connection, "dc=muserpol,dc=gob,dc=bo", "ou=*", array("ou"));
+        $entries = ldap_get_entries($this->connection, $search);
+        $result = [];
+
+        foreach ($entries as $key => $entry) {
+          //if (is_array($entry) && $entry['ou'][0]) {
+          if ($entry['ou'][0]) {
+            $result[] = $entry['ou'][0];
+          }
+        }
+
+        $info['objectClass'] = ['organizationalUnit', 'top'];
+        $info['ou'] = explode('=', env('LDAP_ACCOUNT_SUFFIX'))[1];
+        $search = array_search($info['ou'], $result);
+
+        if (is_bool($search) && $search == false) {
+          $result = @ldap_add($this->connection, $this->config['account_suffix'], $info);
+          return $result;
+        }
+
+        return false;
+      }
+    }
+  }
+
+  public function create_entry($data)
+  {
+    if ($this->connection && $this->verify_open_port()) {
+      if ($this->bind_admin()) {
+        if (!$this->entry_exists($data['employeeNumber'])) {
+          $valid_uid = $this->valid_uid($data);
+          $data = $valid_uid['data'];
+          $uid = $valid_uid['uid'];
+
+          $domain = [];
+          foreach (explode(',', $this->config['base_dn']) as $value) {
+            $domain[] = explode('=', $value)[1];
+          }
+
+          $domain = strtolower(implode('.', $domain));
+          $data["mail"] = implode('@', [$uid, $domain]);
+          $data["objectClass"] = ["inetOrgPerson", "top"];
+          $group = explode('=', env("LDAP_ACCOUNT_SUFFIX"));
+          $data[strtolower($group[0])] = strtolower($group[1]);
+          $data["userPassword"] = $this->hash_password($uid);
+
+          $added = @ldap_add($this->connection, $this->config['user_id_key'] . '=' . $uid . ',' . $this->config['account_suffix'], $data);
+
+          return $added;
+        }
+        return null;
       }
     }
   }
@@ -177,6 +262,28 @@ class Ldap
     ];
   }
 
+  public function modify_entry($id, $data, $type = 'id')
+  {
+    if ($this->connection && $this->verify_open_port()) {
+      if ($this->bind_admin()) {
+        if ($type == 'id') {
+          $entry = $this->get_entry($id);
+          if ($entry) {
+            $uid = $entry['uid'];
+          } else {
+            return null;
+          }
+        } else {
+          $uid = $id;
+        }
+
+        $updated = @ldap_modify($this->connection, $this->config['user_id_key'] . '=' . $uid . ',' . $this->config['account_suffix'], $data);
+
+        return $updated;
+      }
+    }
+  }
+
   public function list_entries()
   {
     if ($this->connection && $this->verify_open_port()) {
@@ -187,8 +294,8 @@ class Ldap
         $result = [];
 
         foreach ($entries as $key => $value) {
-          if (is_array($value) && $value[$this->config['user_id_key']]) {
-            //if ($value[$this->config['user_id_key']]) {
+          //if (is_array($value) && $value[$this->config['user_id_key']]) {
+          if ($value[$this->config['user_id_key']]) {
             $result[] = (object)[
               $this->config['user_id_key'] => $value[$this->config['user_id_key']][0],
               'givenName' => $value['givenname'][0],
@@ -220,6 +327,18 @@ class Ldap
     }
 
     return "{SSHA}" . base64_encode(pack("H*", sha1($password . $salt)) . $salt);
+  }
+
+  public function update_password($username, $new_password)
+  {
+    if ($this->connection) {
+      $new_password = array('userPassword' => $this->hash_password($new_password));
+
+      $update = @ldap_mod_replace($this->connection, $this->config['user_id_key'] . '=' . $username . ',' . $this->config['account_suffix'], $new_password);
+
+      return $update;
+    }
+    return false;
   }
 
   public function unbind()
