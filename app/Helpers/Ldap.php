@@ -3,7 +3,7 @@
 namespace App\Helpers;
 
 use App\Helpers\Util as HelpersUtil;
-use Adldap\Adldap;
+use Util;
 
 class Ldap
 {
@@ -21,7 +21,7 @@ class Ldap
       'admin_username' => env("LDAP_ADMIN_USERNAME"),
       'admin_password' => env("LDAP_ADMIN_PASSWORD"),
       'base_dn' => env("LDAP_BASEDN"),
-      'timeout' => env("LDAP_TIMEOUT"),
+      'timeout' => env("LDAP_TIMEOUT")
     );
 
     $this->config['account_suffix'] = implode(',', [env("LDAP_ACCOUNT_SUFFIX"), $this->config['base_dn']]);
@@ -29,12 +29,10 @@ class Ldap
     $this->config['ldap_url'] = $this->config['ldap_ssl'] ? 'ldaps://' : 'ldap://';
     $this->config['ldap_url'] .= $this->config['ldap_host'];
     $this->config['ldap_url'] = implode(':', [$this->config['ldap_url'], $this->config['ldap_port']]);
+
+    logger($this->config['ldap_url']);
     $this->connection = @ldap_connect($this->config['ldap_url']);
-    if($this->connection){
-      logger("bueno");
-    }else{
-      logger("bueno2");
-    };
+
     ldap_set_option($this->connection, LDAP_OPT_PROTOCOL_VERSION, 3);
     ldap_set_option($this->connection, LDAP_OPT_REFERRALS, 0);
   }
@@ -108,26 +106,30 @@ class Ldap
 
     if ($this->connection && $this->verify_open_port()) {
       if ($this->bind_admin()) {
-        $search = ldap_search($this->connection, $this->config['account_suffix'], "(|(" . $identifier . "=" . $id . "))", array($this->config['user_id_key'], "title", "givenName", "cn", "sn", "mail", "employeeNumber"));
+        $search = ldap_search(
+          $this->connection,
+          $this->config['account_suffix'],
+          "(|(" . $identifier . "=" . $id . "))",
+          array($this->config['user_id_key'], "title", "givenName", "cn", "sn", "mail", "employeeNumber")
+        );
         $entries = ldap_get_entries($this->connection, $search);
         $result = [];
 
         foreach ($entries as $key => $value) {
-          //if (is_array($value) && $value[$this->config['user_id_key']]) {
-          if ($value[$this->config['user_id_key']]) {
+          // Asegúrate de que $value es un array antes de acceder a sus índices
+          if (is_array($value) && isset($value[$this->config['user_id_key']]) && is_array($value[$this->config['user_id_key']])) {
             $result[] = [
-              $this->config['user_id_key'] => $value[$this->config['user_id_key']][0],
-              'employeeNumber' => (int)$value['employeenumber'][0],
-              'givenName' => $value['givenname'][0],
-              'sn' => $value['sn'][0],
-              'cn' => $value['cn'][0],
-              'title' => $value['title'][0],
-              'dn' => $value['dn'],
-              'mail' => $value['mail'][0],
+              $this->config['user_id_key'] => isset($value[$this->config['user_id_key']][0]) ? $value[$this->config['user_id_key']][0] : null,
+              'employeeNumber' => isset($value['employeenumber'][0]) ? (int)$value['employeenumber'][0] : null,
+              'givenName' => isset($value['givenname'][0]) ? $value['givenname'][0] : null,
+              'sn' => isset($value['sn'][0]) ? $value['sn'][0] : null,
+              'cn' => isset($value['cn'][0]) ? $value['cn'][0] : null,
+              'title' => isset($value['title'][0]) ? $value['title'][0] : null,
+              'dn' => isset($value['dn']) ? $value['dn'] : null,
+              'mail' => isset($value['mail'][0]) ? $value['mail'][0] : null,
             ];
           }
         }
-
         if (count($result) == 1) {
           return $result[0];
         } else {
@@ -135,8 +137,8 @@ class Ldap
         }
       }
     }
+    return null; 
   }
-
   public function delete_entry($id, $type = 'id')
   {
     if ($type == 'id') {
@@ -294,17 +296,17 @@ class Ldap
         $result = [];
 
         foreach ($entries as $key => $value) {
-          //if (is_array($value) && $value[$this->config['user_id_key']]) {
-          if ($value[$this->config['user_id_key']]) {
+          // Verifica si el valor es un array y si tiene el índice esperado
+          if (is_array($value) && isset($value[$this->config['user_id_key']]) && is_array($value[$this->config['user_id_key']])) {
             $result[] = (object)[
-              $this->config['user_id_key'] => $value[$this->config['user_id_key']][0],
-              'givenName' => $value['givenname'][0],
-              'employeeNumber' => (int)$value['employeenumber'][0],
-              'sn' => $value['sn'][0],
-              'cn' => $value['cn'][0],
-              'title' => $value['title'][0],
-              'dn' => $value['dn'],
-              'mail' => $value['mail'][0],
+              $this->config['user_id_key'] => isset($value[$this->config['user_id_key']][0]) ? $value[$this->config['user_id_key']][0] : null,
+              'givenName' => isset($value['givenname'][0]) ? $value['givenname'][0] : null,
+              'employeeNumber' => isset($value['employeenumber'][0]) ? (int)$value['employeenumber'][0] : null,
+              'sn' => isset($value['sn'][0]) ? $value['sn'][0] : null,
+              'cn' => isset($value['cn'][0]) ? $value['cn'][0] : null,
+              'title' => isset($value['title'][0]) ? $value['title'][0] : null,
+              'dn' => isset($value['dn']) ? $value['dn'] : null,
+              'mail' => isset($value['mail'][0]) ? $value['mail'][0] : null,
             ];
           }
         }

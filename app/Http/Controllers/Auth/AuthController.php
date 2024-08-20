@@ -65,32 +65,16 @@ class AuthController extends Controller
                 $user->save();
             }
             $token = $user->createToken('api')->plainTextToken;
-            $ldap->unbind();
-            return $this->respondWithToken($token, $user);
-        } else {
-            return $this->registerLdapEmployee($request, $ldap);
-        }
-    }
-
-    private function registerLdapEmployee($request, $ldap)
-    {
-        $employee = Employee::find($ldap->get_entry($request['username'], 'uid')['employeeNumber']);
-        if ($employee) {
+            $employee = Employee::find($ldap->get_entry($request['username'], 'uid')['employeeNumber']);
             $employee->username = $request['username'];
-            $employee->save();
-        } else {
-            return $this->unauthorizedResponse('Empleado no encontrado');
+            $ldap->unbind();
+            return $this->respondWithToken($token, $user, $employee);
         }
-
-        $user = new User(['username' => $request['username']]);
-        $user->save();
-        $token = $user->createToken('api')->plainTextToken;
-        $ldap->unbind();
-        return $this->respondWithToken($token, null, $employee);
     }
 
     protected function respondWithToken($token, $user = null, $employee = null)
     {
+        //logger($employee);
         $consultant = null;
         if ($employee == null) {
             $id = $user->employee_id;
