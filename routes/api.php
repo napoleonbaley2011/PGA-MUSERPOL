@@ -50,6 +50,9 @@ Route::group([
         //Notas de Solicitud
         Route::post('/delivered_material', [NoteRequestController::class, 'delivered_of_material']);
         Route::get('/print_post_request/{note_request}', [NoteRequestController::class, 'print_post_request']);
+        //Dashboard
+        Route::get('/dataDashboard', [ReportController::class, 'dashboard_data']);
+        Route::get('/dataTableDashboard', [ReportController::class, 'kardexGeneral']);
         //Reportes
         Route::get('/ReportPrintKardex/{material}', [ReportController::class, 'kardex']);
     });

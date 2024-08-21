@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\AuthForm;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use App\Models\User;
+use App\User;
 use App\Models\Employee;
 use App\Helpers\Ldap;
 
