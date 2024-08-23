@@ -251,7 +251,7 @@ class NoteRequestController extends Controller
 
 
     public function print_post_request(NoteRequest $note_request)
-    {   //logger($note_request);
+    {
         $user = User::where('employee_id', $note_request->user_register)->first();
 
         $position = $user->position;

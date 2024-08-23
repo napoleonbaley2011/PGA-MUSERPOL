@@ -13,14 +13,13 @@ return new class extends Migration
     {
         Schema::create('note_entries', function (Blueprint $table) {
             $table->id();
-            $table->integer('number_note'); //numero de nota
-            $table->string('invoice_number'); //numero de factura
-            $table->date('delivery_date')->nullable(); //fecha de ingreso
+            $table->integer('number_note'); 
+            $table->string('invoice_number'); 
+            $table->date('delivery_date')->nullable();
             $table->string('state');
             $table->string('invoice_auth');
             $table->string('user_register');
             $table->string('observation')->nullable();
-            //$table->integer('amount_articles');
             $table->foreignId('type_id')->constrained('types')->onDelete('restrict')->onUpdate('cascade');
             $table->unsignedBigInteger('suppliers_id')->nullable(); //id del proveedor
             $table->foreign('suppliers_id')->references('id')->on('suppliers')->onUpdate('cascade')->onDelete('cascade');

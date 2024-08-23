@@ -133,7 +133,7 @@ $dns = new DNS2D();
                         <tr>
                         <td class="text-center" colspan="5">&nbsp;</td>
                         </tr>
-                        @endfor
+                    @endfor
                 </tbody>
             </table>
             <table class="w-100" style="margin-top: 50px;">

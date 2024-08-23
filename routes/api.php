@@ -55,5 +55,8 @@ Route::group([
         Route::get('/dataTableDashboard', [ReportController::class, 'kardexGeneral']);
         //Reportes
         Route::get('/ReportPrintKardex/{material}', [ReportController::class, 'kardex']);
+        Route::get('/PrintKardex/{material}', [ReportController::class, 'print_kardex']);
+        Route::get('/ReportPrintValuedPhysical', [ReportController::class, 'ValuedPhysical']);
+        Route::get('/PrintValuedPhysical', [ReportController::class, 'PrintValuedPhysical']);
     });
 });
