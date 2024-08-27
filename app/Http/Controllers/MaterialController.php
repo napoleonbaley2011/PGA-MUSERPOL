@@ -34,7 +34,6 @@ class MaterialController extends Controller
      */
     public function store(MaterialRequest $request)
     {
-        logger($request);
         try {
             $data = $request->validated();
             $material = new Material($data);
@@ -95,16 +94,13 @@ class MaterialController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
-    {
-    }
+    public function edit(string $id) {}
 
     /**
      * Update the specified resource in storage.
      */
     public function update(Request $request, string $id)
     {
-        //logger($request);
         $material = Material::find($id);
         if ($request['state'] == "Habilitado") {
             $upState = "Inhabilitado";
@@ -112,7 +108,6 @@ class MaterialController extends Controller
             if ($material->stock > 0) {
                 $upState = "Habilitado";
             } else {
-                //logger($material);
                 return response()->json([
                     'status' => false,
                     'message' => "Debe existir Stock para poder Habilitar el material"
@@ -170,7 +165,6 @@ class MaterialController extends Controller
     public function list_materials_pva()
     {
         $query = Material::where('state', 'Habilitado')->get();
-        // logger($query);
         return $query;
     }
 

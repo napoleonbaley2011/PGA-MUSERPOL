@@ -83,9 +83,7 @@ test('list_note_entries', function () {
 test('create_note', function () {
     $this->authenticateUser();
     $supplier = Supplier::factory()->create();
-    //logger($supplier);
     $materials = Material::factory()->count(2)->create();
-    // logger($materials);
     $number_note = Note_Entrie::count() + 1;
     $data = [
         'type' => 1,
@@ -105,7 +103,6 @@ test('create_note', function () {
         'authorization_number' => 'AUTH12345',
         'id_user' => "25"
     ];
-    //logger($data);
     $response = $this->postJson('api/auth/createNoteEntry', $data);
     $response->assertStatus(201)
         ->assertJson([

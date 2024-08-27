@@ -8,14 +8,12 @@ use Illuminate\Http\Request;
 
 class SupplierController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+
     public function index(Request $request)
     {
         $page = $request->get('page', 0);
         $totalSuppliers = Supplier::count();
-        $limit = $request->get('limit', $totalSuppliers > 0 ? $totalSuppliers : 1); // Asegurarse de que el límite no sea 0
+        $limit = $request->get('limit', $totalSuppliers > 0 ? $totalSuppliers : 1);
         $start = $page * $limit;
         $search = $request->input('search', '');
 
@@ -39,17 +37,12 @@ class SupplierController extends Controller
 
 
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         //
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+
     public function store(SupplierRequest $request)
     {
         try {
@@ -75,30 +68,18 @@ class SupplierController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Supplier $supplier)
     {
         return response()->json(['status' => true, 'data' => $supplier], 200);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
+
     public function edit(string $id)
     {
         //
     }
-
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, Supplier $supplier)
     {
-        //logger($supplier->id);
-        //logger($request->all());
-        //logger($request->getContent());
         $validatedData = $request->validate([
             'name' => 'nullable|string|max:255',
             'nit' => 'nullable|string|max:255',
@@ -113,10 +94,6 @@ class SupplierController extends Controller
         //slogger($supplier);
         return response()->json(['data' => $supplier], 200);
     }
-
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Supplier $supplier)
     {
         $supplier->delete();

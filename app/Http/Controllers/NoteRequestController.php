@@ -18,7 +18,6 @@ class NoteRequestController extends Controller
 {
     public function list_note_request(Request $request)
     {
-        //logger($request);
         $page = $request->get('page', 0);
         $limit = $request->get('limit', NoteRequest::count());
         $start = $page * $limit;
@@ -99,8 +98,6 @@ class NoteRequestController extends Controller
             ];
         });
 
-        // logger($response);
-
         return response()->json($response);
     }
 
@@ -115,8 +112,6 @@ class NoteRequestController extends Controller
             'user_register' => $request['id'],
             'request_date' => today()->toDateString()
         ]);
-        // logger($noteRequest);
-
         foreach ($request['material_request'] as $materialData) {
             $noteRequest->materials()->attach($materialData['id'], [
                 'amount_request' => $materialData['quantity'],
@@ -129,7 +124,6 @@ class NoteRequestController extends Controller
 
     public function delivered_of_material(Request $request)
     {
-        //logger($request);
         if ($request->status == "Approved") {
             $materials_validate = $request->input('materials');
 
@@ -156,8 +150,6 @@ class NoteRequestController extends Controller
 
                 $costDetails = [];
 
-                //logger($entries);
-
                 foreach ($entries as $entry) {
                     $entryMaterialPivot = $entry->materials()->where('materials.id', $materialId)->first()->pivot;
                     $availableAmount = $entryMaterialPivot->request;
@@ -180,18 +172,13 @@ class NoteRequestController extends Controller
                 $requestMaterial = Request_Material::where('note_id', $noteRequestId)
                     ->where('material_id', $materialId)
                     ->first();
-                //logger($amountToDeliver);
                 $requestMaterial->delivered_quantity = $amount_to_be_reduced;
                 $requestMaterial->costDetails = $costDetailsString;
                 $requestMaterial->save();
 
-
-                //logger($amountToDeliver);
                 $material = Material::find($materialId);
                 $material->stock -= $amount_to_be_reduced;
-
                 $material->save();
-                //logger($material);
             }
 
             $noteRequest = NoteRequest::find($noteRequestId);
@@ -211,7 +198,6 @@ class NoteRequestController extends Controller
 
     public function print_request(NoteRequest $note_request)
     {
-        // logger($note_request);
         $user = User::where('employee_id', $note_request->user_register)->first();
 
         $position = $user->position;

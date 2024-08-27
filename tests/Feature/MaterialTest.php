@@ -9,7 +9,6 @@ uses(AuthenticationHelper::class, DatabaseTransactions::class);
 test('create_material', function () {
     $this->authenticateUser();
     $data = Material::factory()->make()->toArray();
-    logger($data);
     $response = $this->postJson('api/auth/materials', $data);
     $response->assertStatus(201)
         ->assertJson([
@@ -95,9 +94,6 @@ test('update_material', function () {
     $material->update(['stock' => 0, 'state' => 'Inhabilitado']);
     $updateData = ['state' => 'Inhabilitado'];
     $response = $this->putJson('api/auth/materials/' . $material->id, $updateData);
-
-    //logger($response->json());
-
     $response->assertStatus(400)
         ->assertJson([
             'status' => false,

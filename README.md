@@ -42,7 +42,7 @@ git clone https://github.com/Laradock/laradock.git
 
 ```sh
 cp -f docs/docker-compose.yml laradock/
-cp -f docs/env-example laradock/.env
+cp -f docs/.env.example laradock/.env
 ```
 
 * Modificar el archivo `.env` con las credenciales de acceso a la base de datos.
@@ -86,3 +86,12 @@ docker-compose logs nginx
 
 docker-compose -f nginx
 ```
+
+# Notas
+
+* Para realizar las migraciones de forma correcta en la base de datos crear el Esquema 'store'
+
+```sh
+psql -U tu_usuario -d nombre_de_tu_base_de_datos
+```
+CREATE SCHEMA IF NOT EXISTS store;

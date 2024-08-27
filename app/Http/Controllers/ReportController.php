@@ -128,14 +128,13 @@ class ReportController extends Controller
                 'kardex_de_existencia' => $kardex
             ]);
         } catch (\Exception $e) {
-            logger($e->getMessage());
             return response()->json(['error' => 'No se pudo generar el Kardex'], 500);
         }
     }
 
     public function print_kardex($materialId)
     {
-        logger($materialId);
+
         try {
             $material = Material::findOrFail($materialId);
             $group_material = $material->group()->first()->name_group;
@@ -253,7 +252,6 @@ class ReportController extends Controller
             $pdf = Pdf::loadView('Report_Kardex.ReportKardex', $data)->setPaper('letter', 'landscape');
             return $pdf->stream('Kardex de Existencia.pdf');
         } catch (\Exception $e) {
-            logger($e->getMessage());
             return response()->json(['error' => 'No se pudo generar el Kardex'], 500);
         }
     }
@@ -399,14 +397,12 @@ class ReportController extends Controller
 
             return response()->json($kardexGeneral);
         } catch (\Exception $e) {
-            logger($e->getMessage());
             return response()->json(['error' => 'No se pudo generar el Kardex general'], 500);
         }
     }
 
     public function ValuedPhysical(Request $request)
     {
-        //logger($request);
         $startDate = $request->input('startDate');
         $endDate = $request->input('endDate');
 
@@ -519,9 +515,13 @@ class ReportController extends Controller
                 }),
             ];
         });
-        return response()->json([
-            'data' => $result,
+        $data = [
+            'title' => 'INVENTARIO FISICO VALORADO ALMACENES MUSERPOL',
+            'results' => $result,
             'date_note' => $formattedDate,
-        ]);
+        ];
+
+        $pdf = Pdf::loadView('ValuedPhysical.ValuedPhysical', $data)->setPaper('letter', 'landscape');
+        return $pdf->stream('Inventario Fisico Valorado.pdf');
     }
 }

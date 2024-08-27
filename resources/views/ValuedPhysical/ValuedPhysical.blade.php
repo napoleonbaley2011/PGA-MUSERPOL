@@ -2,6 +2,21 @@
 
 use \Milon\Barcode\DNS2D;
 
+if (!extension_loaded('intl')) {
+    die('La extensión Intl no está habilitada.');
+}
+$formatter = new IntlDateFormatter(
+    'es_ES',
+    IntlDateFormatter::LONG,
+    IntlDateFormatter::NONE,
+    null,
+    null,
+    'd \'DE\' MMMM \'DE\' y'
+);
+$fecha_actual = $formatter->format(new DateTime());
+
+$fecha_actual = strtoupper($fecha_actual);
+
 $date = '12/01/2024';
 $dns = new DNS2D();
 ?>
@@ -19,7 +34,6 @@ $dns = new DNS2D();
             margin: 1.5cm;
         }
 
-        /* Estilos para asegurar que el footer esté en la parte inferior */
         body {
             display: flex;
             flex-direction: column;
@@ -39,12 +53,25 @@ $dns = new DNS2D();
         .footer td {
             padding: 5px;
         }
+
+        .col-detalle {
+            width: 250px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .col-unit {
+            width: 80px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
     </style>
 </head>
 
 <body>
     <div class="content">
-        <!-- Contenido de la página -->
         <table class="w-100 uppercase">
             <tr>
                 <th class="w-25 text-left no-paddings no-margins align-middle">
@@ -69,84 +96,58 @@ $dns = new DNS2D();
         <hr class="m-b-10" style="margin-top: 0; padding-top: 0;">
         <div class="block">
             <div class="leading-tight text-sm text-center m-b-10">{{ $title }}</div>
-            <div class="leading-tight text-xxxl text-center m-b-10">(EXPRESADO EN BOLIVIANOS)</div>
-            <table class="table-code w-100 m-b-10 uppercase text-xs">
-                <tbody>
-                    <tr>
-                        <td class="w-10 text-center bg-grey-darker text-white">CODIGO</td>
-                        <td class="w-90 p-l-5"> {{ $code_material }}</td>
-                    </tr>
-                    <tr>
-                        <td class="w-10 text-center bg-grey-darker text-white">DESCRIPCION</td>
-                        <td class="w-90 p-l-5"> {{ $description }}</td>
-                    </tr>
-                    <tr>
-                        <td class="w-10 text-center bg-grey-darker text-white">UNIDAD</td>
-                        <td class="w-90 p-l-5"> {{ $unit_material }}</td>
-                    </tr>
-                    <tr>
-                        <td class="w-10 text-center bg-grey-darker text-white">GRUPO</td>
-                        <td class="w-90 p-l-5"> {{ $group }}</td>
-                    </tr>
-                </tbody>
-            </table>
-
+            <div class="leading-tight text-xxxl text-center m-b-10">LA PAZ, DEL {{strtoupper($date_note)}} AL {{$fecha_actual}}</div>
+            @foreach ($results as $index => $result)
+            <div class="leading-tight text-xxl text-left m-b-10">{{ $result['group_code'] }}, GRUPO: {{strtoupper($result['group_name'])}}</div>
             <table class="table-info w-100 m-b-10 uppercase text-xs">
                 <thead>
                     <tr>
-                        <th class="text-center bg-grey-darker text-white" rowspan="2">FECHA</th>
-                        <th class="text-center bg-grey-darker text-white border-left-white" rowspan="2">DETALLE</th>
-                        <th class="text-center bg-grey-darker text-white border-left-white" colspan="3">CANTIDAD</th>
-                        <th class="text-center bg-grey-darker text-white border-left-white" rowspan="2">PRECIO UNITARIO</th>
-                        <th class="text-center bg-grey-darker text-white border-left-white" colspan="3">IMPORTES</th>
+                        <th class="text-center bg-grey-darker text-white" rowspan="2">CODIGO</th>
+                        <th class="text-center bg-grey-darker text-white border-left-white col-detalle" rowspan="2">DETALLE</th>
+                        <th class="text-center bg-grey-darker text-white border-left-white col-unit" rowspan="2">UNIDAD</th>
+                        <th class="text-center bg-grey-darker text-white border-left-white" colspan="3">ENTRADAS</th>
+                        <th class="text-center bg-grey-darker text-white border-left-white" colspan="3">CANTIDADES</th>
+                        <th class="text-center bg-grey-darker text-white border-left-white" colspan="3">SALDOS</th>
                     </tr>
                     <tr>
-                        <th class="text-center bg-grey-darker text-white border-left-white">ENTRADA</th>
-                        <th class="text-center bg-grey-darker text-white border-left-white">SALIDA</th>
-                        <th class="text-center bg-grey-darker text-white border-left-white">SALDO</th>
-                        <th class="text-center bg-grey-darker text-white border-left-white">ENTRADA</th>
-                        <th class="text-center bg-grey-darker text-white border-left-white">SALIDA</th>
+                        <th class="text-center bg-grey-darker text-white border-left-white">EXIS. ALM.</th>
+                        <th class="text-center bg-grey-darker text-white border-left-white">COST. UNI.</th>
+                        <th class="text-center bg-grey-darker text-white border-left-white">COST. TOTAL</th>
+                        <th class="text-center bg-grey-darker text-white border-left-white">SAL. EXIS. ALM</th>
+                        <th class="text-center bg-grey-darker text-white border-left-white">COST. UNI.</th>
+                        <th class="text-center bg-grey-darker text-white border-left-white">COST. TOTAL</th>
+                        <th class="text-center bg-grey-darker text-white border-left-white">SAL. EXIS. ALM</th>
+                        <th class="text-center bg-grey-darker text-white border-left-white">COST. UNI.</th>
                         <th class="text-center bg-grey-darker text-white border-left-white">SALDO</th>
                     </tr>
                 </thead>
                 <tbody class="table-striped">
-                    @foreach ($kardex_de_existencia as $index => $kardex)
+                    @foreach ($result['materials'] as $i => $material)
                     <tr>
-                        <td class="text-center">{{$kardex['date']}}</td>
-                        <td class="text-left">{{$kardex['description']}}</td>
-                        <td class="text-center">{{$kardex['entradas']}}</td>
-                        <td class="text-center">{{$kardex['salidas']}}</td>
-                        <td class="text-center">{{$kardex['stock_fisico']}}</td>
-                        <td class="text-right">{{$kardex['cost_unit']}}</td>
-                        <td class="text-right">
-                            @if($kardex['entradas'])
-                            {{ number_format($kardex['entradas'] * $kardex['cost_unit'], 2) }}
-                            @else
-                            ---
-                            @endif
-                        </td>
-                        <td class="text-right">
-                            @if($kardex['salidas'])
-                            {{ number_format($kardex['salidas'] * $kardex['cost_unit'], 2) }}
-                            @else
-                            ---
-                            @endif
-                        </td>
-                        <td class="text-right">
-                            @if($kardex['entradas'] || $kardex['salidas'])
-                            {{$kardex['cost_total']}}
-                            @else
-                            ---
-                            @endif
-                        </td>
+                        <td class="text-left">{{$material['material_code']}}</td>
+                        <td class="text-left">{{$material['description']}}</td>
+                        <td class="text-left">{{$material['unit']}}</td>
+
+                        <td class="text-center">{{ number_format($material['total_amount_entries'], 2) }}</td>
+                        <td class="text-right">{{ number_format($material['average_cost_unit'], 2) }}</td>
+                        <td class="text-right">{{ number_format($material['total_cost'], 2) }}</td>
+
+                        <td class="text-center">{{ number_format($material['total_amount_entries'] - $material['stock'], 2) }}</td>
+                        <td class="text-right">{{ number_format($material['average_cost_unit'], 2) }}</td>
+                        <td class="text-right">{{ number_format(($material['total_amount_entries'] - $material['stock']) * $material['average_cost_unit'], 2) }}</td>
+
+                        <td class="text-center">{{ number_format($material['stock'] - $material['stock'], 2) }}</td>
+                        <td class="text-right">{{ number_format($material['average_cost_unit'], 2) }}</td>
+                        <td class="text-right">{{ number_format($material['average_cost_unit'] * $material['stock'], 2) }}</td>
                     </tr>
                     @endforeach
                 </tbody>
             </table>
+            <div style="margin-top: 30px;"></div>
+            @endforeach
         </div>
     </div>
-
-    <table class="footer">
+    <table>
         <tr>
             <td class="text-xxxs" align="left">
                 @if (env("APP_ENV") == "production")
@@ -160,6 +161,7 @@ $dns = new DNS2D();
             </td>
         </tr>
     </table>
+
 </body>
 
 </html>

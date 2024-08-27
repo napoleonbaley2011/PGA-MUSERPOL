@@ -29,8 +29,6 @@ class Ldap
     $this->config['ldap_url'] = $this->config['ldap_ssl'] ? 'ldaps://' : 'ldap://';
     $this->config['ldap_url'] .= $this->config['ldap_host'];
     $this->config['ldap_url'] = implode(':', [$this->config['ldap_url'], $this->config['ldap_port']]);
-
-    logger($this->config['ldap_url']);
     $this->connection = @ldap_connect($this->config['ldap_url']);
 
     ldap_set_option($this->connection, LDAP_OPT_PROTOCOL_VERSION, 3);
@@ -137,7 +135,7 @@ class Ldap
         }
       }
     }
-    return null; 
+    return null;
   }
   public function delete_entry($id, $type = 'id')
   {

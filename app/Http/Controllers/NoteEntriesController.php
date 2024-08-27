@@ -16,7 +16,6 @@ class NoteEntriesController extends Controller
 {
     public function list_note_entries(Request $request)
     {
-        //logger($request);
         $page = max(0, $request->get('page', 0));
         $limit = max(1, $request->get('limit', Note_Entrie::count()));
         $start = $page * $limit;
@@ -73,10 +72,6 @@ class NoteEntriesController extends Controller
 
 
             $number_note = Note_Entrie::count() + 1;
-            //logger($number_note);
-
-            //logger($validateData);
-
             $noteEntrie = Note_Entrie::create([
                 'number_note' => $number_note,
                 'invoice_number' => $validateData['invoice_number'],
@@ -110,7 +105,6 @@ class NoteEntriesController extends Controller
             }
             return response()->json($noteEntrie, 201);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            logger($e->errors());
             return response()->json($e->errors(), 422);
         }
     }
