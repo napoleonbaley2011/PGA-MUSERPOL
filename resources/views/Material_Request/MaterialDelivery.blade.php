@@ -2,7 +2,7 @@
 
 use \Milon\Barcode\DNS2D;
 
-$max_requests = 14;
+$max_requests = 10;
 
 $dns = new DNS2D();
 ?>
@@ -15,6 +15,11 @@ $dns = new DNS2D();
     <title>PLATAFORMA VIRTUAL ADMINISTRATIVA - MUSERPOL </title>
     <link rel="stylesheet" href="{{ public_path("/css/material-request.min.css") }}" media="all" />
     <style>
+        @page {
+            size: letter;
+            margin: 1.5cm;
+        }
+
         .scissors-rule {
             display: block;
             text-align: center;
@@ -62,7 +67,7 @@ $dns = new DNS2D();
 
 <body style="border: 0; border-radius: 0;">
     @for($it = 0; $it<2; $it++)
-        <table class="w-100 uppercase">
+        <table class="w-100 uppercase" style="margin-top: 50px;">
         <tr>
             <th class="w-25 text-left no-paddings no-margins align-middle">
                 <div class="text-left">
@@ -133,7 +138,7 @@ $dns = new DNS2D();
                         <tr>
                         <td class="text-center" colspan="5">&nbsp;</td>
                         </tr>
-                    @endfor
+                        @endfor
                 </tbody>
             </table>
             <table class="w-100" style="margin-top: 50px;">

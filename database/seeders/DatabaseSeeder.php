@@ -2,6 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Models\Note_Entrie;
+use App\Models\NoteRequest;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -20,6 +22,11 @@ class DatabaseSeeder extends Seeder
             TypesTableSeeder::class,
             MaterialTableSeerder::class,
             SupplierSeeder::class,
+            // NoteEntrieSeeder::class,
+            // NoteRequestSeeder::class,
         ]);
+
+        Note_Entrie::factory()->count(150)->create();
+        NoteRequest::factory()->count(100)->create();
     }
 }

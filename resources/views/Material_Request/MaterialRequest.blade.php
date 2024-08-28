@@ -2,7 +2,7 @@
 
 use \Milon\Barcode\DNS2D;
 
-$max_requests = 14;
+$max_requests = 10;
 
 $dns = new DNS2D();
 ?>
@@ -15,6 +15,11 @@ $dns = new DNS2D();
     <title>PLATAFORMA VIRTUAL ADMINISTRATIVA - MUSERPOL </title>
     <link rel="stylesheet" href="{{ public_path("/css/material-request.min.css") }}" media="all" />
     <style>
+        @page {
+            size: letter;
+            margin: 1.5cm;
+        }
+
         .scissors-rule {
             display: block;
             text-align: center;

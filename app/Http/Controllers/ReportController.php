@@ -21,6 +21,7 @@ class ReportController extends Controller
             $kardex = [];
             $stock = 0;
             $totalValuation = 0;
+            $max_total = 0;
 
             $entries = $material->noteEntries()->orderBy('created_at', 'asc')->get();
             $requests = $material->noteRequests()->where('state', '=', 'Aceptado')->orderBy('created_at', 'asc')->get();
@@ -48,6 +49,7 @@ class ReportController extends Controller
                 ];
             }
 
+
             usort($movements, function ($a, $b) {
                 return strtotime($a['date']) - strtotime($b['date']);
             });
@@ -61,7 +63,8 @@ class ReportController extends Controller
                         'cost_unit' => $movement['cost_unit'],
                     ];
                     $stock += $movement['quantity'];
-                    $totalValuation += $movement['quantity'] * $movement['cost_unit'];
+                    $totalValuation = $movement['quantity'] * $movement['cost_unit'];
+                    $max_total = $max_total + $totalValuation;
 
                     $kardex[] = [
                         'date' => date('Y-m-d', strtotime($movement['date'])),
@@ -70,7 +73,7 @@ class ReportController extends Controller
                         'salidas' => 0,
                         'stock_fisico' => $stock,
                         'cost_unit' => number_format($movement['cost_unit'], 2),
-                        'cost_total' => number_format(max($totalValuation, 0), 2),
+                        'cost_total' => number_format($max_total, 2),
                     ];
                 } elseif ($movement['type'] === 'exit') {
                     $quantityToDeliver = $movement['quantity'];
@@ -81,7 +84,8 @@ class ReportController extends Controller
 
                         if ($fifoItem['quantity'] > $quantityToDeliver) {
                             $costUnit = $fifoItem['cost_unit'];
-                            $costTotal += $quantityToDeliver * $costUnit;
+                            $costTotal = $quantityToDeliver * $costUnit;
+                            $max_total = $max_total - $costTotal;
 
                             $kardex[] = [
                                 'date' => date('Y-m-d', strtotime($movement['date'])),
@@ -90,7 +94,7 @@ class ReportController extends Controller
                                 'salidas' => $quantityToDeliver,
                                 'stock_fisico' => $stock - $quantityToDeliver,
                                 'cost_unit' => number_format($costUnit, 2),
-                                'cost_total' => number_format(max($totalValuation - $costTotal, 0), 2),
+                                'cost_total' => number_format($max_total, 2),
                             ];
 
                             $fifoItem['quantity'] -= $quantityToDeliver;
@@ -100,7 +104,8 @@ class ReportController extends Controller
                             $quantityToDeliver = 0;
                         } else {
                             $costUnit = $fifoItem['cost_unit'];
-                            $costTotal += $fifoItem['quantity'] * $costUnit;
+                            $costTotal = $fifoItem['quantity'] * $costUnit;
+                            $max_total = $max_total - $costTotal;
 
                             $kardex[] = [
                                 'date' => date('Y-m-d', strtotime($movement['date'])),
@@ -109,7 +114,7 @@ class ReportController extends Controller
                                 'salidas' => $fifoItem['quantity'],
                                 'stock_fisico' => $stock - $fifoItem['quantity'],
                                 'cost_unit' => number_format($costUnit, 2),
-                                'cost_total' => number_format(max($totalValuation - $costTotal, 0), 2),
+                                'cost_total' => number_format($max_total, 2),
                             ];
 
                             $quantityToDeliver -= $fifoItem['quantity'];
@@ -142,6 +147,7 @@ class ReportController extends Controller
             $kardex = [];
             $stock = 0;
             $totalValuation = 0;
+            $max_total = 0;
 
             $entries = $material->noteEntries()->orderBy('created_at', 'asc')->get();
             $requests = $material->noteRequests()->where('state', '=', 'Aceptado')->orderBy('created_at', 'asc')->get();
@@ -169,6 +175,7 @@ class ReportController extends Controller
                 ];
             }
 
+
             usort($movements, function ($a, $b) {
                 return strtotime($a['date']) - strtotime($b['date']);
             });
@@ -182,7 +189,8 @@ class ReportController extends Controller
                         'cost_unit' => $movement['cost_unit'],
                     ];
                     $stock += $movement['quantity'];
-                    $totalValuation += $movement['quantity'] * $movement['cost_unit'];
+                    $totalValuation = $movement['quantity'] * $movement['cost_unit'];
+                    $max_total = $max_total + $totalValuation;
 
                     $kardex[] = [
                         'date' => date('Y-m-d', strtotime($movement['date'])),
@@ -191,7 +199,7 @@ class ReportController extends Controller
                         'salidas' => 0,
                         'stock_fisico' => $stock,
                         'cost_unit' => number_format($movement['cost_unit'], 2),
-                        'cost_total' => number_format(max($totalValuation, 0), 2),
+                        'cost_total' => number_format($max_total, 2),
                     ];
                 } elseif ($movement['type'] === 'exit') {
                     $quantityToDeliver = $movement['quantity'];
@@ -202,7 +210,8 @@ class ReportController extends Controller
 
                         if ($fifoItem['quantity'] > $quantityToDeliver) {
                             $costUnit = $fifoItem['cost_unit'];
-                            $costTotal += $quantityToDeliver * $costUnit;
+                            $costTotal = $quantityToDeliver * $costUnit;
+                            $max_total = $max_total - $costTotal;
 
                             $kardex[] = [
                                 'date' => date('Y-m-d', strtotime($movement['date'])),
@@ -211,7 +220,7 @@ class ReportController extends Controller
                                 'salidas' => $quantityToDeliver,
                                 'stock_fisico' => $stock - $quantityToDeliver,
                                 'cost_unit' => number_format($costUnit, 2),
-                                'cost_total' => number_format(max($totalValuation - $costTotal, 0), 2),
+                                'cost_total' => number_format($max_total, 2),
                             ];
 
                             $fifoItem['quantity'] -= $quantityToDeliver;
@@ -221,7 +230,8 @@ class ReportController extends Controller
                             $quantityToDeliver = 0;
                         } else {
                             $costUnit = $fifoItem['cost_unit'];
-                            $costTotal += $fifoItem['quantity'] * $costUnit;
+                            $costTotal = $fifoItem['quantity'] * $costUnit;
+                            $max_total = $max_total - $costTotal;
 
                             $kardex[] = [
                                 'date' => date('Y-m-d', strtotime($movement['date'])),
@@ -230,7 +240,7 @@ class ReportController extends Controller
                                 'salidas' => $fifoItem['quantity'],
                                 'stock_fisico' => $stock - $fifoItem['quantity'],
                                 'cost_unit' => number_format($costUnit, 2),
-                                'cost_total' => number_format(max($totalValuation - $costTotal, 0), 2),
+                                'cost_total' => number_format($max_total, 2),
                             ];
 
                             $quantityToDeliver -= $fifoItem['quantity'];
@@ -240,6 +250,7 @@ class ReportController extends Controller
                     }
                 }
             }
+
             $data = [
                 'title' => 'KARDEX DE EXISTENCIAS',
                 'code_material' => $material->code_material,

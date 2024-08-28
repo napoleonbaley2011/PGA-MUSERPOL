@@ -13,6 +13,7 @@ use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class NoteRequestController extends Controller
 {
@@ -39,6 +40,7 @@ class NoteRequestController extends Controller
         }
 
         $response = $noteRequests->map(function ($noteRequest) {
+            //logger($noteRequest->employee->id);
             return [
                 'id_note' => $noteRequest->id,
                 'number_note' => $noteRequest->number_note,
@@ -199,80 +201,171 @@ class NoteRequestController extends Controller
     public function print_request(NoteRequest $note_request)
     {
         $user = User::where('employee_id', $note_request->user_register)->first();
+        if ($user) {
+            $position = $user->position;
+            $employee = Employee::find($note_request->user_register);
+            $file_title = 'SOLICITUD DE MATERIAL DE ALMACÉN';
+            $materials = $note_request->materials()->get()->map(function ($material) {
+                return [
+                    'description' => $material->description,
+                    'unit_material' => $material->unit_material,
+                    'amount_request' => $material->pivot->amount_request,
+                ];
+            });
 
-        $position = $user->position;
-        $employee = Employee::find($note_request->user_register);
-        $file_title = 'SOLICITUD DE MATERIAL DE ALMACÉN';
-        $materials = $note_request->materials()->get()->map(function ($material) {
-            return [
-                'description' => $material->description,
-                'unit_material' => $material->unit_material,
-                'amount_request' => $material->pivot->amount_request,
+            $data = [
+                'title' => 'SOLICITUD DE MATERIAL DE ALMACÉN',
+                'number_note' => $note_request->number_note,
+                'date' => Carbon::now()->format('Y'),
+                'employee' => $employee
+                    ? "{$employee->first_name} {$employee->last_name} {$employee->mothers_last_name}"
+                    : null,
+                'position' => $user->position,
+                'materials' => $materials,
             ];
-        });
+            $options = [
+                'page-width' => '216',
+                'page-height' => '279',
+                'margin-top' => '4',
+                'margin-bottom' => '4',
+                'margin-left' => '5',
+                'margin-right' => '5',
+                'encoding' => 'UTF-8',
+            ];
 
-        $data = [
-            'title' => 'SOLICITUD DE MATERIAL DE ALMACÉN',
-            'number_note' => $note_request->number_note,
-            'date' => Carbon::now()->format('Y'),
-            'employee' => $employee
-                ? "{$employee->first_name} {$employee->last_name} {$employee->mothers_last_name}"
-                : null,
-            'position' => $user->position,
-            'materials' => $materials,
-        ];
-        $options = [
-            'page-width' => '216',
-            'page-height' => '279',
-            'margin-top' => '4',
-            'margin-bottom' => '4',
-            'margin-left' => '5',
-            'margin-right' => '5',
-            'encoding' => 'UTF-8',
-        ];
+            $pdf = Pdf::loadView('Material_Request.MaterialRequest', $data);
+            return $pdf->download('formulario_solicitud_de_material_de_almacén.pdf');
+        } else {
+            $employee = Employee::where('id', $note_request->user_register)->first();
+            if ($employee) {
+                $position = DB::select('select cp."name" 
+                                        from public.consultant_contracts cc, public.consultant_positions cp 
+                                        where cc.employee_id = ' . $note_request->user_register . '
+                                        and cp.id = cc.consultant_position_id 
+                                        order by cc.consultant_position_id desc 
+                                        limit 1');
+                $employee = Employee::find($note_request->user_register);
+                $file_title = 'SOLICITUD DE MATERIAL DE ALMACÉN';
+                $materials = $note_request->materials()->get()->map(function ($material) {
+                    return [
+                        'description' => $material->description,
+                        'unit_material' => $material->unit_material,
+                        'amount_request' => $material->pivot->amount_request,
+                    ];
+                });
 
-        $pdf = Pdf::loadView('Material_Request.MaterialRequest', $data);
-        return $pdf->download('formulario_solicitud_de_material_de_almacén.pdf');
+                $data = [
+                    'title' => 'SOLICITUD DE MATERIAL DE ALMACÉN',
+                    'number_note' => $note_request->number_note,
+                    'date' => Carbon::now()->format('Y'),
+                    'employee' => $employee
+                        ? "{$employee->first_name} {$employee->last_name} {$employee->mothers_last_name}"
+                        : null,
+                    'position' => $position,
+                    'materials' => $materials,
+                ];
+                $options = [
+                    'page-width' => '216',
+                    'page-height' => '279',
+                    'margin-top' => '4',
+                    'margin-bottom' => '4',
+                    'margin-left' => '5',
+                    'margin-right' => '5',
+                    'encoding' => 'UTF-8',
+                ];
+
+                $pdf = Pdf::loadView('Material_Request.MaterialRequest', $data);
+                return $pdf->download('formulario_solicitud_de_material_de_almacén.pdf');
+            } else {
+                return "no funciona";
+            }
+        }
     }
 
 
     public function print_post_request(NoteRequest $note_request)
     {
         $user = User::where('employee_id', $note_request->user_register)->first();
+        if ($user) {
+            $position = $user->position;
+            $employee = Employee::find($note_request->user_register);
+            $file_title = 'SOLICITUD DE MATERIAL DE ALMACÉN';
+            $materials = $note_request->materials()->get()->map(function ($material) {
+                return [
+                    'description' => $material->description,
+                    'unit_material' => $material->unit_material,
+                    'amount_request' => $material->pivot->amount_request,
+                    'delivered_quantity' => $material->pivot->delivered_quantity,
+                ];
+            });
 
-        $position = $user->position;
-        $employee = Employee::find($note_request->user_register);
-        $file_title = 'SOLICITUD DE MATERIAL DE ALMACÉN';
-        $materials = $note_request->materials()->get()->map(function ($material) {
-            return [
-                'description' => $material->description,
-                'unit_material' => $material->unit_material,
-                'amount_request' => $material->pivot->amount_request,
-                'delivered_quantity' => $material->pivot->delivered_quantity,
+            $data = [
+                'title' => 'ENTREGA DE MATERIAL DE ALMACÉN',
+                'number_note' => $note_request->number_note,
+                'date' => Carbon::now()->format('Y'),
+                'employee' => $employee
+                    ? "{$employee->first_name} {$employee->last_name} {$employee->mothers_last_name}"
+                    : null,
+                'position' => $user->position,
+                'materials' => $materials,
             ];
-        });
+            $options = [
+                'page-width' => '216',
+                'page-height' => '279',
+                'margin-top' => '4',
+                'margin-bottom' => '4',
+                'margin-left' => '5',
+                'margin-right' => '5',
+                'encoding' => 'UTF-8',
+            ];
 
-        $data = [
-            'title' => 'ENTREGA DE MATERIAL DE ALMACÉN',
-            'number_note' => $note_request->number_note,
-            'date' => Carbon::now()->format('Y'),
-            'employee' => $employee
-                ? "{$employee->first_name} {$employee->last_name} {$employee->mothers_last_name}"
-                : null,
-            'position' => $user->position,
-            'materials' => $materials,
-        ];
-        $options = [
-            'page-width' => '216',
-            'page-height' => '279',
-            'margin-top' => '4',
-            'margin-bottom' => '4',
-            'margin-left' => '5',
-            'margin-right' => '5',
-            'encoding' => 'UTF-8',
-        ];
+            $pdf = Pdf::loadView('Material_Request.MaterialDelivery', $data);
+            return $pdf->download('formulario_entrega_de_material_de_almacén.pdf');
+        } else {
+            $employee = Employee::where('id', $note_request->user_register)->first();
+            if ($employee) {
+                $position = DB::select('select cp."name" 
+                                        from public.consultant_contracts cc, public.consultant_positions cp 
+                                        where cc.employee_id = ' . $note_request->user_register . '
+                                        and cp.id = cc.consultant_position_id 
+                                        order by cc.consultant_position_id desc 
+                                        limit 1');
+                $employee = Employee::find($note_request->user_register);
+                $file_title = 'SOLICITUD DE MATERIAL DE ALMACÉN';
+                $materials = $note_request->materials()->get()->map(function ($material) {
+                    return [
+                        'description' => $material->description,
+                        'unit_material' => $material->unit_material,
+                        'amount_request' => $material->pivot->amount_request,
+                        'delivered_quantity' => $material->pivot->delivered_quantity,
+                    ];
+                });
 
-        $pdf = Pdf::loadView('Material_Request.MaterialDelivery', $data);
-        return $pdf->download('formulario_entrega_de_material_de_almacén.pdf');
+                $data = [
+                    'title' => 'ENTREGA DE MATERIAL DE ALMACÉN',
+                    'number_note' => $note_request->number_note,
+                    'date' => Carbon::now()->format('Y'),
+                    'employee' => $employee
+                        ? "{$employee->first_name} {$employee->last_name} {$employee->mothers_last_name}"
+                        : null,
+                    'position' => $position[0]->name,
+                    'materials' => $materials,
+                ];
+                $options = [
+                    'page-width' => '216',
+                    'page-height' => '279',
+                    'margin-top' => '4',
+                    'margin-bottom' => '4',
+                    'margin-left' => '5',
+                    'margin-right' => '5',
+                    'encoding' => 'UTF-8',
+                ];
+
+                $pdf = Pdf::loadView('Material_Request.MaterialDelivery', $data);
+                return $pdf->download('formulario_entrega_de_material_de_almacén.pdf');
+            } else {
+                return "no funciona";
+            }
+        }
     }
 }

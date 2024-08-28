@@ -19,7 +19,6 @@ $dns = new DNS2D();
             margin: 1.5cm;
         }
 
-        /* Estilos para asegurar que el footer esté en la parte inferior */
         body {
             display: flex;
             flex-direction: column;
@@ -44,7 +43,6 @@ $dns = new DNS2D();
 
 <body>
     <div class="content">
-        <!-- Contenido de la página -->
         <table class="w-100 uppercase">
             <tr>
                 <th class="w-25 text-left no-paddings no-margins align-middle">

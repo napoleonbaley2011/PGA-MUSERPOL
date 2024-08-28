@@ -136,7 +136,7 @@ class MaterialController extends Controller
 
         $search = $request->input('search', '');
 
-        $query = Material::orderBy('id');
+        $query = Material::orderBy('state')->orderBy('stock');
         if ($search) {
             $query->where('description', 'like', '%' . $search . '%')
                 ->orWhere('code_material', 'like', '%' . $search . '%');

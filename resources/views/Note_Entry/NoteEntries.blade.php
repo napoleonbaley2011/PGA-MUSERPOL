@@ -5,6 +5,12 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <title>{{$file_title}}</title>
     <link rel="stylesheet" href="{{ public_path("/css/report-print.min.css") }}" media="all" />
+    <style>
+        @page {
+            size: letter;
+            margin: 1.5cm;
+        }
+    </style>
 </head>
 
 <body>
