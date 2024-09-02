@@ -98,7 +98,7 @@ $dns = new DNS2D();
             <div class="leading-tight text-sm text-center m-b-10">{{ $title }}</div>
             <div class="leading-tight text-xxxl text-center m-b-10">LA PAZ, DEL {{strtoupper($date_note)}} AL {{$fecha_actual}}</div>
             @foreach ($results as $index => $result)
-            <div class="leading-tight text-xxl text-left m-b-10">{{ $result['group_code'] }}, GRUPO: {{strtoupper($result['group_name'])}}</div>
+            <div class="leading-tight text-xxl text-left m-b-10">{{ $result['codigo_grupo'] }}, GRUPO: {{strtoupper($result['grupo'])}}</div>
             <table class="table-info w-100 m-b-10 uppercase text-xs">
                 <thead>
                     <tr>
@@ -122,28 +122,28 @@ $dns = new DNS2D();
                     </tr>
                 </thead>
                 <tbody class="table-striped">
-                    @foreach ($result['materials'] as $i => $material)
+                    @foreach ($result['materiales'] as $i => $material)
                     <tr>
-                        <td class="text-left">{{$material['material_code']}}</td>
-                        <td class="text-left">{{$material['description']}}</td>
-                        <td class="text-left">{{$material['unit']}}</td>
+                        <td class="text-left">{{$material['codigo_material']}}</td>
+                        <td class="text-left">{{$material['nombre_material']}}</td>
+                        <td class="text-left">{{$material['unidad_material']}}</td>
 
-                        <td class="text-center">{{ number_format($material['total_amount_entries'], 2) }}</td>
-                        <td class="text-right">{{ number_format($material['average_cost_unit'], 2) }}</td>
-                        <td class="text-right">{{ number_format($material['total_cost'], 2) }}</td>
+                        <td class="text-center">{{ $material['total_ingresado']}}</td>
+                        <td class="text-right">{{ number_format($material['promedio_costo_unitario'], 2) }}</td>
+                        <td class="text-right">{{ number_format(($material['total_ingresado'] * $material['promedio_costo_unitario']), 2) }}</td>
 
-                        <td class="text-center">{{ number_format($material['total_amount_entries'] - $material['stock'], 2) }}</td>
-                        <td class="text-right">{{ number_format($material['average_cost_unit'], 2) }}</td>
-                        <td class="text-right">{{ number_format(($material['total_amount_entries'] - $material['stock']) * $material['average_cost_unit'], 2) }}</td>
+                        <td class="text-center">{{ $material['total_entregado'] }}</td>
+                        <td class="text-right">{{ number_format($material['promedio_costo_unitario'], 2) }}</td>
+                        <td class="text-right">{{ number_format(($material['total_entregado'] * $material['promedio_costo_unitario']), 2) }}</td>
 
-                        <td class="text-center">{{ number_format($material['stock'] - $material['stock'], 2) }}</td>
-                        <td class="text-right">{{ number_format($material['average_cost_unit'], 2) }}</td>
-                        <td class="text-right">{{ number_format($material['average_cost_unit'] * $material['stock'], 2) }}</td>
+                        <td class="text-center">{{ $material['total_ingresado'] - $material['total_entregado']}}</td>
+                        <td class="text-right">{{ number_format($material['promedio_costo_unitario'], 2) }}</td>
+                        <td class="text-right">{{ number_format(($material['total_ingresado'] - $material['total_entregado']) * $material['promedio_costo_unitario'] , 2) }}</td>
                     </tr>
                     @endforeach
                 </tbody>
             </table>
-            <div style="margin-top: 30px;"></div>
+            <div style="margin-top: 20px;"></div>
             @endforeach
         </div>
     </div>

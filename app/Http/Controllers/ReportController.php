@@ -414,118 +414,237 @@ class ReportController extends Controller
 
     public function ValuedPhysical(Request $request)
     {
-        $startDate = $request->input('startDate');
-        $endDate = $request->input('endDate');
-
-        $note = Note_Entrie::getFirstNoteOfYear();
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
 
 
-        if ($note) {
-            $formattedDate = Note_Entrie::formatDate($note->created_at);
+        $notesQuery = Note_Entrie::with(['materials.group']);
+        if ($startDate && $endDate) {
+            $notesQuery->whereBetween('delivery_date', [$startDate, $endDate]);
+        }
+        $notes = $notesQuery->get();
+
+        $requestsQuery = NoteRequest::with(['materials.group'])->where('state', 'Aceptado');
+        if ($startDate && $endDate) {
+            $requestsQuery->whereBetween('received_on_date', [$startDate, $endDate]);
+        }
+        $requests = $requestsQuery->get();
+
+        $materialsByGroup = [];
+
+        foreach ($notes as $note) {
+            foreach ($note->materials as $material) {
+                $group = $material->group;
+                $groupName = $group ? $group->name_group : 'Sin grupo';
+                $groupCode = $group ? $group->code : null;
+
+                $materialCode = $material->code_material;
+                $materialName = $material->description;
+                $materialUnit = $material->unit_material;
+                $amountEntries = $material->pivot->amount_entries;
+                $costUnit = $material->pivot->cost_unit;
+
+                if (!isset($materialsByGroup[$groupName])) {
+                    $materialsByGroup[$groupName] = [
+                        'codigo_grupo' => $groupCode,
+                        'materiales' => []
+                    ];
+                }
+
+                if (!isset($materialsByGroup[$groupName]['materiales'][$materialCode])) {
+                    $materialsByGroup[$groupName]['materiales'][$materialCode] = [
+                        'codigo_material' => $materialCode,
+                        'nombre_material' => $materialName,
+                        'unidad_material' => $materialUnit,
+                        'total_ingresado' => 0,
+                        'total_entregado' => 0,
+                        'cost_unit_sum' => 0,
+                        'num_entries' => 0,
+                    ];
+                }
+                $materialsByGroup[$groupName]['materiales'][$materialCode]['total_ingresado'] += $amountEntries;
+                $materialsByGroup[$groupName]['materiales'][$materialCode]['cost_unit_sum'] += $costUnit;
+                $materialsByGroup[$groupName]['materiales'][$materialCode]['num_entries'] += 1;
+            }
         }
 
-        $groups = Group::whereHas('materials.noteEntries')
-            ->with(['materials' => function ($query) {
-                $query->whereHas('noteEntries')
-                    ->with(['noteEntries' => function ($q) {
-                        $q->withPivot('amount_entries', 'cost_unit', 'cost_total');
-                    }]);
-            }])
-            ->get();
+        foreach ($requests as $request) {
+            foreach ($request->materials as $material) {
+                $group = $material->group;
+                $groupName = $group ? $group->name_group : 'Sin grupo';
+                $groupCode = $group ? $group->code : null;
 
-        $result = $groups->map(function ($group) {
-            return [
-                'group_code' => $group->code,
-                'group_name' => $group->name_group,
-                'materials' => $group->materials->map(function ($material) {
-                    $totalAmountEntries = 0;
-                    $totalCost = 0;
-                    $costUnitSum = 0;
-                    $noteEntriesCount = $material->noteEntries->count();
+                $materialCode = $material->code_material;
+                $deliveredQuantity = $material->pivot->delivered_quantity;
 
-                    foreach ($material->noteEntries as $noteEntry) {
-                        $amountEntries = $noteEntry->pivot->amount_entries;
-                        $costUnit = round((float) $noteEntry->pivot->cost_unit, 2);
-                        $totalAmountEntries += $amountEntries;
-                        $totalCost += round($amountEntries * $costUnit, 2);
-                        $costUnitSum += $costUnit;
-                    }
-
-                    return [
-                        'material_code' => $material->code_material,
-                        'description' => $material->description,
-                        'unit' => $material->unit_material,
-                        'state' => $material->state,
-                        'stock' => $material->stock,
-                        'barcode' => $material->barcode,
-                        'type' => $material->type,
-                        'average_cost_unit' => $noteEntriesCount > 0 ? round($costUnitSum / $noteEntriesCount, 2) : 0,
-                        'total_amount_entries' => $totalAmountEntries,
-                        'total_cost' => $totalCost,
+                if (!isset($materialsByGroup[$groupName])) {
+                    $materialsByGroup[$groupName] = [
+                        'codigo_grupo' => $groupCode,
+                        'materiales' => []
                     ];
-                }),
+                }
+
+                if (!isset($materialsByGroup[$groupName]['materiales'][$materialCode])) {
+                    $materialsByGroup[$groupName]['materiales'][$materialCode] = [
+                        'codigo_material' => $materialCode,
+                        'nombre_material' => $material->description,
+                        'unidad_material' => $material->unit_material,
+                        'total_ingresado' => 0,
+                        'total_entregado' => 0,
+                        'cost_unit_sum' => 0,
+                        'num_entries' => 0,
+                    ];
+                }
+                $materialsByGroup[$groupName]['materiales'][$materialCode]['total_entregado'] += $deliveredQuantity;
+            }
+        }
+        $result = [];
+        foreach ($materialsByGroup as $groupName => $groupData) {
+            $groupResult = [
+                'grupo' => $groupName,
+                'codigo_grupo' => $groupData['codigo_grupo'],
+                'materiales' => []
             ];
-        });
+
+            foreach ($groupData['materiales'] as $materialCode => $materialData) {
+                $averageCost = $materialData['cost_unit_sum'] / $materialData['num_entries'];
+                $groupResult['materiales'][] = [
+                    'codigo_material' => $materialData['codigo_material'],
+                    'nombre_material' => $materialData['nombre_material'],
+                    'unidad_material' => $materialData['unidad_material'],
+                    'total_ingresado' => $materialData['total_ingresado'],
+                    'total_entregado' => $materialData['total_entregado'],
+                    'promedio_costo_unitario' => number_format($averageCost, 2),
+                ];
+            }
+
+            $result[] = $groupResult;
+        }
+
+        $note = Note_Entrie::getFirstNoteOfYear();
+        $formattedDate = $note ? Note_Entrie::formatDate($note->delivery_date) : null;
+
         return response()->json([
-            'data' => $result,
             'date_note' => $formattedDate,
+            'data' => $result,
         ]);
     }
 
     public function PrintValuedPhysical(Request $request)
     {
-        $startDate = $request->input('startDate');
-        $endDate = $request->input('endDate');
 
-        $note = Note_Entrie::getFirstNoteOfYear();
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
 
 
-        if ($note) {
-            $formattedDate = Note_Entrie::formatDate($note->created_at);
+        $notesQuery = Note_Entrie::with(['materials.group']);
+        if ($startDate && $endDate) {
+            $notesQuery->whereBetween('delivery_date', [$startDate, $endDate]);
+        }
+        $notes = $notesQuery->get();
+
+        $requestsQuery = NoteRequest::with(['materials.group'])->where('state', 'Aceptado');
+        if ($startDate && $endDate) {
+            $requestsQuery->whereBetween('received_on_date', [$startDate, $endDate]);
+        }
+        $requests = $requestsQuery->get();
+
+        $materialsByGroup = [];
+
+        foreach ($notes as $note) {
+            foreach ($note->materials as $material) {
+                $group = $material->group;
+                $groupName = $group ? $group->name_group : 'Sin grupo';
+                $groupCode = $group ? $group->code : null;
+
+                $materialCode = $material->code_material;
+                $materialName = $material->description;
+                $materialUnit = $material->unit_material;
+                $amountEntries = $material->pivot->amount_entries;
+                $costUnit = $material->pivot->cost_unit;
+
+                if (!isset($materialsByGroup[$groupName])) {
+                    $materialsByGroup[$groupName] = [
+                        'codigo_grupo' => $groupCode,
+                        'materiales' => []
+                    ];
+                }
+
+                if (!isset($materialsByGroup[$groupName]['materiales'][$materialCode])) {
+                    $materialsByGroup[$groupName]['materiales'][$materialCode] = [
+                        'codigo_material' => $materialCode,
+                        'nombre_material' => $materialName,
+                        'unidad_material' => $materialUnit,
+                        'total_ingresado' => 0,
+                        'total_entregado' => 0,
+                        'cost_unit_sum' => 0,
+                        'num_entries' => 0,
+                    ];
+                }
+                $materialsByGroup[$groupName]['materiales'][$materialCode]['total_ingresado'] += $amountEntries;
+                $materialsByGroup[$groupName]['materiales'][$materialCode]['cost_unit_sum'] += $costUnit;
+                $materialsByGroup[$groupName]['materiales'][$materialCode]['num_entries'] += 1;
+            }
         }
 
-        $groups = Group::whereHas('materials.noteEntries')
-            ->with(['materials' => function ($query) {
-                $query->whereHas('noteEntries')
-                    ->with(['noteEntries' => function ($q) {
-                        $q->withPivot('amount_entries', 'cost_unit', 'cost_total');
-                    }]);
-            }])
-            ->get();
+        foreach ($requests as $request) {
+            foreach ($request->materials as $material) {
+                $group = $material->group;
+                $groupName = $group ? $group->name_group : 'Sin grupo';
+                $groupCode = $group ? $group->code : null;
 
-        $result = $groups->map(function ($group) {
-            return [
-                'group_code' => $group->code,
-                'group_name' => $group->name_group,
-                'materials' => $group->materials->map(function ($material) {
-                    $totalAmountEntries = 0;
-                    $totalCost = 0;
-                    $costUnitSum = 0;
-                    $noteEntriesCount = $material->noteEntries->count();
+                $materialCode = $material->code_material;
+                $deliveredQuantity = $material->pivot->delivered_quantity;
 
-                    foreach ($material->noteEntries as $noteEntry) {
-                        $amountEntries = $noteEntry->pivot->amount_entries;
-                        $costUnit = round((float) $noteEntry->pivot->cost_unit, 2);
-                        $totalAmountEntries += $amountEntries;
-                        $totalCost += round($amountEntries * $costUnit, 2);
-                        $costUnitSum += $costUnit;
-                    }
-
-                    return [
-                        'material_code' => $material->code_material,
-                        'description' => $material->description,
-                        'unit' => $material->unit_material,
-                        'state' => $material->state,
-                        'stock' => $material->stock,
-                        'barcode' => $material->barcode,
-                        'type' => $material->type,
-                        'average_cost_unit' => $noteEntriesCount > 0 ? round($costUnitSum / $noteEntriesCount, 2) : 0,
-                        'total_amount_entries' => $totalAmountEntries,
-                        'total_cost' => $totalCost,
+                if (!isset($materialsByGroup[$groupName])) {
+                    $materialsByGroup[$groupName] = [
+                        'codigo_grupo' => $groupCode,
+                        'materiales' => []
                     ];
-                }),
+                }
+
+                if (!isset($materialsByGroup[$groupName]['materiales'][$materialCode])) {
+                    $materialsByGroup[$groupName]['materiales'][$materialCode] = [
+                        'codigo_material' => $materialCode,
+                        'nombre_material' => $material->description,
+                        'unidad_material' => $material->unit_material,
+                        'total_ingresado' => 0,
+                        'total_entregado' => 0,
+                        'cost_unit_sum' => 0,
+                        'num_entries' => 0,
+                    ];
+                }
+                $materialsByGroup[$groupName]['materiales'][$materialCode]['total_entregado'] += $deliveredQuantity;
+            }
+        }
+        $result = [];
+        foreach ($materialsByGroup as $groupName => $groupData) {
+            $groupResult = [
+                'grupo' => $groupName,
+                'codigo_grupo' => $groupData['codigo_grupo'],
+                'materiales' => []
             ];
-        });
+
+            foreach ($groupData['materiales'] as $materialCode => $materialData) {
+                $averageCost = $materialData['cost_unit_sum'] / $materialData['num_entries'];
+                $groupResult['materiales'][] = [
+                    'codigo_material' => $materialData['codigo_material'],
+                    'nombre_material' => $materialData['nombre_material'],
+                    'unidad_material' => $materialData['unidad_material'],
+                    'total_ingresado' => $materialData['total_ingresado'],
+                    'total_entregado' => $materialData['total_entregado'],
+                    'promedio_costo_unitario' => number_format($averageCost, 2),
+                ];
+            }
+
+            $result[] = $groupResult;
+        }
+
+        $note = Note_Entrie::getFirstNoteOfYear();
+        $formattedDate = $note ? Note_Entrie::formatDate($note->delivery_date) : null;
+
+
+
         $data = [
             'title' => 'INVENTARIO FISICO VALORADO ALMACENES MUSERPOL',
             'results' => $result,

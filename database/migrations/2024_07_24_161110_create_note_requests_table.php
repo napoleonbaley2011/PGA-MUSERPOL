@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('observation')->nullable();
             $table->foreignId('user_register')->constrained('public.employees')->onDelete('restrict')->onUpdate('cascade');
             $table->date('request_date');
+            $table->date('received_on_date')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

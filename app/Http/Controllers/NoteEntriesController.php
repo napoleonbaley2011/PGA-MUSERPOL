@@ -39,6 +39,8 @@ class NoteEntriesController extends Controller
 
         $notes = $query->skip($start)->take($limit)->get();
 
+        logger($notes);
+
         return response()->json([
             'status' => 'success',
             'total' => $totalNotes,

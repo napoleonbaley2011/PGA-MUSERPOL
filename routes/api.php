@@ -58,5 +58,11 @@ Route::group([
         Route::get('/PrintKardex/{material}', [ReportController::class, 'print_kardex']);
         Route::get('/ReportPrintValuedPhysical', [ReportController::class, 'ValuedPhysical']);
         Route::get('/PrintValuedPhysical', [ReportController::class, 'PrintValuedPhysical']);
+
+
+
+
+
+        Route::get('/funcion', [ReportController::class, 'getNotesByDateRange']);
     });
 });

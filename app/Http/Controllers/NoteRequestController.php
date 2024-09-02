@@ -40,7 +40,6 @@ class NoteRequestController extends Controller
         }
 
         $response = $noteRequests->map(function ($noteRequest) {
-            //logger($noteRequest->employee->id);
             return [
                 'id_note' => $noteRequest->id,
                 'number_note' => $noteRequest->number_note,
@@ -185,6 +184,7 @@ class NoteRequestController extends Controller
 
             $noteRequest = NoteRequest::find($noteRequestId);
             $noteRequest->state = 'Aceptado';
+            $noteRequest->received_on_date = today()->toDateString();
             $noteRequest->save();
             return response()->json(['status' => true, 'message' => 'Solicitud Aceptada'], 200);
         } else {
