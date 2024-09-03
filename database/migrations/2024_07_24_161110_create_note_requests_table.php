@@ -19,6 +19,7 @@ return new class extends Migration
             $table->foreignId('user_register')->constrained('public.employees')->onDelete('restrict')->onUpdate('cascade');
             $table->date('request_date');
             $table->date('received_on_date')->nullable();
+            $table->foreignId('management_id')->constrained('management')->onDelete('restrict')->onUpdate('cascade');
             $table->timestamps();
             $table->softDeletes();
         });

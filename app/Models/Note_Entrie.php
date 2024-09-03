@@ -46,4 +46,10 @@ class Note_Entrie extends Model
             ->locale('es')
             ->translatedFormat('j \\d\\e F');
     }
+
+
+    public function management()
+    {
+        return $this->belongsTo(Management::class);
+    }
 }

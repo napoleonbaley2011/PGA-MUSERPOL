@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             ClassifierSeader::class,
             GroupTableSeeder::class,
             TypesTableSeeder::class,
+            ManagementSeeder::class,
             MaterialTableSeerder::class,
             SupplierSeeder::class,
             // NoteEntrieSeeder::class,

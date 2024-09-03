@@ -22,4 +22,8 @@ class NoteRequest extends Model
     {
         return $this->belongsTo(Employee::class, 'user_register');
     }
+    public function management()
+    {
+        return $this->belongsTo(Management::class);
+    }
 }

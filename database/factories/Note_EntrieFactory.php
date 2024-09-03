@@ -16,6 +16,17 @@ class Note_EntrieFactory extends Factory
 {
     protected $model = Note_Entrie::class;
     private static $noteNumber = 1;
+    private static $startDate;
+
+    public function __construct(...$args)
+    {
+        parent::__construct(...$args);
+        // Set a base start date for the first note
+        if (!self::$startDate) {
+            self::$startDate = Carbon::create(2024, 2, 1);  // Base start date: 1st February 2024
+        }
+    }
+
     /**
      * Define the model's default state.
      *
@@ -23,10 +34,13 @@ class Note_EntrieFactory extends Factory
      */
     public function definition(): array
     {
+        // Set the delivery date by adding days based on the note number
+        $deliveryDate = self::$startDate->copy()->addDays(self::$noteNumber - 1);
+
         return [
-            'number_note' => self::$noteNumber++, // Correlativo
-            'invoice_number' => $this->faker->unique()->numberBetween(100000, 999999), // Número de factura de 6 dígitos
-            'delivery_date' => Carbon::create(2024, 8, rand(1, 31)), // Fechas en agosto de 2024
+            'number_note' => self::$noteNumber++,
+            'invoice_number' => $this->faker->unique()->numberBetween(100000, 999999),
+            'delivery_date' => $deliveryDate, // Correlative date based on note number
             'state' => 'Creado',
             'invoice_auth' => $this->faker->unique()->numberBetween(100000, 999999),
             'user_register' => 25,
@@ -34,6 +48,7 @@ class Note_EntrieFactory extends Factory
             'type_id' => 1,
             'suppliers_id' => Supplier::inRandomOrder()->first()->id,
             'name_supplier' => Supplier::inRandomOrder()->first()->name,
+            'management_id' => 1,
         ];
     }
 

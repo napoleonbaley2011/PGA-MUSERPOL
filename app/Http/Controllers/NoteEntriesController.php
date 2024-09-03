@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Employee;
 use App\Models\Entrie_Material;
+use App\Models\Management;
 use App\Models\Material;
 use App\Models\Note_Entrie;
 use App\Models\Supplier;
@@ -39,7 +40,7 @@ class NoteEntriesController extends Controller
 
         $notes = $query->skip($start)->take($limit)->get();
 
-        logger($notes);
+
 
         return response()->json([
             'status' => 'success',
@@ -71,7 +72,8 @@ class NoteEntriesController extends Controller
             ]);
 
             $supplier_note = Supplier::find($request['id_supplier']);
-
+            $period = Management::latest()->first();
+            //logger($period->id);
 
             $number_note = Note_Entrie::count() + 1;
             $noteEntrie = Note_Entrie::create([
@@ -85,6 +87,7 @@ class NoteEntriesController extends Controller
                 'type_id' => $validateData['type'],
                 'suppliers_id' => $validateData['id_supplier'],
                 'name_supplier' => $supplier_note->name,
+                'management_id' => $period->id,
             ]);
 
 

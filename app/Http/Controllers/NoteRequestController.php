@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Employee;
 use App\Models\Entrie_Material;
 use App\Models\Entry;
+use App\Models\Management;
 use App\Models\Material;
 use App\Models\Note_Entrie;
 use App\Models\NoteRequest;
@@ -105,13 +106,15 @@ class NoteRequestController extends Controller
     public function create_note_request(Request $request)
     {
         $number_note = NoteRequest::count() + 1;
+        $period = Management::latest()->first();
 
         $noteRequest = NoteRequest::create([
             'number_note' => $number_note,
             'state' => 'En Revision',
             'observation' => 'Ninguno',
             'user_register' => $request['id'],
-            'request_date' => today()->toDateString()
+            'request_date' => today()->toDateString(),
+            'management_id' => $period->id,
         ]);
         foreach ($request['material_request'] as $materialData) {
             $noteRequest->materials()->attach($materialData['id'], [
