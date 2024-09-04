@@ -24,9 +24,19 @@ class NoteEntriesController extends Controller
         $startDate = $request->input('start_date', '');
         $endDate = $request->input('end_date', '');
 
+        $lastManagement = Management::orderByDesc('id')->first();
+
+        if (!$lastManagement) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'No se encontró ningún management.',
+            ], 404);
+        }
         $query = Note_Entrie::with(['materials' => function ($query) {
             $query->withPivot('amount_entries', 'cost_unit', 'cost_total')->withTrashed();
-        }, 'supplier'])->orderByDesc('id');
+        }, 'supplier'])
+            ->where('management_id', $lastManagement->id)
+            ->orderByDesc('id');
 
         if ($startDate && $endDate) {
             $query->whereBetween('delivery_date', [$startDate, $endDate]);
@@ -35,12 +45,8 @@ class NoteEntriesController extends Controller
         } elseif ($endDate) {
             $query->whereDate('delivery_date', '<=', $endDate);
         }
-
         $totalNotes = $query->count();
-
         $notes = $query->skip($start)->take($limit)->get();
-
-
 
         return response()->json([
             'status' => 'success',
@@ -73,7 +79,6 @@ class NoteEntriesController extends Controller
 
             $supplier_note = Supplier::find($request['id_supplier']);
             $period = Management::latest()->first();
-            //logger($period->id);
 
             $number_note = Note_Entrie::count() + 1;
             $noteEntrie = Note_Entrie::create([

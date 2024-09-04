@@ -20,26 +20,43 @@ class NoteRequestController extends Controller
 {
     public function list_note_request(Request $request)
     {
-        $page = $request->get('page', 0);
-        $limit = $request->get('limit', NoteRequest::count());
+        // Obtener página y límites
+        $page = max(0, $request->get('page', 0));
+        $limit = max(1, $request->get('limit', NoteRequest::count()));
         $start = $page * $limit;
         $state = $request->input('state', '');
 
+        // Obtener la última ID de Management
+        $lastManagement = Management::orderByDesc('id')->first();
 
-        $query = NoteRequest::with(['materials', 'employee'])->orderBy('number_note');
+        // Verificar si existe un Management
+        if (!$lastManagement) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'No se encontró ningún management.',
+            ], 404);
+        }
 
+        // Consultar las solicitudes de nota relacionadas al último Management
+        $query = NoteRequest::with(['materials', 'employee'])
+            ->where('management_id', $lastManagement->id) // Filtrar por última ID de Management
+            ->orderBy('number_note');
+
+        // Filtrar por estado si es necesario
         if ($state) {
             $query->where('state', $state);
         }
 
+        // Obtener el total de solicitudes de nota y paginar
         $totalNoteRequests = $query->count();
-
         $noteRequests = $query->skip($start)->take($limit)->get();
 
+        // Verificar si se encontraron resultados
         if ($noteRequests->isEmpty()) {
             return response()->json(['message' => 'No note requests found'], 404);
         }
 
+        // Mapear la respuesta
         $response = $noteRequests->map(function ($noteRequest) {
             return [
                 'id_note' => $noteRequest->id,
@@ -65,8 +82,6 @@ class NoteRequestController extends Controller
             ];
         });
 
-
-
         return response()->json([
             'status' => 'success',
             'total' => $totalNoteRequests,
@@ -75,6 +90,7 @@ class NoteRequestController extends Controller
             'data' => $response,
         ], 200);
     }
+
     public function listUserNoteRequests($userId)
     {
         $noteRequests = NoteRequest::where('user_register', $userId)->with('materials')->get();
@@ -119,7 +135,8 @@ class NoteRequestController extends Controller
         foreach ($request['material_request'] as $materialData) {
             $noteRequest->materials()->attach($materialData['id'], [
                 'amount_request' => $materialData['quantity'],
-                'name_material' => $materialData['description']
+                'name_material' => $materialData['description'],
+                'delivered_quantity' => 0,
             ]);
         }
         return response()->json($noteRequest->load('materials'), 201);

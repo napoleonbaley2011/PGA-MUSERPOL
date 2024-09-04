@@ -52,8 +52,9 @@ class NoteRequestFactory extends Factory
             $materials = Material::inRandomOrder()->take(rand(5, 10))->get();
             foreach ($materials as $material) {
                 $noteRequest->materials()->attach($material->id, [
-                    'amount_request' => rand(1, 100),
+                    'amount_request' => rand(1, 10),
                     'name_material' => $material->description,
+                    'delivered_quantity' => 0,
                 ]);
             }
         });

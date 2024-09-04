@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\Employee;
 use App\Models\Group;
+use App\Models\Management;
 use App\Models\Material;
 use App\Models\Note_Entrie;
 use App\Models\NoteRequest;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ReportController extends Controller
 {
@@ -23,8 +25,8 @@ class ReportController extends Controller
             $totalValuation = 0;
             $max_total = 0;
 
-            $entries = $material->noteEntries()->orderBy('created_at', 'asc')->get();
-            $requests = $material->noteRequests()->where('state', '=', 'Aceptado')->orderBy('created_at', 'asc')->get();
+            $entries = $material->noteEntries()->orderBy('delivery_date', 'asc')->get();
+            $requests = $material->noteRequests()->where('state', '=', 'Aceptado')->orderBy('received_on_date', 'asc')->get();
 
             $movements = [];
 
@@ -149,8 +151,8 @@ class ReportController extends Controller
             $totalValuation = 0;
             $max_total = 0;
 
-            $entries = $material->noteEntries()->orderBy('created_at', 'asc')->get();
-            $requests = $material->noteRequests()->where('state', '=', 'Aceptado')->orderBy('created_at', 'asc')->get();
+            $entries = $material->noteEntries()->orderBy('delivery_date', 'asc')->get();
+            $requests = $material->noteRequests()->where('state', '=', 'Aceptado')->orderBy('received_on_date', 'asc')->get();
 
             $movements = [];
 
@@ -269,11 +271,12 @@ class ReportController extends Controller
 
     public function dashboard_data()
     {
+        $period = Management::latest()->first();
         $num_material = Material::where('stock', '>', 0)->count();
         $num_material_total = Material::all()->count();
-        $num_order_total = NoteRequest::all()->count();
-        $num_order = NoteRequest::where('state', '=', 'En Revision')->count();
-        $num_delivery = NoteRequest::where('state', '=', 'Aceptado')->count();
+        $num_order_total = NoteRequest::where('management_id', '=', $period->id)->count();
+        $num_order = NoteRequest::where('state', '=', 'En Revision')->where('management_id', '=', $period->id)->count();
+        $num_delivery = NoteRequest::where('state', '=', 'Aceptado')->where('management_id', '=', $period->id)->count();
 
         return response()->json([
             'num_material' => $num_material,
@@ -294,8 +297,8 @@ class ReportController extends Controller
                 $stock = 0;
                 $totalValuation = 0;
 
-                $entries = $material->noteEntries()->orderBy('created_at', 'asc')->get();
-                $requests = $material->noteRequests()->where('state', '=', 'Aceptado')->orderBy('created_at', 'asc')->get();
+                $entries = $material->noteEntries()->orderBy('delivery_date', 'asc')->get();
+                $requests = $material->noteRequests()->where('state', '=', 'Aceptado')->orderBy('received_on_date', 'asc')->get();
 
                 $movements = [];
 
@@ -653,5 +656,151 @@ class ReportController extends Controller
 
         $pdf = Pdf::loadView('ValuedPhysical.ValuedPhysical', $data)->setPaper('letter', 'landscape');
         return $pdf->stream('Inventario Fisico Valorado.pdf');
+    }
+
+    public function consolidated_valued_physical_inventory()
+    {
+        $latestManagement = Management::latest('id')->first();
+        $previousManagement = Management::where('id', '<', $latestManagement->id)->latest('id')->first();
+
+        $latestManagementId = $latestManagement ? $latestManagement->id : null;
+        $previousManagementId = $previousManagement ? $previousManagement->id : null;
+
+        $latestGroups = Group::whereHas('materials')
+            ->with(['materials.noteRequests' => function ($query) use ($latestManagementId) {
+                $query->where('management_id', $latestManagementId);
+            }, 'materials.noteEntries' => function ($query) use ($latestManagementId) {
+                $query->where('management_id', $latestManagementId);
+            }])
+            ->get()
+            ->map(function ($group) {
+                $totalSum = 0;
+                $totalCost = 0;
+
+                foreach ($group->materials as $material) {
+                    $deliveredSum = $material->noteRequests->sum('pivot.delivered_quantity') ?: 0;
+                    $entrySum = $material->noteEntries->sum('pivot.amount_entries') ?: 0;
+                    $averageCost = $material->noteEntries->avg('pivot.cost_unit') ?: 0;
+
+                    if ($entrySum > 0 && $averageCost > 0) {
+                        $totalMaterialCost = ($entrySum - $deliveredSum) * $averageCost;
+                    } else {
+                        $totalMaterialCost = 0;
+                    }
+
+                    $totalSum += ($entrySum - $deliveredSum);
+                    $totalCost += $totalMaterialCost;
+                }
+
+                return [
+                    'group_id' => $group->id,
+                    'code' => $group->code,
+                    'name_group' => $group->name_group,
+                    'latest_total_sum' => $totalSum,
+                    'latest_total_cost' => number_format($totalCost, 2)
+                ];
+            });
+
+        $previousGroups = $previousManagement
+            ? Group::whereHas('materials')
+            ->with(['materials.noteRequests' => function ($query) use ($previousManagementId) {
+                $query->where('management_id', $previousManagementId);
+            }, 'materials.noteEntries' => function ($query) use ($previousManagementId) {
+                $query->where('management_id', $previousManagementId);
+            }])
+            ->get()
+            ->map(function ($group) {
+                $totalSum = 0;
+                $totalCost = 0;
+
+                foreach ($group->materials as $material) {
+                    $deliveredSum = $material->noteRequests->sum('pivot.delivered_quantity') ?: 0;
+                    $entrySum = $material->noteEntries->sum('pivot.amount_entries') ?: 0;
+                    $averageCost = $material->noteEntries->avg('pivot.cost_unit') ?: 0;
+
+                    if ($entrySum > 0 && $averageCost > 0) {
+                        $totalMaterialCost = ($entrySum - $deliveredSum) * $averageCost;
+                    } else {
+                        $totalMaterialCost = 0;
+                    }
+
+                    $totalSum += ($entrySum - $deliveredSum);
+                    $totalCost += $totalMaterialCost;
+                }
+
+                return [
+                    'group_id' => $group->id,
+                    'code' => $group->code,
+                    'name_group' => $group->name_group,
+                    'previous_total_sum' => $totalSum,
+                    'previous_total_cost' => $totalCost
+                ];
+            })
+            : collect();
+
+        $latestRequests = DB::select('
+            SELECT tmp2.group_id, 
+                   SUM(tmp2.suma_entregado) AS total, 
+                   SUM(tmp2.suma_entregado * tmp.promedio) AS total_cost
+            FROM (
+                SELECT em.material_id, 
+                       AVG(em.cost_unit) AS promedio
+                FROM store.note_entries ne 
+                JOIN store.entries_material em ON ne.id = em.note_id
+                WHERE ne.management_id = ?
+                GROUP BY em.material_id
+            ) AS tmp
+            JOIN (
+                SELECT m.group_id, 
+                       m.id, 
+                       SUM(rm.delivered_quantity) AS suma_entregado
+                FROM store.note_requests nr 
+                JOIN store.request_material rm ON nr.id = rm.note_id
+                JOIN store.materials m ON rm.material_id = m.id
+                WHERE nr.management_id = ?
+                GROUP BY m.group_id, m.id
+            ) AS tmp2 ON tmp.material_id = tmp2.id
+            GROUP BY tmp2.group_id
+        ', [$latestManagementId, $latestManagementId]);
+
+        $requestMap = collect($latestRequests)->mapWithKeys(function ($item) {
+            return [$item->group_id => [
+                'latest_request_sum' => $item->total,
+                'latest_request_cost' => number_format($item->total_cost, 2)
+            ]];
+        });
+
+        $result = $latestGroups->map(function ($latestGroup) use ($requestMap, $previousGroups) {
+            $previousGroup = $previousGroups->firstWhere('group_id', $latestGroup['group_id']) ?? [
+                'previous_total_sum' => 0,
+                'previous_total_cost' => 0
+            ];
+
+            $requestData = $requestMap->get($latestGroup['group_id'], [
+                'latest_request_sum' => 0,
+                'latest_request_cost' => '0.00'
+            ]);
+
+            return array_merge($latestGroup, $previousGroup, $requestData);
+        });
+
+        return response()->json($result);
+    }
+
+    public function management_closure()
+    {
+        $latestManagement = Management::latest('id')->first();
+        $latestManagement->state = "Cerrado";
+        $latestManagement->close_date = now()->format('Y-m-d');
+        $latestManagement->save();
+
+        $newlatestManagement = Management::create([
+            'period_name' => now()->format('Y') ,
+            'star_date'=> now()->format('Y-m-d'),
+            'state' => 'Abierto',
+        ]);
+
+        
+        logger($latestManagement);
     }
 }

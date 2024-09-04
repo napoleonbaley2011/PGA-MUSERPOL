@@ -59,7 +59,7 @@ class Note_EntrieFactory extends Factory
 
             $materials = Material::inRandomOrder()->take(rand(5, 10))->get();
             foreach ($materials as $material) {
-                $amountEntries = rand(1, 100);
+                $amountEntries = rand(1, 10);
                 $material->stock += $amountEntries;
                 $material->state = 'Habilitado';
                 $material->save();
