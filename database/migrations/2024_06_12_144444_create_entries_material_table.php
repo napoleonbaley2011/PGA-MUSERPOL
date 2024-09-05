@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('material_id')->constrained()->onDelete('cascade');
             $table->integer('amount_entries')->nullable();
             $table->integer('request')->nullable();
-            $table->double('cost_unit', 2, 8)->nullable();
+            $table->decimal('cost_unit', 10, 2)->default(0.00)->nullable();
             $table->decimal('cost_total', 10, 2)->default(0.00)->nullable();
             $table->string('name_material')->nullable();
             $table->timestamps();

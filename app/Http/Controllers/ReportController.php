@@ -680,7 +680,7 @@ class ReportController extends Controller
                 foreach ($group->materials as $material) {
                     $deliveredSum = $material->noteRequests->sum('pivot.delivered_quantity') ?: 0;
                     $entrySum = $material->noteEntries->sum('pivot.amount_entries') ?: 0;
-                    $averageCost = $material->noteEntries->avg('pivot.cost_unit') ?: 0;
+                    $averageCost = number_format($material->noteEntries->avg('pivot.cost_unit'), 6) ?: 0;
 
                     if ($entrySum > 0 && $averageCost > 0) {
                         $totalMaterialCost = ($entrySum - $deliveredSum) * $averageCost;
@@ -690,6 +690,7 @@ class ReportController extends Controller
 
                     $totalSum += ($entrySum - $deliveredSum);
                     $totalCost += $totalMaterialCost;
+                    logger($averageCost);
                 }
 
                 return [
@@ -700,7 +701,7 @@ class ReportController extends Controller
                     'latest_total_cost' => number_format($totalCost, 2)
                 ];
             });
-
+        logger('---------');
         $previousGroups = $previousManagement
             ? Group::whereHas('materials')
             ->with(['materials.noteRequests' => function ($query) use ($previousManagementId) {
@@ -716,7 +717,7 @@ class ReportController extends Controller
                 foreach ($group->materials as $material) {
                     $deliveredSum = $material->noteRequests->sum('pivot.delivered_quantity') ?: 0;
                     $entrySum = $material->noteEntries->sum('pivot.amount_entries') ?: 0;
-                    $averageCost = $material->noteEntries->avg('pivot.cost_unit') ?: 0;
+                    $averageCost = number_format($material->noteEntries->avg('pivot.cost_unit'), 6) ?: 0;
 
                     if ($entrySum > 0 && $averageCost > 0) {
                         $totalMaterialCost = ($entrySum - $deliveredSum) * $averageCost;
@@ -726,6 +727,7 @@ class ReportController extends Controller
 
                     $totalSum += ($entrySum - $deliveredSum);
                     $totalCost += $totalMaterialCost;
+                    logger($averageCost);
                 }
 
                 return [
@@ -733,10 +735,11 @@ class ReportController extends Controller
                     'code' => $group->code,
                     'name_group' => $group->name_group,
                     'previous_total_sum' => $totalSum,
-                    'previous_total_cost' => $totalCost
+                    'previous_total_cost' => number_format($totalCost, 2),
                 ];
             })
             : collect();
+
 
         $latestRequests = DB::select('
             SELECT tmp2.group_id, 
@@ -793,14 +796,71 @@ class ReportController extends Controller
         $latestManagement->state = "Cerrado";
         $latestManagement->close_date = now()->format('Y-m-d');
         $latestManagement->save();
+        $year = $latestManagement->name;
 
-        $newlatestManagement = Management::create([
-            'period_name' => now()->format('Y') ,
-            'star_date'=> now()->format('Y-m-d'),
+        $date_start = now()->format('Y-m-d');
+        logger($date_start);
+        $newManagement = Management::create([
+            'period_name' => now()->format('Y'),
+            'start_date' => $date_start,
             'state' => 'Abierto',
         ]);
 
-        
-        logger($latestManagement);
+        $materials = Material::where('type', 'Almacen')->get();
+
+        if ($materials->isEmpty()) {
+            return response()->json(['error' => 'No se encontraron materiales de tipo Almacen.'], 404);
+        }
+
+        $noteEntrie = Note_Entrie::create([
+            'number_note' => $this->generateNoteNumber(),
+            'invoice_number' => 'N/A',
+            'delivery_date' => now()->format('Y-m-d'),
+            'state' => 'Creado',
+            'invoice_auth' => 'N/A',
+            'user_register' => '25',
+            'observation' => 'Cierre de gestión y apertura de nueva gestión',
+            'type_id' => 1,
+            'suppliers_id' => 1,
+            'name_supplier' => 'Generado por Cierre de Gestión',
+            'management_id' => $newManagement->id,
+        ]);
+
+        foreach ($materials as $material) {
+            $noteEntrie->materials()->attach($material->id, [
+                'amount_entries' => $material->stock,
+                'cost_unit' => $this->calculateMaterialCost($material),
+                'cost_total' => $material->stock * $this->calculateMaterialCost($material),
+                'name_material' => $material->description,
+                'request' => $material->stock,
+            ]);
+        }
+
+        return response()->json(['success' => 'Cierre de gestión y nueva nota de entrada creada exitosamente']);
+    }
+
+    private function generateNoteNumber()
+    {
+        $lastNote = Note_Entrie::orderBy('number_note', 'desc')->first();
+        return $lastNote ? $lastNote->number_note + 1 : 1;
+    }
+
+    public function calculateMaterialCost(Material $material)
+    {
+        $latestManagement = Management::latest('id')->first();
+        $previousManagement = Management::where('id', '<', $latestManagement->id)
+            ->orderBy('id', 'desc')
+            ->first();
+        if (!$previousManagement) {
+            return 0;
+        }
+
+        $averageCostUnit = $material->noteEntries()
+            ->where('management_id', $previousManagement->id)
+            ->avg('entries_material.cost_unit');
+
+        logger($averageCostUnit);
+
+        return ($averageCostUnit);
     }
 }

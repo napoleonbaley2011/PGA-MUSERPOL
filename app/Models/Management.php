@@ -11,7 +11,7 @@ class Management extends Model
 
     protected $fillable = [
         'period_name',
-        'star_date',
+        'start_date',
         'state',
         'close_date',
         'closed_by_user',

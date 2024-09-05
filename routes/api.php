@@ -61,6 +61,7 @@ Route::group([
         Route::get('/ReportPrintValuedPhysicalConsolidated', [ReportController::class, 'consolidated_valued_physical_inventory']);
         Route::get('/ManagementClosure', [ReportController::class, 'management_closure']);
 
-        Route::get('/funcion', [ReportController::class, 'getNotesByDateRange']);
+
+        Route::get('/funcion/{material}', [ReportController::class, 'calculateMaterialCost']);
     });
 });
