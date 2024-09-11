@@ -30,6 +30,7 @@ class AuthController extends Controller
         if (!env("LDAP_AUTHENTICATION")) {
             return $this->handleDatabaseAuthentication($request, $user);
         } else {
+            logger("asdasdasda");
             return $this->handleLdapAuthentication($request);
         }
     }
