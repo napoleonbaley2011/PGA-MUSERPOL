@@ -432,7 +432,6 @@ class ReportController extends Controller
         }
         $requests = $requestsQuery->get();
 
-
         $materialsByGroup = [];
 
         foreach ($notes as $note) {
@@ -485,26 +484,24 @@ class ReportController extends Controller
                 if (isset($materialsByGroup[$groupName]['materiales'][$materialCode])) {
                     $lotes = &$materialsByGroup[$groupName]['materiales'][$materialCode]['lotes'];
 
-                    foreach ($lotes as &$lote) {
-                        if ($deliveredQuantity > 0) {
-                            if ($lote['cantidad'] >= $deliveredQuantity) {
-                                $lote['cantidad'] -= $deliveredQuantity;
-                                $deliveredQuantity = 0;
-                                break;
-                            } else {
-                                $deliveredQuantity -= $lote['cantidad'];
-                                $lote['cantidad'] = 0;
-                            }
+                    $i = 0;
+                    while ($deliveredQuantity > 0 && $i < count($lotes)) {
+                        if ($lotes[$i]['cantidad'] >= $deliveredQuantity) {
+                            $lotes[$i]['cantidad'] -= $deliveredQuantity;
+                            $deliveredQuantity = 0;
+                        } else {
+                            $deliveredQuantity -= $lotes[$i]['cantidad'];
+                            $lotes[$i]['cantidad'] = 0;
                         }
+                        $i++;
                     }
                 }
             }
         }
 
-
-
         $result = [];
         logger($materialsByGroup);
+
         foreach ($materialsByGroup as $groupName => $groupData) {
             $groupResult = [
                 'grupo' => $groupName,
@@ -515,14 +512,12 @@ class ReportController extends Controller
             foreach ($groupData['materiales'] as $materialCode => $materialData) {
                 $materialLotes = [];
                 foreach ($materialData['lotes'] as $lote) {
-                    if ($lote['cantidad'] > 0 || $lote['cantidad_inicial'] > 0) {
-                        $materialLotes[] = [
-                            'fecha_ingreso' => $lote['fecha_ingreso'],
-                            'cantidad_inicial' => $lote['cantidad_inicial'],
-                            'cantidad_restante' => $lote['cantidad'],
-                            'precio_unitario' => number_format($lote['precio_unitario'], 2),
-                        ];
-                    }
+                    $materialLotes[] = [
+                        'fecha_ingreso' => $lote['fecha_ingreso'],
+                        'cantidad_inicial' => $lote['cantidad_inicial'],
+                        'cantidad_restante' => $lote['cantidad'],
+                        'precio_unitario' => number_format($lote['precio_unitario'], 2),
+                    ];
                 }
 
                 $groupResult['materiales'][] = [
@@ -544,6 +539,7 @@ class ReportController extends Controller
             'data' => $result,
         ]);
     }
+
 
 
     public function PrintValuedPhysical(Request $request)
