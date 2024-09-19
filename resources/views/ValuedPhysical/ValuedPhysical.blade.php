@@ -3,7 +3,7 @@
 use \Milon\Barcode\DNS2D;
 
 if (!extension_loaded('intl')) {
-    die('La extensión Intl no está habilitada.');
+    die('La extensión Intl não está habilitada.');
 }
 $formatter = new IntlDateFormatter(
     'es_ES',
@@ -88,7 +88,7 @@ $dns = new DNS2D();
                 </th>
                 <th class="w-25 no-padding no-margins align-top">
                     <table class="table-code no-padding no-margins text-xxxs uppercase">
-
+                        <!-- Espacio para el código de barras -->
                     </table>
                 </th>
             </tr>
@@ -96,13 +96,13 @@ $dns = new DNS2D();
         <hr class="m-b-10" style="margin-top: 0; padding-top: 0;">
         <div class="block">
             <div class="leading-tight text-sm text-center m-b-10">{{ $title }}</div>
-            <div class="leading-tight text-xxxl text-center m-b-10">LA PAZ, DEL {{strtoupper($date_note)}} AL {{$fecha_actual}}</div>
+            <div class="leading-tight text-xxxl text-center m-b-10">LA PAZ, DEL {{ strtoupper($date_note) }} AL {{ $fecha_actual }}</div>
             @foreach ($results as $index => $result)
-            <div class="leading-tight text-xxl text-left m-b-10">{{ $result['codigo_grupo'] }}, GRUPO: {{strtoupper($result['grupo'])}}</div>
+            <div class="leading-tight text-xxl text-left m-b-10">{{ $result['codigo_grupo'] }}, GRUPO: {{ strtoupper($result['grupo']) }}</div>
             <table class="table-info w-100 m-b-10 uppercase text-xs">
                 <thead>
                     <tr>
-                        <th class="text-center bg-grey-darker text-white" rowspan="2">CODIGO</th>
+                        <th class="text-center bg-grey-darker text-white" rowspan="2">CÓDIGO</th>
                         <th class="text-center bg-grey-darker text-white border-left-white col-detalle" rowspan="2">DETALLE</th>
                         <th class="text-center bg-grey-darker text-white border-left-white col-unit" rowspan="2">UNIDAD</th>
                         <th class="text-center bg-grey-darker text-white border-left-white" colspan="3">ENTRADAS</th>
@@ -122,23 +122,63 @@ $dns = new DNS2D();
                     </tr>
                 </thead>
                 <tbody class="table-striped">
-                    @foreach ($result['materiales'] as $i => $material)
+                    @foreach ($result['materiales'] as $material)
+                    @php
+                    $totalEntradas = 0;
+                    $totalEntradasCosto = 0;
+                    $totalCantidades = 0;
+                    $totalCantidadesCosto = 0;
+                    $totalSaldos = 0;
+                    $totalSaldosCosto = 0;
+                    @endphp
+                    @foreach ($material['lotes'] as $lote)
+                    @php
+                    $cantidadEntradas = $lote['cantidad_inicial'];
+                    $cantidadRestante = $lote['cantidad_restante'];
+                    $precioUnitario = $lote['precio_unitario'];
+
+                    $totalEntradas += $cantidadEntradas;
+                    $totalEntradasCosto += $cantidadEntradas * $precioUnitario;
+
+                    $totalCantidades += ($cantidadEntradas - $cantidadRestante);
+                    $totalCantidadesCosto += ($cantidadEntradas - $cantidadRestante) * $precioUnitario;
+
+                    $totalSaldos += $cantidadRestante;
+                    $totalSaldosCosto += $cantidadRestante * $precioUnitario;
+                    @endphp
                     <tr>
-                        <td class="text-left">{{$material['codigo_material']}}</td>
-                        <td class="text-left">{{$material['nombre_material']}}</td>
-                        <td class="text-left">{{$material['unidad_material']}}</td>
-
-                        <td class="text-center">{{ $material['total_ingresado']}}</td>
-                        <td class="text-right">{{ number_format($material['promedio_costo_unitario'], 2) }}</td>
-                        <td class="text-right">{{ number_format(($material['total_ingresado'] * $material['promedio_costo_unitario']), 2) }}</td>
-
-                        <td class="text-center">{{ $material['total_entregado'] }}</td>
-                        <td class="text-right">{{ number_format($material['promedio_costo_unitario'], 2) }}</td>
-                        <td class="text-right">{{ number_format(($material['total_entregado'] * $material['promedio_costo_unitario']), 2) }}</td>
-
-                        <td class="text-center">{{ $material['total_ingresado'] - $material['total_entregado']}}</td>
-                        <td class="text-right">{{ number_format($material['promedio_costo_unitario'], 2) }}</td>
-                        <td class="text-right">{{ number_format(($material['total_ingresado'] - $material['total_entregado']) * $material['promedio_costo_unitario'] , 2) }}</td>
+                        @if ($loop->first)
+                        <td class="text-left" rowspan="{{ count($material['lotes']) }}">{{ $material['codigo_material'] }}</td>
+                        <td class="text-left" rowspan="{{ count($material['lotes']) }}">{{ $material['nombre_material'] }}</td>
+                        <td class="text-left" rowspan="{{ count($material['lotes']) }}">{{ $material['unidad_material'] }}</td>
+                        @endif
+                        <td class="text-center">{{ $cantidadEntradas }}</td>
+                        <td class="text-right">{{ number_format($precioUnitario, 2) }}</td>
+                        <td class="text-right">{{ number_format($cantidadEntradas * $precioUnitario, 2) }}</td>
+                        <td class="text-center">{{ $cantidadEntradas - $cantidadRestante }}</td>
+                        <td class="text-right">{{ number_format($precioUnitario, 2) }}</td>
+                        <td class="text-right">{{ number_format(($cantidadEntradas - $cantidadRestante) * $precioUnitario, 2) }}</td>
+                        <td class="text-center">{{ $cantidadRestante }}</td>
+                        <td class="text-right">{{ number_format($precioUnitario, 2) }}</td>
+                        <td class="text-right">{{ number_format($cantidadRestante * $precioUnitario, 2) }}</td>
+                    </tr>
+                    @endforeach
+                    <tr>
+                        <td colspan="3" class="text-right font-bold">SUB-TOTAL</td>
+                        @php
+                        $averageEntradas = $totalEntradas > 0 ? $totalEntradasCosto / $totalEntradas : 0;
+                        $averageCantidades = $totalCantidades > 0 ? $totalCantidadesCosto / $totalCantidades : 0;
+                        $averageSaldos = $totalSaldos > 0 ? $totalSaldosCosto / $totalSaldos : 0;
+                        @endphp
+                        <td class="text-center">{{ $totalEntradas }}</td>
+                        <td class="text-right">{{ number_format($averageEntradas, 2) }}</td>
+                        <td class="text-right">{{ number_format($totalEntradasCosto, 2) }}</td>
+                        <td class="text-center">{{ $totalCantidades }}</td>
+                        <td class="text-right">{{ number_format($averageCantidades, 2) }}</td>
+                        <td class="text-right">{{ number_format($totalCantidadesCosto, 2) }}</td>
+                        <td class="text-center">{{ $totalSaldos }}</td>
+                        <td class="text-right">{{ number_format($averageSaldos, 2) }}</td>
+                        <td class="text-right">{{ number_format($totalSaldosCosto, 2) }}</td>
                     </tr>
                     @endforeach
                 </tbody>
