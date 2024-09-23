@@ -1,15 +1,6 @@
 /.cache
 /.vscode
 /node_modules
-/public/mix-manifest.json
-/public/hot
-/public/img
-/public/docs/*
-/public/fonts
-/public/js
-/public/css
-/public/fonts
-/public/storage
 /storage/*.key
 /vendor
 /laradock/*

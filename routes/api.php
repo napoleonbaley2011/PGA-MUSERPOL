@@ -9,10 +9,6 @@ use App\Http\Controllers\NoteRequestController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\TypeController;
-use App\Models\Material;
-use App\Models\Note_Entrie;
-use App\Models\NoteRequest;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::group([
