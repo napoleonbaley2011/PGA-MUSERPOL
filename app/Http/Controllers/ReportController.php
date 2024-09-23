@@ -538,8 +538,6 @@ class ReportController extends Controller
         ]);
     }
 
-
-
     public function PrintValuedPhysical(Request $request)
     {
 

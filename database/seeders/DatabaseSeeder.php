@@ -27,7 +27,7 @@ class DatabaseSeeder extends Seeder
             // NoteRequestSeeder::class,
         ]);
 
-        // Note_Entrie::factory()->count(150)->create();
-        // NoteRequest::factory()->count(100)->create();
+        Note_Entrie::factory()->count(300)->create();
+        //NoteRequest::factory()->count(100)->create();
     }
 }
