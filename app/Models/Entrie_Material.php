@@ -13,8 +13,14 @@ class Entrie_Material extends Model
     protected $table = 'entries_material';
 
     protected $fillable = [
-        'note_id', 'material_id', 'amount_entries', 'request', 'cost_unit',
-        'cost_total', 'name_material'
+        'note_id',
+        'material_id',
+        'amount_entries',
+        'request',
+        'cost_unit',
+        'cost_total',
+        'name_material',
+        'delivery_date_entry'
     ];
 
     public function noteEntry()

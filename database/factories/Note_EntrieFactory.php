@@ -21,9 +21,8 @@ class Note_EntrieFactory extends Factory
     public function __construct(...$args)
     {
         parent::__construct(...$args);
-        // Set a base start date for the first note
         if (!self::$startDate) {
-            self::$startDate = Carbon::create(2024, 2, 1);  // Base start date: 1st February 2024
+            self::$startDate = Carbon::create(2024, 2, 1);
         }
     }
 
@@ -57,7 +56,10 @@ class Note_EntrieFactory extends Factory
         return $this->afterCreating(function (Note_Entrie $noteEntrie) {
             $priceOptions = [36.6, 36.2, 36.4];
 
-            $materials = Material::inRandomOrder()->take(rand(5, 10))->get();
+            $materials = Material::where('description', 'NOT LIKE', '%(CAJA CHICA)%')
+                ->inRandomOrder()
+                ->take(rand(5, 10))
+                ->get();
             foreach ($materials as $material) {
                 $amountEntries = rand(1, 10);
                 $material->stock += $amountEntries;
@@ -72,6 +74,7 @@ class Note_EntrieFactory extends Factory
                     'cost_unit' => $costUnit,
                     'cost_total' => $amountEntries * $costUnit,
                     'name_material' => $material->description,
+                    'delivery_date_entry' => $noteEntrie->delivery_date
                 ]);
             }
         });

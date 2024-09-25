@@ -166,7 +166,7 @@ class NoteRequestController extends Controller
                     $query->where('materials.id', $materialId);
                 })
                     ->where('state', '!=', 'Eliminado')
-                    ->orderBy('created_at', 'asc')
+                    ->orderBy('delivery_date', 'asc')
                     ->get();
 
                 $costDetails = [];

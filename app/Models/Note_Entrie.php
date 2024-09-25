@@ -29,7 +29,7 @@ class Note_Entrie extends Model
 
     public function materials()
     {
-        return $this->belongsToMany(Material::class, 'entries_material', 'note_id', 'material_id')->withPivot('amount_entries', 'cost_unit', 'cost_total', 'name_material', 'request')->withTimestamps();
+        return $this->belongsToMany(Material::class, 'entries_material', 'note_id', 'material_id')->withPivot('amount_entries', 'cost_unit', 'cost_total', 'name_material', 'request','delivery_date_entry')->withTimestamps();
     }
 
     public static function getFirstNoteOfYear()

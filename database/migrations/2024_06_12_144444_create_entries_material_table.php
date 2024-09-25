@@ -20,6 +20,7 @@ return new class extends Migration
             $table->decimal('cost_unit', 10, 2)->default(0.00)->nullable();
             $table->decimal('cost_total', 10, 2)->default(0.00)->nullable();
             $table->string('name_material')->nullable();
+            $table->date('delivery_date_entry')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

@@ -109,6 +109,7 @@ class NoteEntriesController extends Controller
                     'cost_unit' => $materialData['price'],
                     'cost_total' => $materialData['quantity'] * $materialData['price'],
                     'name_material' => $materialData['name'],
+                    'delivery_date_entry' => $validateData['date_entry'],
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);

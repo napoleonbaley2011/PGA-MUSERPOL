@@ -32,7 +32,7 @@ class ReportController extends Controller
 
             foreach ($entries as $entry) {
                 $movements[] = [
-                    'date' => $entry->pivot->created_at,
+                    'date' => $entry->pivot->delivery_date_entry,
                     'type' => 'entry',
                     'description' => $entry->name_supplier . ' - Nota de Entrada #' . $entry->number_note,
                     'quantity' => $entry->pivot->amount_entries,
@@ -50,6 +50,8 @@ class ReportController extends Controller
                     'cost_unit' => null,
                 ];
             }
+
+
 
 
             usort($movements, function ($a, $b) {
@@ -158,7 +160,7 @@ class ReportController extends Controller
 
             foreach ($entries as $entry) {
                 $movements[] = [
-                    'date' => $entry->pivot->created_at,
+                    'date' => $entry->pivot->delivery_date_entry,
                     'type' => 'entry',
                     'description' => $entry->name_supplier . ' - Nota de Entrada #' . $entry->number_note,
                     'quantity' => $entry->pivot->amount_entries,
@@ -415,92 +417,225 @@ class ReportController extends Controller
         }
     }
 
+    // public function ValuedPhysical(Request $request)
+    // {
+    //     $startDate = $request->input('start_date');
+    //     $endDate = $request->input('end_date');
+
+    //     $notesQuery = Note_Entrie::with(['materials.group']);
+    //     if ($startDate && $endDate) {
+    //         $notesQuery->whereBetween('delivery_date', [$startDate, $endDate]);
+    //     }
+    //     $notes = $notesQuery->get();
+
+    //     $requestsQuery = NoteRequest::with(['materials.group'])->where('state', 'Aceptado');
+    //     if ($startDate && $endDate) {
+    //         $requestsQuery->whereBetween('received_on_date', [$startDate, $endDate]);
+    //     }
+    //     $requests = $requestsQuery->get();
+
+    //     $materialsByGroup = [];
+
+    //     foreach ($notes as $note) {
+    //         foreach ($note->materials as $material) {
+    //             $group = $material->group;
+    //             $groupName = $group ? $group->name_group : 'Sin grupo';
+    //             $groupCode = $group ? $group->code : null;
+
+    //             $materialCode = $material->code_material;
+    //             $materialName = $material->description;
+    //             $materialUnit = $material->unit_material;
+    //             $amountEntries = $material->pivot->amount_entries;
+    //             $costUnit = $material->pivot->cost_unit;
+    //             $deliveryDate = $note->delivery_date;
+
+    //             if (!isset($materialsByGroup[$groupName])) {
+    //                 $materialsByGroup[$groupName] = [
+    //                     'codigo_grupo' => $groupCode,
+    //                     'materiales' => []
+    //                 ];
+    //             }
+
+    //             if (!isset($materialsByGroup[$groupName]['materiales'][$materialCode])) {
+    //                 $materialsByGroup[$groupName]['materiales'][$materialCode] = [
+    //                     'codigo_material' => $materialCode,
+    //                     'nombre_material' => $materialName,
+    //                     'unidad_material' => $materialUnit,
+    //                     'lotes' => []
+    //                 ];
+    //             }
+
+    //             $materialsByGroup[$groupName]['materiales'][$materialCode]['lotes'][] = [
+    //                 'fecha_ingreso' => $deliveryDate,
+    //                 'cantidad_inicial' => $amountEntries,
+    //                 'cantidad' => $amountEntries,
+    //                 'precio_unitario' => $costUnit
+    //             ];
+    //         }
+    //     }
+
+    //     foreach ($requests as $request) {
+    //         foreach ($request->materials as $material) {
+    //             $group = $material->group;
+    //             $groupName = $group ? $group->name_group : 'Sin grupo';
+    //             $groupCode = $group ? $group->code : null;
+
+    //             $materialCode = $material->code_material;
+    //             $deliveredQuantity = $material->pivot->delivered_quantity;
+
+    //             if (isset($materialsByGroup[$groupName]['materiales'][$materialCode])) {
+    //                 $lotes = &$materialsByGroup[$groupName]['materiales'][$materialCode]['lotes'];
+
+    //                 $i = 0;
+    //                 while ($deliveredQuantity > 0 && $i < count($lotes)) {
+    //                     if ($lotes[$i]['cantidad'] >= $deliveredQuantity) {
+    //                         $lotes[$i]['cantidad'] -= $deliveredQuantity;
+    //                         $deliveredQuantity = 0;
+    //                     } else {
+    //                         $deliveredQuantity -= $lotes[$i]['cantidad'];
+    //                         $lotes[$i]['cantidad'] = 0;
+    //                     }
+    //                     $i++;
+    //                 }
+    //             }
+    //         }
+    //     }
+
+    //     $result = [];
+    //     foreach ($materialsByGroup as $groupName => $groupData) {
+    //         $groupResult = [
+    //             'grupo' => $groupName,
+    //             'codigo_grupo' => $groupData['codigo_grupo'],
+    //             'materiales' => []
+    //         ];
+
+    //         foreach ($groupData['materiales'] as $materialCode => $materialData) {
+    //             $materialLotes = [];
+    //             foreach ($materialData['lotes'] as $lote) {
+    //                 $materialLotes[] = [
+    //                     'fecha_ingreso' => $lote['fecha_ingreso'],
+    //                     'cantidad_inicial' => $lote['cantidad_inicial'],
+    //                     'cantidad_restante' => $lote['cantidad'],
+    //                     'precio_unitario' => number_format($lote['precio_unitario'], 2),
+    //                 ];
+    //             }
+
+    //             $groupResult['materiales'][] = [
+    //                 'codigo_material' => $materialData['codigo_material'],
+    //                 'nombre_material' => $materialData['nombre_material'],
+    //                 'unidad_material' => $materialData['unidad_material'],
+    //                 'lotes' => $materialLotes
+    //             ];
+    //         }
+
+    //         $result[] = $groupResult;
+    //     }
+
+    //     $note = Note_Entrie::getFirstNoteOfYear();
+    //     $formattedDate = $note ? Note_Entrie::formatDate($note->delivery_date) : null;
+
+    //     return response()->json([
+    //         'date_note' => $formattedDate,
+    //         'data' => $result,
+    //     ]);
+    // }
     public function ValuedPhysical(Request $request)
     {
         $startDate = $request->input('start_date');
         $endDate = $request->input('end_date');
 
-        $notesQuery = Note_Entrie::with(['materials.group']);
+        $notesQuery = Note_Entrie::with(['materials' => function ($query) {
+            $query->select('materials.id', 'materials.description', 'materials.code_material', 'materials.group_id', 'materials.unit_material');
+        }, 'materials.group' => function ($query) {
+            $query->select('groups.id', 'groups.name_group', 'groups.code');
+        }]);
+
         if ($startDate && $endDate) {
             $notesQuery->whereBetween('delivery_date', [$startDate, $endDate]);
         }
-        $notes = $notesQuery->get();
 
-        $requestsQuery = NoteRequest::with(['materials.group'])->where('state', 'Aceptado');
+        $notesData = [];
+        $notesQuery->chunk(100, function ($notes) use (&$notesData) {
+            foreach ($notes as $note) {
+                foreach ($note->materials as $material) {
+                    $group = $material->group;
+                    $groupName = $group ? $group->name_group : 'Sin grupo';
+                    $groupCode = $group ? $group->code : null;
+
+                    $materialCode = $material->code_material;
+                    $materialName = $material->description;
+                    $materialUnit = $material->unit_material;
+                    $amountEntries = $material->pivot->amount_entries;
+                    $costUnit = $material->pivot->cost_unit;
+                    $deliveryDate = $note->delivery_date;
+
+                    if (!isset($notesData[$groupName])) {
+                        $notesData[$groupName] = [
+                            'codigo_grupo' => $groupCode,
+                            'materiales' => []
+                        ];
+                    }
+
+                    if (!isset($notesData[$groupName]['materiales'][$materialCode])) {
+                        $notesData[$groupName]['materiales'][$materialCode] = [
+                            'codigo_material' => $materialCode,
+                            'nombre_material' => $materialName,
+                            'unidad_material' => $materialUnit,
+                            'lotes' => []
+                        ];
+                    }
+
+                    $notesData[$groupName]['materiales'][$materialCode]['lotes'][] = [
+                        'fecha_ingreso' => $deliveryDate,
+                        'cantidad_inicial' => $amountEntries,
+                        'cantidad' => $amountEntries,
+                        'precio_unitario' => $costUnit
+                    ];
+                }
+            }
+        });
+
+        $requestsQuery = NoteRequest::with(['materials' => function ($query) {
+            $query->select('materials.id', 'materials.code_material', 'materials.group_id');
+        }, 'materials.group' => function ($query) {
+            $query->select('groups.id', 'groups.name_group', 'groups.code');
+        }])->where('state', 'Aceptado');
+
         if ($startDate && $endDate) {
             $requestsQuery->whereBetween('received_on_date', [$startDate, $endDate]);
         }
-        $requests = $requestsQuery->get();
 
-        $materialsByGroup = [];
+        $requestsQuery->chunk(100, function ($requests) use (&$notesData) {
+            foreach ($requests as $request) {
+                foreach ($request->materials as $material) {
+                    $group = $material->group;
+                    $groupName = $group ? $group->name_group : 'Sin grupo';
+                    $materialCode = $material->code_material;
+                    $deliveredQuantity = $material->pivot->delivered_quantity;
 
-        foreach ($notes as $note) {
-            foreach ($note->materials as $material) {
-                $group = $material->group;
-                $groupName = $group ? $group->name_group : 'Sin grupo';
-                $groupCode = $group ? $group->code : null;
+                    if (isset($notesData[$groupName]['materiales'][$materialCode])) {
+                        $lotes = &$notesData[$groupName]['materiales'][$materialCode]['lotes'];
 
-                $materialCode = $material->code_material;
-                $materialName = $material->description;
-                $materialUnit = $material->unit_material;
-                $amountEntries = $material->pivot->amount_entries;
-                $costUnit = $material->pivot->cost_unit;
-                $deliveryDate = $note->delivery_date;
+                        foreach ($lotes as &$lote) {
+                            if ($deliveredQuantity <= 0) {
+                                break;
+                            }
 
-                if (!isset($materialsByGroup[$groupName])) {
-                    $materialsByGroup[$groupName] = [
-                        'codigo_grupo' => $groupCode,
-                        'materiales' => []
-                    ];
-                }
-
-                if (!isset($materialsByGroup[$groupName]['materiales'][$materialCode])) {
-                    $materialsByGroup[$groupName]['materiales'][$materialCode] = [
-                        'codigo_material' => $materialCode,
-                        'nombre_material' => $materialName,
-                        'unidad_material' => $materialUnit,
-                        'lotes' => []
-                    ];
-                }
-
-                $materialsByGroup[$groupName]['materiales'][$materialCode]['lotes'][] = [
-                    'fecha_ingreso' => $deliveryDate,
-                    'cantidad_inicial' => $amountEntries,
-                    'cantidad' => $amountEntries,
-                    'precio_unitario' => $costUnit
-                ];
-            }
-        }
-
-        foreach ($requests as $request) {
-            foreach ($request->materials as $material) {
-                $group = $material->group;
-                $groupName = $group ? $group->name_group : 'Sin grupo';
-                $groupCode = $group ? $group->code : null;
-
-                $materialCode = $material->code_material;
-                $deliveredQuantity = $material->pivot->delivered_quantity;
-
-                if (isset($materialsByGroup[$groupName]['materiales'][$materialCode])) {
-                    $lotes = &$materialsByGroup[$groupName]['materiales'][$materialCode]['lotes'];
-
-                    $i = 0;
-                    while ($deliveredQuantity > 0 && $i < count($lotes)) {
-                        if ($lotes[$i]['cantidad'] >= $deliveredQuantity) {
-                            $lotes[$i]['cantidad'] -= $deliveredQuantity;
-                            $deliveredQuantity = 0;
-                        } else {
-                            $deliveredQuantity -= $lotes[$i]['cantidad'];
-                            $lotes[$i]['cantidad'] = 0;
+                            if ($lote['cantidad'] >= $deliveredQuantity) {
+                                $lote['cantidad'] -= $deliveredQuantity;
+                                $deliveredQuantity = 0;
+                            } else {
+                                $deliveredQuantity -= $lote['cantidad'];
+                                $lote['cantidad'] = 0;
+                            }
                         }
-                        $i++;
                     }
                 }
             }
-        }
+        });
 
         $result = [];
-        foreach ($materialsByGroup as $groupName => $groupData) {
+        foreach ($notesData as $groupName => $groupData) {
             $groupResult = [
                 'grupo' => $groupName,
                 'codigo_grupo' => $groupData['codigo_grupo'],
@@ -508,15 +643,14 @@ class ReportController extends Controller
             ];
 
             foreach ($groupData['materiales'] as $materialCode => $materialData) {
-                $materialLotes = [];
-                foreach ($materialData['lotes'] as $lote) {
-                    $materialLotes[] = [
+                $materialLotes = array_map(function ($lote) {
+                    return [
                         'fecha_ingreso' => $lote['fecha_ingreso'],
                         'cantidad_inicial' => $lote['cantidad_inicial'],
                         'cantidad_restante' => $lote['cantidad'],
                         'precio_unitario' => number_format($lote['precio_unitario'], 2),
                     ];
-                }
+                }, $materialData['lotes']);
 
                 $groupResult['materiales'][] = [
                     'codigo_material' => $materialData['codigo_material'],
@@ -528,6 +662,7 @@ class ReportController extends Controller
 
             $result[] = $groupResult;
         }
+
 
         $note = Note_Entrie::getFirstNoteOfYear();
         $formattedDate = $note ? Note_Entrie::formatDate($note->delivery_date) : null;
@@ -538,93 +673,105 @@ class ReportController extends Controller
         ]);
     }
 
+
     public function PrintValuedPhysical(Request $request)
     {
 
         $startDate = $request->input('start_date');
         $endDate = $request->input('end_date');
 
-        $notesQuery = Note_Entrie::with(['materials.group']);
+        $notesQuery = Note_Entrie::with(['materials' => function ($query) {
+            $query->select('materials.id', 'materials.description', 'materials.code_material', 'materials.group_id', 'materials.unit_material');
+        }, 'materials.group' => function ($query) {
+            $query->select('groups.id', 'groups.name_group', 'groups.code');
+        }]);
+
         if ($startDate && $endDate) {
             $notesQuery->whereBetween('delivery_date', [$startDate, $endDate]);
         }
-        $notes = $notesQuery->get();
 
-        $requestsQuery = NoteRequest::with(['materials.group'])->where('state', 'Aceptado');
+        $notesData = [];
+        $notesQuery->chunk(100, function ($notes) use (&$notesData) {
+            foreach ($notes as $note) {
+                foreach ($note->materials as $material) {
+                    $group = $material->group;
+                    $groupName = $group ? $group->name_group : 'Sin grupo';
+                    $groupCode = $group ? $group->code : null;
+
+                    $materialCode = $material->code_material;
+                    $materialName = $material->description;
+                    $materialUnit = $material->unit_material;
+                    $amountEntries = $material->pivot->amount_entries;
+                    $costUnit = $material->pivot->cost_unit;
+                    $deliveryDate = $note->delivery_date;
+
+                    if (!isset($notesData[$groupName])) {
+                        $notesData[$groupName] = [
+                            'codigo_grupo' => $groupCode,
+                            'materiales' => []
+                        ];
+                    }
+
+                    if (!isset($notesData[$groupName]['materiales'][$materialCode])) {
+                        $notesData[$groupName]['materiales'][$materialCode] = [
+                            'codigo_material' => $materialCode,
+                            'nombre_material' => $materialName,
+                            'unidad_material' => $materialUnit,
+                            'lotes' => []
+                        ];
+                    }
+
+                    $notesData[$groupName]['materiales'][$materialCode]['lotes'][] = [
+                        'fecha_ingreso' => $deliveryDate,
+                        'cantidad_inicial' => $amountEntries,
+                        'cantidad' => $amountEntries,
+                        'precio_unitario' => $costUnit
+                    ];
+                }
+            }
+        });
+
+        $requestsQuery = NoteRequest::with(['materials' => function ($query) {
+            $query->select('materials.id', 'materials.code_material', 'materials.group_id');
+        }, 'materials.group' => function ($query) {
+            $query->select('groups.id', 'groups.name_group', 'groups.code');
+        }])->where('state', 'Aceptado');
+
         if ($startDate && $endDate) {
             $requestsQuery->whereBetween('received_on_date', [$startDate, $endDate]);
         }
-        $requests = $requestsQuery->get();
 
-        $materialsByGroup = [];
+        $requestsQuery->chunk(100, function ($requests) use (&$notesData) {
+            foreach ($requests as $request) {
+                foreach ($request->materials as $material) {
+                    $group = $material->group;
+                    $groupName = $group ? $group->name_group : 'Sin grupo';
+                    $materialCode = $material->code_material;
+                    $deliveredQuantity = $material->pivot->delivered_quantity;
 
-        foreach ($notes as $note) {
-            foreach ($note->materials as $material) {
-                $group = $material->group;
-                $groupName = $group ? $group->name_group : 'Sin grupo';
-                $groupCode = $group ? $group->code : null;
+                    if (isset($notesData[$groupName]['materiales'][$materialCode])) {
+                        $lotes = &$notesData[$groupName]['materiales'][$materialCode]['lotes'];
 
-                $materialCode = $material->code_material;
-                $materialName = $material->description;
-                $materialUnit = $material->unit_material;
-                $amountEntries = $material->pivot->amount_entries;
-                $costUnit = $material->pivot->cost_unit;
-                $deliveryDate = $note->delivery_date;
+                        foreach ($lotes as &$lote) {
+                            if ($deliveredQuantity <= 0) {
+                                break;
+                            }
 
-                if (!isset($materialsByGroup[$groupName])) {
-                    $materialsByGroup[$groupName] = [
-                        'codigo_grupo' => $groupCode,
-                        'materiales' => []
-                    ];
-                }
-
-                if (!isset($materialsByGroup[$groupName]['materiales'][$materialCode])) {
-                    $materialsByGroup[$groupName]['materiales'][$materialCode] = [
-                        'codigo_material' => $materialCode,
-                        'nombre_material' => $materialName,
-                        'unidad_material' => $materialUnit,
-                        'lotes' => []
-                    ];
-                }
-
-                $materialsByGroup[$groupName]['materiales'][$materialCode]['lotes'][] = [
-                    'fecha_ingreso' => $deliveryDate,
-                    'cantidad_inicial' => $amountEntries,
-                    'cantidad' => $amountEntries,
-                    'precio_unitario' => $costUnit
-                ];
-            }
-        }
-
-        foreach ($requests as $request) {
-            foreach ($request->materials as $material) {
-                $group = $material->group;
-                $groupName = $group ? $group->name_group : 'Sin grupo';
-                $groupCode = $group ? $group->code : null;
-
-                $materialCode = $material->code_material;
-                $deliveredQuantity = $material->pivot->delivered_quantity;
-
-                if (isset($materialsByGroup[$groupName]['materiales'][$materialCode])) {
-                    $lotes = &$materialsByGroup[$groupName]['materiales'][$materialCode]['lotes'];
-
-                    $i = 0;
-                    while ($deliveredQuantity > 0 && $i < count($lotes)) {
-                        if ($lotes[$i]['cantidad'] >= $deliveredQuantity) {
-                            $lotes[$i]['cantidad'] -= $deliveredQuantity;
-                            $deliveredQuantity = 0;
-                        } else {
-                            $deliveredQuantity -= $lotes[$i]['cantidad'];
-                            $lotes[$i]['cantidad'] = 0;
+                            if ($lote['cantidad'] >= $deliveredQuantity) {
+                                $lote['cantidad'] -= $deliveredQuantity;
+                                $deliveredQuantity = 0;
+                            } else {
+                                $deliveredQuantity -= $lote['cantidad'];
+                                $lote['cantidad'] = 0;
+                            }
                         }
-                        $i++;
                     }
                 }
             }
-        }
+        });
 
         $result = [];
-        foreach ($materialsByGroup as $groupName => $groupData) {
+        foreach ($notesData as $groupName => $groupData) {
             $groupResult = [
                 'grupo' => $groupName,
                 'codigo_grupo' => $groupData['codigo_grupo'],
@@ -632,15 +779,14 @@ class ReportController extends Controller
             ];
 
             foreach ($groupData['materiales'] as $materialCode => $materialData) {
-                $materialLotes = [];
-                foreach ($materialData['lotes'] as $lote) {
-                    $materialLotes[] = [
+                $materialLotes = array_map(function ($lote) {
+                    return [
                         'fecha_ingreso' => $lote['fecha_ingreso'],
                         'cantidad_inicial' => $lote['cantidad_inicial'],
                         'cantidad_restante' => $lote['cantidad'],
                         'precio_unitario' => number_format($lote['precio_unitario'], 2),
                     ];
-                }
+                }, $materialData['lotes']);
 
                 $groupResult['materiales'][] = [
                     'codigo_material' => $materialData['codigo_material'],
@@ -653,9 +799,9 @@ class ReportController extends Controller
             $result[] = $groupResult;
         }
 
+
         $note = Note_Entrie::getFirstNoteOfYear();
         $formattedDate = $note ? Note_Entrie::formatDate($note->delivery_date) : null;
-
 
 
         $data = [
