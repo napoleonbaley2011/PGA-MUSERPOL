@@ -25,6 +25,7 @@ $dns = new DNS2D();
 
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PLATAFORMA VIRTUAL ADMINISTRATIVA - MUSERPOL </title>
     <link rel="stylesheet" href="{{ public_path('/css/material-request.min.css') }}" media="all" />
 
@@ -124,30 +125,30 @@ $dns = new DNS2D();
                 <tbody class="table-striped">
                     @foreach ($result['materiales'] as $material)
                     @php
-                    $totalEntradas = 0;
-                    $totalEntradasCosto = 0;
-                    $totalCantidades = 0;
-                    $totalCantidadesCosto = 0;
-                    $totalSaldos = 0;
-                    $totalSaldosCosto = 0;
+                        $totalEntradas = 0;
+                        $totalEntradasCosto = 0;
+                        $totalCantidades = 0;
+                        $totalCantidadesCosto = 0;
+                        $totalSaldos = 0;
+                        $totalSaldosCosto = 0;
                     @endphp
                     @foreach ($material['lotes'] as $lote)
                     @php
-                    $cantidadEntradas = $lote['cantidad_inicial'];
-                    $cantidadRestante = $lote['cantidad_restante'];
-                    $precioUnitario = $lote['precio_unitario'];
+                        $cantidadEntradas = $lote['cantidad_inicial'];
+                        $cantidadRestante = $lote['cantidad_restante'];
+                        $precioUnitario = $lote['precio_unitario'];
 
-                    $totalEntradas += $cantidadEntradas;
-                    $totalEntradasCosto += $cantidadEntradas * $precioUnitario;
+                        $totalEntradas += $cantidadEntradas;
+                        $totalEntradasCosto += $cantidadEntradas * $precioUnitario;
 
-                    $totalCantidades += ($cantidadEntradas - $cantidadRestante);
-                    $totalCantidadesCosto += ($cantidadEntradas - $cantidadRestante) * $precioUnitario;
+                        $totalCantidades += ($cantidadEntradas - $cantidadRestante);
+                        $totalCantidadesCosto += ($cantidadEntradas - $cantidadRestante) * $precioUnitario;
 
-                    $totalSaldos += $cantidadRestante;
-                    $totalSaldosCosto += $cantidadRestante * $precioUnitario;
+                        $totalSaldos += $cantidadRestante;
+                        $totalSaldosCosto += $cantidadRestante * $precioUnitario;
                     @endphp
                     <tr>
-                        @if ($loop->first)
+                        @if($loop->first)
                         <td class="text-left" rowspan="{{ count($material['lotes']) }}">{{ $material['codigo_material'] }}</td>
                         <td class="text-left" rowspan="{{ count($material['lotes']) }}">{{ $material['nombre_material'] }}</td>
                         <td class="text-left" rowspan="{{ count($material['lotes']) }}">{{ $material['unidad_material'] }}</td>
@@ -163,7 +164,7 @@ $dns = new DNS2D();
                         <td class="text-right">{{ number_format($cantidadRestante * $precioUnitario, 2) }}</td>
                     </tr>
                     @endforeach
-                    <tr>
+                    <!-- <tr>
                         <td colspan="3" class="text-right font-bold">SUB-TOTAL</td>
                         @php
                         $averageEntradas = $totalEntradas > 0 ? $totalEntradasCosto / $totalEntradas : 0;
@@ -179,7 +180,7 @@ $dns = new DNS2D();
                         <td class="text-center">{{ $totalSaldos }}</td>
                         <td class="text-right">{{ number_format($averageSaldos, 2) }}</td>
                         <td class="text-right">{{ number_format($totalSaldosCosto, 2) }}</td>
-                    </tr>
+                    </tr> -->
                     @endforeach
                 </tbody>
             </table>
