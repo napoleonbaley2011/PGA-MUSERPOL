@@ -8,7 +8,7 @@
 /app/storage/
 /resources/docs/
 .env
-.phpunit.result.cache
+
 yarn-error.log
 npm-debug.log
 !/public/docs/collection.json
