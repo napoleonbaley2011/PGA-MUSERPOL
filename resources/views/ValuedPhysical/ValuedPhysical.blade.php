@@ -54,20 +54,6 @@ $dns = new DNS2D();
         .footer td {
             padding: 5px;
         }
-
-        .col-detalle {
-            width: 250px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .col-unit {
-            width: 80px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
     </style>
 </head>
 
@@ -89,7 +75,6 @@ $dns = new DNS2D();
                 </th>
                 <th class="w-25 no-padding no-margins align-top">
                     <table class="table-code no-padding no-margins text-xxxs uppercase">
-                        <!-- Espacio para el código de barras -->
                     </table>
                 </th>
             </tr>
@@ -104,8 +89,8 @@ $dns = new DNS2D();
                 <thead>
                     <tr>
                         <th class="text-center bg-grey-darker text-white" rowspan="2">CÓDIGO</th>
-                        <th class="text-center bg-grey-darker text-white border-left-white col-detalle" rowspan="2">DETALLE</th>
-                        <th class="text-center bg-grey-darker text-white border-left-white col-unit" rowspan="2">UNIDAD</th>
+                        <th class="text-center bg-grey-darker text-white border-left-white" rowspan="2">DETALLE</th>
+                        <th class="text-center bg-grey-darker text-white border-left-white" rowspan="2">UNIDAD</th>
                         <th class="text-center bg-grey-darker text-white border-left-white" colspan="3">ENTRADAS</th>
                         <th class="text-center bg-grey-darker text-white border-left-white" colspan="3">CANTIDADES</th>
                         <th class="text-center bg-grey-darker text-white border-left-white" colspan="3">SALDOS</th>
@@ -125,33 +110,37 @@ $dns = new DNS2D();
                 <tbody class="table-striped">
                     @foreach ($result['materiales'] as $material)
                     @php
-                        $totalEntradas = 0;
-                        $totalEntradasCosto = 0;
-                        $totalCantidades = 0;
-                        $totalCantidadesCosto = 0;
-                        $totalSaldos = 0;
-                        $totalSaldosCosto = 0;
+                    $totalEntradas = 0;
+                    $totalEntradasCosto = 0;
+                    $totalCantidades = 0;
+                    $totalCantidadesCosto = 0;
+                    $totalSaldos = 0;
+                    $totalSaldosCosto = 0;
                     @endphp
                     @foreach ($material['lotes'] as $lote)
                     @php
-                        $cantidadEntradas = $lote['cantidad_inicial'];
-                        $cantidadRestante = $lote['cantidad_restante'];
-                        $precioUnitario = $lote['precio_unitario'];
+                    $cantidadEntradas = $lote['cantidad_inicial'];
+                    $cantidadRestante = $lote['cantidad_restante'];
+                    $precioUnitario = $lote['precio_unitario'];
 
-                        $totalEntradas += $cantidadEntradas;
-                        $totalEntradasCosto += $cantidadEntradas * $precioUnitario;
+                    $totalEntradas += $cantidadEntradas;
+                    $totalEntradasCosto += $cantidadEntradas * $precioUnitario;
 
-                        $totalCantidades += ($cantidadEntradas - $cantidadRestante);
-                        $totalCantidadesCosto += ($cantidadEntradas - $cantidadRestante) * $precioUnitario;
+                    $totalCantidades += ($cantidadEntradas - $cantidadRestante);
+                    $totalCantidadesCosto += ($cantidadEntradas - $cantidadRestante) * $precioUnitario;
 
-                        $totalSaldos += $cantidadRestante;
-                        $totalSaldosCosto += $cantidadRestante * $precioUnitario;
+                    $totalSaldos += $cantidadRestante;
+                    $totalSaldosCosto += $cantidadRestante * $precioUnitario;
                     @endphp
                     <tr>
                         @if($loop->first)
-                        <td class="text-left" rowspan="{{ count($material['lotes']) }}">{{ $material['codigo_material'] }}</td>
-                        <td class="text-left" rowspan="{{ count($material['lotes']) }}">{{ $material['nombre_material'] }}</td>
-                        <td class="text-left" rowspan="{{ count($material['lotes']) }}">{{ $material['unidad_material'] }}</td>
+                        <td class="text-left">{{ $material['codigo_material'] }}</td>
+                        <td class="text-left">{{ $material['nombre_material'] }}</td>
+                        <td class="text-left">{{ $material['unidad_material'] }}</td>
+                        @else
+                        <td class="text-left" style="border-bottom: none;"></td> <!-- Espacio vacío para el código sin borde inferior -->
+                        <td class="text-left" style="border-bottom: none;"></td> <!-- Espacio vacío para el detalle sin borde inferior -->
+                        <td class="text-left" style="border-bottom: none;"></td> <!-- Espacio vacío para la unidad sin borde inferior -->
                         @endif
                         <td class="text-center">{{ $cantidadEntradas }}</td>
                         <td class="text-right">{{ number_format($precioUnitario, 2) }}</td>
@@ -164,8 +153,12 @@ $dns = new DNS2D();
                         <td class="text-right">{{ number_format($cantidadRestante * $precioUnitario, 2) }}</td>
                     </tr>
                     @endforeach
-                    <!-- <tr>
-                        <td colspan="3" class="text-right font-bold">SUB-TOTAL</td>
+                    <!-- Añadir fila para línea superior del subtotal -->
+                    <tr>
+                        <td colspan="12" style="border-top: 1px solid black;"></td>
+                    </tr>
+                    <tr>
+                        <td colspan="3" class="text-left font-bold">SUB-TOTAL</td>
                         @php
                         $averageEntradas = $totalEntradas > 0 ? $totalEntradasCosto / $totalEntradas : 0;
                         $averageCantidades = $totalCantidades > 0 ? $totalCantidadesCosto / $totalCantidades : 0;
@@ -180,9 +173,10 @@ $dns = new DNS2D();
                         <td class="text-center">{{ $totalSaldos }}</td>
                         <td class="text-right">{{ number_format($averageSaldos, 2) }}</td>
                         <td class="text-right">{{ number_format($totalSaldosCosto, 2) }}</td>
-                    </tr> -->
+                    </tr>
                     @endforeach
                 </tbody>
+
             </table>
             <div style="margin-top: 20px;"></div>
             @endforeach
