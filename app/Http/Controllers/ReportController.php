@@ -50,10 +50,6 @@ class ReportController extends Controller
                     'cost_unit' => null,
                 ];
             }
-
-
-
-
             usort($movements, function ($a, $b) {
                 return strtotime($a['date']) - strtotime($b['date']);
             });
