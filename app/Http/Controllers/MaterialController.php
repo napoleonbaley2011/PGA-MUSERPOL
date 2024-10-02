@@ -164,7 +164,7 @@ class MaterialController extends Controller
 
     public function list_materials_pva()
     {
-        $query = Material::where('state', 'Habilitado')->get();
+        $query = Material::where('state', 'Habilitado')->where('description', 'not like', '%CAJA CHICA%')->get();
         return $query;
     }
 
