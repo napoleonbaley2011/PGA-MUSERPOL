@@ -39,11 +39,11 @@ class Note_EntrieFactory extends Factory
         return [
             'number_note' => self::$noteNumber++,
             'invoice_number' => $this->faker->unique()->numberBetween(100000, 999999),
-            'delivery_date' => $deliveryDate, // Correlative date based on note number
+            'delivery_date' => $deliveryDate, 
             'state' => 'Creado',
             'invoice_auth' => $this->faker->unique()->numberBetween(100000, 999999),
             'user_register' => 25,
-            'observation' => $this->faker->sentence,
+            'observation' => 'Activo',
             'type_id' => 1,
             'suppliers_id' => Supplier::inRandomOrder()->first()->id,
             'name_supplier' => Supplier::inRandomOrder()->first()->name,

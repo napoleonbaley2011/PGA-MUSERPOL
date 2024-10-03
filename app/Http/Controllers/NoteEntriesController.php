@@ -88,7 +88,7 @@ class NoteEntriesController extends Controller
                 'state' => 'Creado',
                 'invoice_auth' => $validateData['authorization_number'],
                 'user_register' => $validateData['id_user'],
-                'observation' => 'Creado recientemente',
+                'observation' => 'Activo',
                 'type_id' => $validateData['type'],
                 'suppliers_id' => $validateData['id_supplier'],
                 'name_supplier' => $supplier_note->name,

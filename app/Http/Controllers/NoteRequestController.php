@@ -172,6 +172,8 @@ class NoteRequestController extends Controller
                 $costDetails = [];
 
                 foreach ($entries as $entry) {
+                    $entry->observation = 'Inactivo';
+                    logger($entry);
                     $entryMaterialPivot = $entry->materials()->where('materials.id', $materialId)->first()->pivot;
                     $availableAmount = $entryMaterialPivot->request;
                     $costUnit = $entryMaterialPivot->cost_unit;
