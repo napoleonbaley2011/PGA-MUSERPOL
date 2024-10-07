@@ -20,16 +20,13 @@ class NoteRequestController extends Controller
 {
     public function list_note_request(Request $request)
     {
-        // Obtener página y límites
         $page = max(0, $request->get('page', 0));
         $limit = max(1, $request->get('limit', NoteRequest::count()));
         $start = $page * $limit;
         $state = $request->input('state', '');
 
-        // Obtener la última ID de Management
         $lastManagement = Management::orderByDesc('id')->first();
 
-        // Verificar si existe un Management
         if (!$lastManagement) {
             return response()->json([
                 'status' => 'error',
@@ -37,26 +34,21 @@ class NoteRequestController extends Controller
             ], 404);
         }
 
-        // Consultar las solicitudes de nota relacionadas al último Management
         $query = NoteRequest::with(['materials', 'employee'])
-            ->where('management_id', $lastManagement->id) // Filtrar por última ID de Management
-            ->orderBy('number_note');
+            ->where('management_id', $lastManagement->id) 
+            ->orderBy('id', 'desc');
 
-        // Filtrar por estado si es necesario
         if ($state) {
             $query->where('state', $state);
         }
 
-        // Obtener el total de solicitudes de nota y paginar
         $totalNoteRequests = $query->count();
         $noteRequests = $query->skip($start)->take($limit)->get();
 
-        // Verificar si se encontraron resultados
         if ($noteRequests->isEmpty()) {
             return response()->json(['message' => 'No note requests found'], 404);
         }
-
-        // Mapear la respuesta
+        
         $response = $noteRequests->map(function ($noteRequest) {
             return [
                 'id_note' => $noteRequest->id,
@@ -121,7 +113,7 @@ class NoteRequestController extends Controller
 
     public function create_note_request(Request $request)
     {
-        $number_note = NoteRequest::count() + 1;
+        $number_note = 0;
         $period = Management::latest()->first();
 
         $noteRequest = NoteRequest::create([
@@ -203,10 +195,11 @@ class NoteRequestController extends Controller
                 $material->stock -= $amount_to_be_reduced;
                 $material->save();
             }
-
+            $number_note = NoteRequest::where('state', 'Aceptado')->count() + 1;
             $noteRequest = NoteRequest::find($noteRequestId);
             $noteRequest->state = 'Aceptado';
             $noteRequest->received_on_date = today()->toDateString();
+            $noteRequest->number_note = $number_note;
             $noteRequest->save();
             return response()->json(['status' => true, 'message' => 'Solicitud Aceptada'], 200);
         } else {

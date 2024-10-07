@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('note_requests', function (Blueprint $table) {
             $table->id();
-            $table->integer('number_note');
+            $table->integer('number_note')->nullable();
             $table->string('state');
             $table->string('observation')->nullable();
             $table->foreignId('user_register')->constrained('public.employees')->onDelete('restrict')->onUpdate('cascade');
