@@ -35,7 +35,7 @@ class NoteRequestController extends Controller
         }
 
         $query = NoteRequest::with(['materials', 'employee'])
-            ->where('management_id', $lastManagement->id) 
+            ->where('management_id', $lastManagement->id)
             ->orderBy('id', 'desc');
 
         if ($state) {
@@ -48,7 +48,7 @@ class NoteRequestController extends Controller
         if ($noteRequests->isEmpty()) {
             return response()->json(['message' => 'No note requests found'], 404);
         }
-        
+
         $response = $noteRequests->map(function ($noteRequest) {
             return [
                 'id_note' => $noteRequest->id,
@@ -85,7 +85,7 @@ class NoteRequestController extends Controller
 
     public function listUserNoteRequests($userId)
     {
-        $noteRequests = NoteRequest::where('user_register', $userId)->with('materials')->get();
+        $noteRequests = NoteRequest::where('user_register', $userId)->with('materials')->orderBy('id', 'desc')->get();
 
         if ($noteRequests->isEmpty()) {
             return response()->json(['message' => 'No note requests found for this user'], 404);

@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
             ManagementSeeder::class,
             MaterialTableSeerder::class,
             SupplierSeeder::class,
+            RolStoreSeeder::class,
             // NoteEntrieSeeder::class,
             // NoteRequestSeeder::class,
         ]);

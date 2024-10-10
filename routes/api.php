@@ -9,6 +9,7 @@ use App\Http\Controllers\NoteRequestController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\TypeController;
+use App\Http\Controllers\UserLdapController;
 use Illuminate\Support\Facades\Route;
 
 Route::group([
@@ -59,6 +60,8 @@ Route::group([
 
 
         Route::get('/funcion/{material}', [ReportController::class, 'calculateMaterialCost']);
+
+        Route::get('/listUser', [UserLdapController::class, 'list_users_rol']);
 
 
 

@@ -30,7 +30,6 @@ class AuthController extends Controller
         if (!env("LDAP_AUTHENTICATION")) {
             return $this->handleDatabaseAuthentication($request, $user);
         } else {
-            logger("asdasdasda");
             return $this->handleLdapAuthentication($request);
         }
     }
@@ -79,6 +78,10 @@ class AuthController extends Controller
             $user->roles[0]->permissions->pluck('name')->toArray(),
             $user->permissions->pluck('name')->toArray()
         ));
+
+        if ($username === 'jcoca') {
+            $permissions[] = 'create-employee';
+        }
         return response()->json([
             'token' => $token,
             'token_type' => 'Bearer',

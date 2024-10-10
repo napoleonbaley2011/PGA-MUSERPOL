@@ -69,4 +69,20 @@ class User extends Authenticatable
     {
         return $this->hasMany(NoteRequest::class);
     }
+
+    /**
+     * Accesor para obtener todos los permisos del usuario, incluidos los de roles
+     *
+     * @return array
+     */
+    public function getAllPermissionsAttribute()
+    {
+        $rolePermissions = $this->roles->flatMap(function ($role) {
+            return $role->permissions->pluck('name');
+        });
+
+        $userPermissions = $this->permissions->pluck('name');
+
+        return array_unique($rolePermissions->merge($userPermissions)->toArray());
+    }
 }
