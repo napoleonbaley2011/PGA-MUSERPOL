@@ -31,6 +31,6 @@ class Employee extends Model
   }
   public function note_requests()
   {
-    return $this->hasMany(NoteRequest::class);
+    return $this->hasMany(NoteRequest::class, 'user_register');
   }
 }

@@ -62,6 +62,8 @@ Route::group([
         Route::get('/funcion/{material}', [ReportController::class, 'calculateMaterialCost']);
 
         Route::get('/listUser', [UserLdapController::class, 'list_users_rol']);
+        Route::get('/listEmployees/{user}', [UserLdapController::class, 'list_users']);
+        Route::get('/listEmployeesRequest', [UserLdapController::class, 'list_user_request']);
 
 
 
