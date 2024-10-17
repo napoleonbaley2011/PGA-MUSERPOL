@@ -63,7 +63,11 @@ Route::group([
 
         Route::get('/listUser', [UserLdapController::class, 'list_users_rol']);
         Route::get('/listEmployees/{user}', [UserLdapController::class, 'list_users']);
+        Route::get('/printListEmployee/{user}', [UserLdapController::class, 'list_users_print']);
+
+
         Route::get('/listEmployeesRequest', [UserLdapController::class, 'list_user_request']);
+        Route::get('/listRequestDirections/{direction}', [UserLdapController::class, 'list_users_direction']);
 
 
 

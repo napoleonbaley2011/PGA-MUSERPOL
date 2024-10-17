@@ -279,16 +279,6 @@ class NoteRequestController extends Controller
                     'position' => $position,
                     'materials' => $materials,
                 ];
-                $options = [
-                    'page-width' => '216',
-                    'page-height' => '279',
-                    'margin-top' => '4',
-                    'margin-bottom' => '4',
-                    'margin-left' => '5',
-                    'margin-right' => '5',
-                    'encoding' => 'UTF-8',
-                ];
-
                 $pdf = Pdf::loadView('Material_Request.MaterialRequest', $data);
                 return $pdf->download('formulario_solicitud_de_material_de_almacén.pdf');
             } else {
