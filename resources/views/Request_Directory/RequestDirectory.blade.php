@@ -95,6 +95,7 @@ $dns = new DNS2D();
     <hr class="m-b-10" style="margin-top: 0; padding-top: 0;">
     <div class="block">
         <div class="leading-tight text-sm text-center m-b-10">{{ $title }}</div>
+        <div class="leading-tight text-sm text-center m-b-10">{{ $date_on }} a {{ $date_end }}</div>
         <table class="table-code w-100 m-b-10 uppercase text-xs">
             <tbody>
                 <tr>
@@ -110,6 +111,7 @@ $dns = new DNS2D();
                     <th class="text-center bg-grey-darker text-white">DETALLE DEL MATERIAL</th>
                     <th class="text-center bg-grey-darker text-white border-left-white">TOTAL ENTREGADO</th>
                     <th class="text-center bg-grey-darker text-white border-left-white">UNIDAD DE MEDIDA</th>
+                    <th class="text-center bg-grey-darker text-white border-left-white">COSTO TOTAL</th>
                 </tr>
             </thead>
             <tbody class="table-striped">
@@ -118,6 +120,7 @@ $dns = new DNS2D();
                     <td class="text-rigth">{{ $material['material_name']}}</td>
                     <td class="text-center border-left-white">{{ $material['total_amount_requested']}}</td>
                     <td class="text-center border-left-white">{{ $material['unit_material']}}</td>
+                    <td class="text-center border-left-white">{{ $material['cost']}}</td>
                 </tr>
                 @endforeach
             </tbody>

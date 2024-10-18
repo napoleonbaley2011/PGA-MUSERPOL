@@ -12,6 +12,7 @@ use App\Models\Type;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class NoteEntriesController extends Controller
 {
@@ -113,6 +114,13 @@ class NoteEntriesController extends Controller
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
+
+                $averageCost = DB::table('entries_material')
+                    ->where('material_id', $materialData['id'])
+                    ->avg('cost_unit');
+
+                $material->average_cost = $averageCost;
+                $material->save();
             }
             return response()->json($noteEntrie, 201);
         } catch (\Illuminate\Validation\ValidationException $e) {

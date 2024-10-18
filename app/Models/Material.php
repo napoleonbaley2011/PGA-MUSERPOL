@@ -16,6 +16,7 @@ class Material extends Model
         'unit_material',
         'state',
         'stock',
+        'average_cost',
         'min',
         'barcode',
         'type',
@@ -29,7 +30,7 @@ class Material extends Model
 
     public function noteEntries()
     {
-        return $this->belongsToMany(Note_Entrie::class, 'entries_material', 'material_id', 'note_id')->withPivot('amount_entries', 'cost_unit', 'cost_total', 'name_material', 'request','delivery_date_entry')->withTimestamps();
+        return $this->belongsToMany(Note_Entrie::class, 'entries_material', 'material_id', 'note_id')->withPivot('amount_entries', 'cost_unit', 'cost_total', 'name_material', 'request', 'delivery_date_entry')->withTimestamps();
     }
 
     public function noteRequests()

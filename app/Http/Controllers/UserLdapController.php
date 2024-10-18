@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Employee;
+use App\Models\Management;
 use App\Models\NoteRequest;
 use App\Models\UserStore;
 use App\User;
@@ -42,13 +43,50 @@ class UserLdapController extends Controller
 
     public function list_users($userId)
     {
-        $noteRequests = NoteRequest::with(['employee', 'materials'])
+        $startDate = request()->query('start_date');
+        $endDate = request()->query('end_date');
+        $period = Management::latest()->first();
+
+
+        $query = NoteRequest::with(['employee', 'materials'])
             ->where('state', 'like', 'Aceptado')
-            ->where('user_register', $userId)
-            ->get();
+            ->where('user_register', $userId);
+        if ($startDate && $endDate) {
+            $query->whereBetween('received_on_date', [$startDate, $endDate])->where('management_id', '=', $period);
+        }
+
+        $noteRequests = $query->get();
 
         $employee = $noteRequests->first() ? $noteRequests->first()->employee : null;
         $materialsGrouped = [];
+
+        if ($employee) {
+            $id = $employee->id;
+            $cargo = DB::table('public.contracts as c')
+                ->join('public.positions as p', 'c.position_id', '=', 'p.id')
+                ->join('public.employees as e', 'c.employee_id', '=', 'e.id')
+                ->join('public.position_groups as pg', 'p.position_group_id', '=', 'pg.id')
+                ->select('c.employee_id', 'e.first_name', 'e.last_name', 'e.mothers_last_name', 'p.name as position_name', 'pg.name as group_name', 'pg.id as group_id')
+                ->where('c.active', true)
+                ->whereNull('c.deleted_at')
+                ->whereIn('pg.id', [7, 8, 9, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21])
+                ->where('c.employee_id', $id)
+                ->unionAll(
+                    DB::table('public.consultant_contracts as cc')
+                        ->join('public.consultant_positions as cp', 'cc.consultant_position_id', '=', 'cp.id')
+                        ->join('public.employees as e', 'cc.employee_id', '=', 'e.id')
+                        ->join('public.position_groups as pg', 'cp.position_group_id', '=', 'pg.id')
+                        ->select('cc.employee_id', 'e.first_name', 'e.last_name', 'e.mothers_last_name', 'cp.name as position_name', 'pg.name as group_name', 'pg.id as group_id')
+                        ->where('cc.active', true)
+                        ->whereNull('cc.deleted_at')
+                        ->whereIn('pg.id', [7, 8, 9, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21])
+                        ->where('cc.employee_id', $id)
+                )
+                ->get();
+            $positionName = isset($cargo[0]) ? $cargo[0]->position_name : null;
+        } else {
+            $positionName = null;
+        }
 
         foreach ($noteRequests as $noteRequest) {
             foreach ($noteRequest->materials as $material) {
@@ -64,6 +102,92 @@ class UserLdapController extends Controller
                         'amount_requested' => $material->pivot->amount_request,
                         'delivered_quantity' => $material->pivot->delivered_quantity,
                         'unit_material' => $material->unit_material,
+                        'cost' => $material->average_cost,
+                    ];
+                }
+            }
+        }
+
+        // Armamos el resultado final incluyendo el position_name en employee
+        $result = [
+            'employee' => [
+                'id' => $employee ? $employee->id : null,
+                'name' => $employee ? $employee->fullname : null,
+                'position_name' => $positionName,  // Incluimos el position_name aquí
+            ],
+            'materials' => array_values($materialsGrouped),
+        ];
+
+        return response()->json($result);
+    }
+
+
+    public function list_users_print($userId)
+    {
+        $startDate = request()->query('start_date');
+        $endDate = request()->query('end_date');
+
+        $period = Management::latest()->first();
+
+        $query = NoteRequest::with(['employee', 'materials'])
+            ->where('state', 'like', 'Aceptado')
+            ->where('user_register', $userId);
+        if ($startDate && $endDate) {
+            $query->whereBetween('received_on_date', [$startDate, $endDate])->where('management_id', '=', $period);
+        }
+
+        $noteRequests = $query->get();
+
+        $employee = $noteRequests->first() ? $noteRequests->first()->employee : null;
+        $materialsGrouped = [];
+
+
+        if ($employee) {
+            $id = $employee->id;
+
+            // Consulta para obtener el cargo del empleado
+            $cargo = DB::table('public.contracts as c')
+                ->join('public.positions as p', 'c.position_id', '=', 'p.id')
+                ->join('public.employees as e', 'c.employee_id', '=', 'e.id')
+                ->join('public.position_groups as pg', 'p.position_group_id', '=', 'pg.id')
+                ->select('c.employee_id', 'e.first_name', 'e.last_name', 'e.mothers_last_name', 'p.name as position_name', 'pg.name as group_name', 'pg.id as group_id')
+                ->where('c.active', true)
+                ->whereNull('c.deleted_at')
+                ->whereIn('pg.id', [7, 8, 9, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21])
+                ->where('c.employee_id', $id)
+                ->unionAll(
+                    DB::table('public.consultant_contracts as cc')
+                        ->join('public.consultant_positions as cp', 'cc.consultant_position_id', '=', 'cp.id')
+                        ->join('public.employees as e', 'cc.employee_id', '=', 'e.id')
+                        ->join('public.position_groups as pg', 'cp.position_group_id', '=', 'pg.id')
+                        ->select('cc.employee_id', 'e.first_name', 'e.last_name', 'e.mothers_last_name', 'cp.name as position_name', 'pg.name as group_name', 'pg.id as group_id')
+                        ->where('cc.active', true)
+                        ->whereNull('cc.deleted_at')
+                        ->whereIn('pg.id', [7, 8, 9, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21])
+                        ->where('cc.employee_id', $id)
+                )
+                ->get();
+
+            $positionName = isset($cargo[0]) ? $cargo[0]->position_name : null;
+        } else {
+            $positionName = null;
+        }
+
+        foreach ($noteRequests as $noteRequest) {
+            foreach ($noteRequest->materials as $material) {
+                $materialId = $material->id;
+
+                if (isset($materialsGrouped[$materialId])) {
+                    $materialsGrouped[$materialId]['amount_requested'] += $material->pivot->amount_request;
+                    $materialsGrouped[$materialId]['delivered_quantity'] += $material->pivot->delivered_quantity;
+                } else {
+                    $materialsGrouped[$materialId] = [
+                        'material_id' => $material->id,
+                        'name_material' => $material->pivot->name_material,
+                        'amount_requested' => $material->pivot->amount_request,
+                        'delivered_quantity' => $material->pivot->delivered_quantity,
+                        'unit_material' => $material->unit_material,
+                        'cost' => $material->average_cost,
                     ];
                 }
             }
@@ -72,44 +196,17 @@ class UserLdapController extends Controller
             'employee' => [
                 'id' => $employee ? $employee->id : null,
                 'name' => $employee ? $employee->fullname : null,
+                'position_name' => $positionName,
             ],
             'materials' => array_values($materialsGrouped),
         ];
 
-        logger($result);
-        return response()->json($result);
-    }
-
-    public function list_users_print($userId)
-    {
-        $name_employee = '';
-        $noteRequests = NoteRequest::with(['employee', 'materials'])
-            ->where('user_register', $userId)
-            ->get();
-        $result = $noteRequests->map(function ($noteRequest) use (&$name_employee) {
-            $name_employee = $noteRequest->employee->fullname;
-
-            return [
-                'employee' => [
-                    'id' => $noteRequest->employee->id,
-                    'name' => $noteRequest->employee->fullname,
-                ],
-                'note_id' => $noteRequest->id,
-                'materials' => $noteRequest->materials->map(function ($material) {
-                    return [
-                        'material_id' => $material->id,
-                        'name_material' => $material->pivot->name_material,
-                        'amount_requested' => $material->pivot->amount_request,
-                        'delivered_quantity' => $material->pivot->delivered_quantity,
-                        'unit_material' => $material->unit_material,
-                    ];
-                })
-            ];
-        });
-
         $data = [
             'title' => 'SALIDAS POR FUNCIONARIO',
-            'employee' => $name_employee,
+            'employee' => $employee->fullname,
+            'position' => $positionName,
+            'date_on' => $startDate,
+            'date_end' => $endDate,
             'date' => Carbon::now()->format('Y'),
             'result' => $result,
         ];
@@ -139,28 +236,32 @@ class UserLdapController extends Controller
 
     public function list_users_direction($id_direction)
     {
+        $startDate = request()->query('start_date');
+        $endDate = request()->query('end_date');
+
+        $period = Management::latest()->first();
         if ($id_direction == 1) {
-            //Direccion de Estrategias Sociales e Inversiones
+            // Dirección de Estrategias Sociales e Inversiones
             $name = "Dirección de Estrategias Sociales e Inversiones";
             $array = [7, 8, 9];
-        }
-        if ($id_direction == 2) {
-            //Direccion de Beneficios Economicos
+        } elseif ($id_direction == 2) {
+            // Dirección de Beneficios Económicos
             $name = "Dirección de Beneficios Económicos";
             $array = [11, 12, 13];
-        }
-        if ($id_direction == 3) {
-            //Direccion de Asuntos Administrativos
+        } elseif ($id_direction == 3) {
+            // Dirección de Asuntos Administrativos
             $name = "Dirección de Asuntos Administrativos";
             $array = [14, 15, 16, 17, 18];
-        }
-        if ($id_direction == 4) {
-            //Direccion de Asesoriamiento juridico adm y defensa inter
+        } elseif ($id_direction == 4) {
+            // Dirección de Asesoramiento jurídico administrativo y defensa interinstitucional
             $name = "Dirección de Asesoramiento jurídico administrativo y defensa interinstitucional";
             $array = [19, 20, 21];
+        } else {
+            // Manejo de caso donde id_direction no es válido
+            return response()->json(['error' => 'Invalid direction ID'], 400);
         }
 
-        logger($array);
+        // Obtener IDs de empleados activos
         $employeeIds = DB::table('public.contracts')
             ->join('public.positions', 'public.contracts.position_id', '=', 'public.positions.id')
             ->join('public.employees', 'public.contracts.employee_id', '=', 'public.employees.id')
@@ -183,27 +284,38 @@ class UserLdapController extends Controller
 
         $allEmployeeIds = array_merge($employeeIds, $consultantEmployeeIds);
 
-        $materials = NoteRequest::with('materials')
+        $query = NoteRequest::with('materials')
             ->whereIn('user_register', $allEmployeeIds)
-            ->whereNull('deleted_at')
-            ->get()
+            ->whereNull('deleted_at');
+            
+        if ($startDate) {
+            $query->where('received_on_date', '>=', $startDate)->where('management_id', '=', $period);
+        }
+        if ($endDate) {
+            $query->where('received_on_date', '<=', $endDate)->where('management_id', '=', $period);
+        }
+
+        $materials = $query->get()
             ->flatMap(function ($noteRequest) {
                 return $noteRequest->materials->map(function ($material) {
                     return [
                         'material_id' => $material->id,
                         'name' => $material->pivot->name_material,
                         'unit_material' => $material->unit_material,
-                        'amount_requested' => $material->pivot->amount_request,
+                        'amount_requested' => $material->pivot->delivered_quantity,
+                        'cost' => ($material->pivot->delivered_quantity * $material->average_cost),
                     ];
                 });
             })
             ->groupBy('material_id')
             ->map(function ($groupedMaterials) {
                 $totalAmount = $groupedMaterials->sum('amount_requested');
+                $cost_total = $groupedMaterials->sum('cost');
                 return [
                     'material_name' => $groupedMaterials->first()['name'],
                     'unit_material' => $groupedMaterials->first()['unit_material'],
                     'total_amount_requested' => $totalAmount,
+                    'cost' => $cost_total,
                 ];
             })
             ->values();
@@ -214,8 +326,14 @@ class UserLdapController extends Controller
         ]);
     }
 
+
     public function list_direction_print($id_direction)
     {
+        $startDate = request()->query('start_date');
+        $endDate = request()->query('end_date');
+
+        $period = Management::latest()->first();
+
         if ($id_direction == 1) {
             //Direccion de Estrategias Sociales e Inversiones
             $name = "Dirección de Estrategias Sociales e Inversiones";
@@ -260,27 +378,40 @@ class UserLdapController extends Controller
 
         $allEmployeeIds = array_merge($employeeIds, $consultantEmployeeIds);
 
-        $materials = NoteRequest::with('materials')
+        // Construir la consulta de materiales
+        $query = NoteRequest::with('materials')
             ->whereIn('user_register', $allEmployeeIds)
-            ->whereNull('deleted_at')
-            ->get()
+            ->whereNull('deleted_at');
+
+        // Filtrar por fechas si están presentes
+        if ($startDate) {
+            $query->where('received_on_date', '>=', $startDate)->where('management_id', '=', $period);
+        }
+        if ($endDate) {
+            $query->where('received_on_date', '<=', $endDate)->where('management_id', '=', $period);
+        }
+
+        $materials = $query->get()
             ->flatMap(function ($noteRequest) {
                 return $noteRequest->materials->map(function ($material) {
                     return [
                         'material_id' => $material->id,
                         'name' => $material->pivot->name_material,
                         'unit_material' => $material->unit_material,
-                        'amount_requested' => $material->pivot->amount_request,
+                        'amount_requested' => $material->pivot->delivered_quantity,
+                        'cost' => ($material->pivot->delivered_quantity * $material->average_cost),
                     ];
                 });
             })
             ->groupBy('material_id')
             ->map(function ($groupedMaterials) {
                 $totalAmount = $groupedMaterials->sum('amount_requested');
+                $cost_total = $groupedMaterials->sum('cost');
                 return [
                     'material_name' => $groupedMaterials->first()['name'],
                     'unit_material' => $groupedMaterials->first()['unit_material'],
                     'total_amount_requested' => $totalAmount,
+                    'cost' => $cost_total,
                 ];
             })
             ->values();
@@ -289,6 +420,8 @@ class UserLdapController extends Controller
         $data = [
             'title' => 'SALIDAS POR DIRECCIONES',
             'direction' => $name,
+            'date_on' => $startDate,
+            'date_end' => $endDate,
             'date' => Carbon::now()->format('Y'),
             'materials' => $materials
         ];

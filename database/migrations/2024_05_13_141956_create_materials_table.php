@@ -18,9 +18,10 @@ return new class extends Migration
             $table->string('unit_material');
             $table->string('state');
             $table->integer('stock')->nullable();
+            $table->decimal('average_cost', 10, 2)->default(0.00)->nullable();
             $table->integer('min')->nullable();
             $table->string('barcode')->nullable();
-            $table->enum('type',['Caja Chica', 'Almacen','Fondo de Avance']);
+            $table->enum('type', ['Caja Chica', 'Almacen', 'Fondo de Avance']);
             $table->foreignId('group_id')->constrained('groups')->onUpdate('cascade')->onDelete('restrict');
             $table->timestamps();
             $table->softDeletes();

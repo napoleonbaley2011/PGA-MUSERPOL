@@ -710,7 +710,7 @@ class ReportController extends Controller
                 foreach ($group->materials as $material) {
                     $deliveredSum = $material->noteRequests->sum('pivot.delivered_quantity') ?: 0;
                     $entrySum = $material->noteEntries->sum('pivot.amount_entries') ?: 0;
-                    $averageCost = number_format($material->noteEntries->avg('pivot.cost_unit'), 6) ?: 0;
+                    $averageCost = $material->average_cost ?: 0;
 
                     if ($entrySum > 0 && $averageCost > 0) {
                         $totalMaterialCost = ($entrySum - $deliveredSum) * $averageCost;
@@ -720,7 +720,6 @@ class ReportController extends Controller
 
                     $totalSum += ($entrySum - $deliveredSum);
                     $totalCost += $totalMaterialCost;
-                    logger($averageCost);
                 }
 
                 return [
@@ -731,7 +730,6 @@ class ReportController extends Controller
                     'latest_total_cost' => number_format($totalCost, 2)
                 ];
             });
-        logger('---------');
         $previousGroups = $previousManagement
             ? Group::whereHas('materials')
             ->with(['materials.noteRequests' => function ($query) use ($previousManagementId) {
@@ -747,7 +745,7 @@ class ReportController extends Controller
                 foreach ($group->materials as $material) {
                     $deliveredSum = $material->noteRequests->sum('pivot.delivered_quantity') ?: 0;
                     $entrySum = $material->noteEntries->sum('pivot.amount_entries') ?: 0;
-                    $averageCost = number_format($material->noteEntries->avg('pivot.cost_unit'), 6) ?: 0;
+                    $averageCost = $material->average_cost ?: 0;
 
                     if ($entrySum > 0 && $averageCost > 0) {
                         $totalMaterialCost = ($entrySum - $deliveredSum) * $averageCost;
@@ -829,7 +827,8 @@ class ReportController extends Controller
         $year = $latestManagement->name;
 
         $date_start = now()->format('Y-m-d');
-        logger($date_start);
+
+
         $newManagement = Management::create([
             'period_name' => now()->format('Y'),
             'start_date' => $date_start,
