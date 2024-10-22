@@ -56,6 +56,7 @@ Route::group([
         Route::get('/ReportPrintValuedPhysical', [ReportController::class, 'ValuedPhysical']);
         Route::get('/PrintValuedPhysical', [ReportController::class, 'PrintValuedPhysical']);
         Route::get('/ReportPrintValuedPhysicalConsolidated', [ReportController::class, 'consolidated_valued_physical_inventory']);
+        Route::get('/PrintValuedPhysicalConsolidated', [ReportController::class, 'print_consolidated_valued_physical_inventory']);
         Route::get('/ManagementClosure', [ReportController::class, 'management_closure']);
 
 
@@ -67,6 +68,8 @@ Route::group([
         Route::get('/listEmployeesRequest', [UserLdapController::class, 'list_user_request']);
         Route::get('/listRequestDirections/{direction}', [UserLdapController::class, 'list_users_direction']);
         Route::get('/printListRequestDirections/{direction}', [UserLdapController::class, 'list_direction_print']);
+
+        Route::get('/listManagement', [ReportController::class, 'list_mangement']);
 
 
 

@@ -138,9 +138,9 @@ $dns = new DNS2D();
                         <td class="text-left">{{ $material['nombre_material'] }}</td>
                         <td class="text-left">{{ $material['unidad_material'] }}</td>
                         @else
-                        <td class="text-left" style="border-bottom: none;"></td> <!-- Espacio vacío para el código sin borde inferior -->
-                        <td class="text-left" style="border-bottom: none;"></td> <!-- Espacio vacío para el detalle sin borde inferior -->
-                        <td class="text-left" style="border-bottom: none;"></td> <!-- Espacio vacío para la unidad sin borde inferior -->
+                        <td class="text-left" style="border-bottom: none;"></td>
+                        <td class="text-left" style="border-bottom: none;"></td>
+                        <td class="text-left" style="border-bottom: none;"></td>
                         @endif
                         <td class="text-center">{{ $cantidadEntradas }}</td>
                         <td class="text-right">{{ number_format($precioUnitario, 2) }}</td>
@@ -153,7 +153,6 @@ $dns = new DNS2D();
                         <td class="text-right">{{ number_format($cantidadRestante * $precioUnitario, 2) }}</td>
                     </tr>
                     @endforeach
-                    <!-- Añadir fila para línea superior del subtotal -->
                     <tr>
                         <td colspan="12" style="border-top: 1px solid black;"></td>
                     </tr>
