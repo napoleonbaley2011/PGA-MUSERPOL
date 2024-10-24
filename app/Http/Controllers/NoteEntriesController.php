@@ -81,7 +81,8 @@ class NoteEntriesController extends Controller
             $supplier_note = Supplier::find($request['id_supplier']);
             $period = Management::latest()->first();
 
-            $number_note = Note_Entrie::count() + 1;
+            // $number_note = Note_Entrie::count() + 1;
+            $number_note = $this->generateNoteNumber();
             $noteEntrie = Note_Entrie::create([
                 'number_note' => $number_note,
                 'invoice_number' => $validateData['invoice_number'],
@@ -194,5 +195,13 @@ class NoteEntriesController extends Controller
     {
         $noteEntry = Note_Entrie::factory()->create();
         return $noteEntry;
+    }
+
+
+    private function generateNoteNumber()
+    {
+        $latestManagement = Management::latest('id')->first();
+        $lastNote = Note_Entrie::where('management_id', $latestManagement->id)->orderBy('number_note', 'desc')->first();
+        return $lastNote ? $lastNote->number_note + 1 : 1;
     }
 }

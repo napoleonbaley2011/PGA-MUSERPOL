@@ -107,6 +107,7 @@ class NoteRequestController extends Controller
                 }),
             ];
         });
+        logger("sdad");
 
         return response()->json($response);
     }
@@ -165,7 +166,6 @@ class NoteRequestController extends Controller
 
                 foreach ($entries as $entry) {
                     $entry->observation = 'Inactivo';
-                    logger($entry);
                     $entryMaterialPivot = $entry->materials()->where('materials.id', $materialId)->first()->pivot;
                     $availableAmount = $entryMaterialPivot->request;
                     $costUnit = $entryMaterialPivot->cost_unit;

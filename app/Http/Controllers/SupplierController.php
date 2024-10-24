@@ -90,8 +90,6 @@ class SupplierController extends Controller
         ]);
 
         $supplier->update($validatedData);
-
-        //slogger($supplier);
         return response()->json(['data' => $supplier], 200);
     }
     public function destroy(Supplier $supplier)

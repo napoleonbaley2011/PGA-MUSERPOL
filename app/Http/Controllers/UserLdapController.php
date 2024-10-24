@@ -287,7 +287,7 @@ class UserLdapController extends Controller
         $query = NoteRequest::with('materials')
             ->whereIn('user_register', $allEmployeeIds)
             ->whereNull('deleted_at');
-            
+
         if ($startDate) {
             $query->where('received_on_date', '>=', $startDate)->where('management_id', '=', $period);
         }
@@ -354,8 +354,6 @@ class UserLdapController extends Controller
             $name = "Dirección de Asesoramiento jurídico administrativo y defensa interinstitucional";
             $array = [19, 20, 21];
         }
-
-        logger($array);
         $employeeIds = DB::table('public.contracts')
             ->join('public.positions', 'public.contracts.position_id', '=', 'public.positions.id')
             ->join('public.employees', 'public.contracts.employee_id', '=', 'public.employees.id')

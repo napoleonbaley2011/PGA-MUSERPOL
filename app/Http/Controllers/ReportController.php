@@ -26,9 +26,8 @@ class ReportController extends Controller
             $totalValuation = 0;
             $max_total = 0;
 
-            $entries = $material->noteEntries()->orderBy('delivery_date', 'asc')->get();
-            $requests = $material->noteRequests()->where('state', '=', 'Aceptado')->orderBy('received_on_date', 'asc')->get();
-
+            $entries = $material->noteEntries()->where('management_id', $latestManagement->id)->orderBy('delivery_date', 'asc')->get();
+            $requests = $material->noteRequests()->where('management_id', $latestManagement->id)->where('state', '=', 'Aceptado')->orderBy('received_on_date', 'asc')->get();
             $movements = [];
 
             foreach ($entries as $entry) {
@@ -142,6 +141,7 @@ class ReportController extends Controller
     {
 
         try {
+            $latestManagement = Management::latest('id')->first();
             $material = Material::findOrFail($materialId);
             $group_material = $material->group()->first()->name_group;
 
@@ -150,8 +150,8 @@ class ReportController extends Controller
             $totalValuation = 0;
             $max_total = 0;
 
-            $entries = $material->noteEntries()->orderBy('delivery_date', 'asc')->get();
-            $requests = $material->noteRequests()->where('state', '=', 'Aceptado')->orderBy('received_on_date', 'asc')->get();
+            $entries = $material->noteEntries()->where('management_id', $latestManagement->id)->orderBy('delivery_date', 'asc')->get();
+            $requests = $material->noteRequests()->where('management_id', $latestManagement->id)->where('state', '=', 'Aceptado')->orderBy('received_on_date', 'asc')->get();
 
             $movements = [];
 
@@ -885,7 +885,6 @@ class ReportController extends Controller
 
                     $totalSum += ($entrySum - $deliveredSum);
                     $totalCost += $totalMaterialCost;
-                    logger($averageCost);
                 }
 
                 return [
@@ -958,13 +957,24 @@ class ReportController extends Controller
     public function management_closure()
     {
         $latestManagement = Management::latest('id')->first();
+        logger($latestManagement->id);
+
+        $pendingNotes = NoteRequest::where('management_id', $latestManagement->id)
+            ->where('state', 'like', 'En Revision')
+            ->exists();
+
+        logger($pendingNotes);
+
+        if ($pendingNotes) {
+            return response()->json(['error' => 'No se puede cerrar la gestión. Existen notas de solicitud pendientes en estado "En Revisión".'], 400);
+        }
+
         $latestManagement->state = "Cerrado";
         $latestManagement->close_date = now()->format('Y-m-d');
         $latestManagement->save();
         $year = $latestManagement->name;
 
         $date_start = now()->format('Y-m-d');
-
 
         $newManagement = Management::create([
             'period_name' => now()->format('Y'),
@@ -979,9 +989,9 @@ class ReportController extends Controller
         }
 
         $noteEntrie = Note_Entrie::create([
-            'number_note' => $this->generateNoteNumber(),
+            'number_note' => 1,
             'invoice_number' => 'N/A',
-            'delivery_date' => now()->format('Y-m-d'),
+            'delivery_date' => $date_start,
             'state' => 'Creado',
             'invoice_auth' => 'N/A',
             'user_register' => '25',
@@ -998,6 +1008,7 @@ class ReportController extends Controller
                 'cost_unit' => $this->calculateMaterialCost($material),
                 'cost_total' => $material->stock * $this->calculateMaterialCost($material),
                 'name_material' => $material->description,
+                'delivery_date_entry' => $date_start,
                 'request' => $material->stock,
             ]);
         }
@@ -1024,8 +1035,6 @@ class ReportController extends Controller
         $averageCostUnit = $material->noteEntries()
             ->where('management_id', $previousManagement->id)
             ->avg('entries_material.cost_unit');
-
-        logger($averageCostUnit);
 
         return ($averageCostUnit);
     }
