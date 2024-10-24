@@ -419,7 +419,9 @@ class ReportController extends Controller
         $startDate = $request->input('start_date');
         $endDate = $request->input('end_date');
 
-        $notesQuery = Note_Entrie::with(['materials' => function ($query) {
+        $latestManagement = Management::latest('id')->first();
+
+        $notesQuery = Note_Entrie::where('management_id', $latestManagement->id)->with(['materials' => function ($query) {
             $query->select('materials.id', 'materials.description', 'materials.code_material', 'materials.group_id', 'materials.unit_material');
         }, 'materials.group' => function ($query) {
             $query->select('groups.id', 'groups.name_group', 'groups.code');
@@ -470,7 +472,7 @@ class ReportController extends Controller
             }
         });
 
-        $requestsQuery = NoteRequest::with(['materials' => function ($query) {
+        $requestsQuery = NoteRequest::where('management_id', $latestManagement->id)->with(['materials' => function ($query) {
             $query->select('materials.id', 'materials.code_material', 'materials.group_id');
         }, 'materials.group' => function ($query) {
             $query->select('groups.id', 'groups.name_group', 'groups.code');
