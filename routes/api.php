@@ -55,8 +55,8 @@ Route::group([
         Route::get('/PrintKardex/{material}', [ReportController::class, 'print_kardex']);
         Route::get('/ReportPrintValuedPhysical', [ReportController::class, 'ValuedPhysical']);
         Route::get('/PrintValuedPhysical', [ReportController::class, 'PrintValuedPhysical']);
-        Route::get('/ReportPrintValuedPhysicalConsolidated', [ReportController::class, 'consolidated_valued_physical_inventory']);
-        Route::get('/PrintValuedPhysicalConsolidated', [ReportController::class, 'print_consolidated_valued_physical_inventory']);
+        Route::get('/ReportPrintValuedPhysicalConsolidated/{management}', [ReportController::class, 'consolidated_valued_physical_inventory']);
+        Route::get('/PrintValuedPhysicalConsolidated/{management}', [ReportController::class, 'print_consolidated_valued_physical_inventory']);
         Route::get('/ManagementClosure', [ReportController::class, 'management_closure']);
 
 

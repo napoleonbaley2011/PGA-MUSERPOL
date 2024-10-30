@@ -552,7 +552,7 @@ class ReportController extends Controller
 
 
     public function PrintValuedPhysical(Request $request)
-    {   
+    {
 
         $startDate = $request->input('start_date');
         $endDate = $request->input('end_date');
@@ -691,18 +691,16 @@ class ReportController extends Controller
         return $pdf->stream('Inventario Fisico Valorado.pdf');
     }
 
-    public function consolidated_valued_physical_inventory()
+    public function consolidated_valued_physical_inventory($idManagement)
     {
-        // $latestManagement2 = Management::where('id', 1)->latest('id')->first();
-        // logger($latestManagement2);
-        $latestManagement = Management::latest('id')->first();
+        $latestManagement = Management::where('id', $idManagement)->latest('id')->first();
         $previousManagement = Management::where('id', '<', $latestManagement->id)->latest('id')->first();
 
         $latestManagementId = $latestManagement ? $latestManagement->id : null;
         $previousManagementId = $previousManagement ? $previousManagement->id : null;
 
         $latestGroups = Group::whereHas('materials')
-            ->with(['materials.noteRequests' => function ($query) use ($latestManagementId) {   
+            ->with(['materials.noteRequests' => function ($query) use ($latestManagementId) {
                 $query->where('management_id', $latestManagementId);
             }, 'materials.noteEntries' => function ($query) use ($latestManagementId) {
                 $query->where('management_id', $latestManagementId);
@@ -822,9 +820,10 @@ class ReportController extends Controller
         return response()->json($result);
     }
 
-    public function print_consolidated_valued_physical_inventory()
+    public function print_consolidated_valued_physical_inventory($idManagement)
     {
-        $latestManagement = Management::latest('id')->first();
+        logger($idManagement);
+        $latestManagement = Management::where('id', $idManagement)->latest('id')->first();
         $previousManagement = Management::where('id', '<', $latestManagement->id)->latest('id')->first();
 
         $latestManagementId = $latestManagement ? $latestManagement->id : null;

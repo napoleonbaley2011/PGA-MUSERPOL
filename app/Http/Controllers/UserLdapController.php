@@ -107,13 +107,11 @@ class UserLdapController extends Controller
                 }
             }
         }
-
-        // Armamos el resultado final incluyendo el position_name en employee
         $result = [
             'employee' => [
                 'id' => $employee ? $employee->id : null,
                 'name' => $employee ? $employee->fullname : null,
-                'position_name' => $positionName,  // Incluimos el position_name aquí
+                'position_name' => $positionName,
             ],
             'materials' => array_values($materialsGrouped),
         ];
@@ -144,8 +142,6 @@ class UserLdapController extends Controller
 
         if ($employee) {
             $id = $employee->id;
-
-            // Consulta para obtener el cargo del empleado
             $cargo = DB::table('public.contracts as c')
                 ->join('public.positions as p', 'c.position_id', '=', 'p.id')
                 ->join('public.employees as e', 'c.employee_id', '=', 'e.id')
@@ -231,8 +227,6 @@ class UserLdapController extends Controller
 
         return response()->json($result);
     }
-
-
 
     public function list_users_direction($id_direction)
     {
