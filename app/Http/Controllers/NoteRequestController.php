@@ -35,6 +35,7 @@ class NoteRequestController extends Controller
         }
 
         $query = NoteRequest::with(['materials', 'employee'])
+            ->where('type_id', 1)
             ->where('management_id', $lastManagement->id)
             ->orderBy('id', 'desc');
 
@@ -107,7 +108,6 @@ class NoteRequestController extends Controller
                 }),
             ];
         });
-        logger("sdad");
 
         return response()->json($response);
     }
@@ -122,6 +122,7 @@ class NoteRequestController extends Controller
             'state' => 'En Revision',
             'observation' => 'Ninguno',
             'user_register' => $request['id'],
+            'type_id' => 1,
             'request_date' => today()->toDateString(),
             'management_id' => $period->id,
         ]);
@@ -372,5 +373,71 @@ class NoteRequestController extends Controller
                 return "no funciona";
             }
         }
+    }
+
+    public function list_note_request_petty_cash(Request $request)
+    {
+        $page = max(0, $request->get('page', 0));
+        $limit = max(1, $request->get('limit', NoteRequest::count()));
+        $start = $page * $limit;
+        $state = $request->input('state', '');
+
+        $lastManagement = Management::orderByDesc('id')->first();
+
+        if (!$lastManagement) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'No se encontró ningún management.',
+            ], 404);
+        }
+
+        $query = NoteRequest::with(['materials', 'employee'])
+            ->where('type_id', 2)
+            ->where('management_id', $lastManagement->id)
+            ->orderBy('id', 'desc');
+
+        if ($state) {
+            $query->where('state', $state);
+        }
+
+        $totalNoteRequests = $query->count();
+        $noteRequests = $query->skip($start)->take($limit)->get();
+
+        if ($noteRequests->isEmpty()) {
+            return response()->json(['message' => 'No note requests found'], 404);
+        }
+
+        $response = $noteRequests->map(function ($noteRequest) {
+            return [
+                'id_note' => $noteRequest->id,
+                'number_note' => $noteRequest->number_note,
+                'state' => $noteRequest->state,
+                'request_date' => $noteRequest->request_date,
+                'observation' => $noteRequest->observation,
+                'employee' => $noteRequest->employee
+                    ? "{$noteRequest->employee->first_name} {$noteRequest->employee->last_name} {$noteRequest->employee->mothers_last_name}"
+                    : null,
+                'materials' => $noteRequest->materials->map(function ($material) {
+                    return [
+                        'id' => $material->id,
+                        'code_material' => $material->code_material,
+                        'description' => $material->description,
+                        'unit_material' => $material->unit_material,
+                        'stock' => $material->stock,
+                        'amount_request' => $material->pivot->amount_request,
+                        'delivered_quantity' => $material->pivot->delivered_quantity,
+                        'name_material' => $material->pivot->name_material,
+                    ];
+                }),
+            ];
+        });
+
+        return response()->json([
+            'status' => 'success',
+            'total' => $totalNoteRequests,
+            'page' => $page,
+            'last_page' => ceil($totalNoteRequests / $limit),
+            'data' => $response,
+        ], 200);
     }
 }

@@ -26,4 +26,8 @@ class NoteRequest extends Model
     {
         return $this->belongsTo(Management::class);
     }
+    public function type()
+    {
+        return $this->belongsTo(Type::class);
+    }
 }

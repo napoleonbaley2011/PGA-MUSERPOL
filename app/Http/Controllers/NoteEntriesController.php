@@ -7,6 +7,7 @@ use App\Models\Entrie_Material;
 use App\Models\Management;
 use App\Models\Material;
 use App\Models\Note_Entrie;
+use App\Models\NoteRequest;
 use App\Models\Supplier;
 use App\Models\Type;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -123,10 +124,36 @@ class NoteEntriesController extends Controller
                 $material->average_cost = $averageCost;
                 $material->save();
             }
+            logger($noteEntrie->materials()->get());
+            if ($noteEntrie->type_id == 2) {
+                $number_note = 0;
+                $noteRequest = NoteRequest::create([
+                    'number_note' => $number_note,
+                    'state' => 'En Revision',
+                    'observation' => 'Ninguno',
+                    'user_register' => $validateData['id_user'],
+                    'type_id' => 2,
+                    'request_date' => today()->toDateString(),
+                    'management_id' => $period->id,
+                ]);
+
+                foreach ($validateData['materials'] as $materialData) {
+                    $noteRequest->materials()->attach($materialData['id'], [
+                        'amount_request' => $materialData['quantity'],
+                        'name_material' => $materialData['name'],
+                        'delivered_quantity' => 0,
+                    ]);
+                }
+            }
             return response()->json($noteEntrie, 201);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json($e->errors(), 422);
         }
+    }
+
+    public function aprovedded_note(Request $request)
+    {
+
     }
 
 
@@ -203,5 +230,29 @@ class NoteEntriesController extends Controller
         $latestManagement = Management::latest('id')->first();
         $lastNote = Note_Entrie::where('management_id', $latestManagement->id)->orderBy('number_note', 'desc')->first();
         return $lastNote ? $lastNote->number_note + 1 : 1;
+    }
+
+
+    public function create_note_request(Request $request)
+    {
+        $number_note = 0;
+        $period = Management::latest()->first();
+
+        $noteRequest = NoteRequest::create([
+            'number_note' => $number_note,
+            'state' => 'En Revision',
+            'observation' => 'Ninguno',
+            'user_register' => $request['id'],
+            'request_date' => today()->toDateString(),
+            'management_id' => $period->id,
+        ]);
+        foreach ($request['material_request'] as $materialData) {
+            $noteRequest->materials()->attach($materialData['id'], [
+                'amount_request' => $materialData['quantity'],
+                'name_material' => $materialData['description'],
+                'delivered_quantity' => 0,
+            ]);
+        }
+        return response()->json($noteRequest->load('materials'), 201);
     }
 }

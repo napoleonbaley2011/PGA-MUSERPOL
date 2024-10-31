@@ -13,7 +13,13 @@ class Type extends Model
         'balance'
     ];
 
-    public function note_entries(){
+    public function note_entries()
+    {
         return $this->hasMany(Note_Entrie::class);
+    }
+
+    public function note_request()
+    {
+        return $this->hasMany(NoteRequest::class);
     }
 }
