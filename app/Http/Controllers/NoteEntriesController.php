@@ -38,6 +38,51 @@ class NoteEntriesController extends Controller
             $query->withPivot('amount_entries', 'cost_unit', 'cost_total')->withTrashed();
         }, 'supplier'])
             ->where('management_id', $lastManagement->id)
+            ->where('state', 'Aceptado')
+            ->orderByDesc('id');
+
+        if ($startDate && $endDate) {
+            $query->whereBetween('delivery_date', [$startDate, $endDate]);
+        } elseif ($startDate) {
+            $query->whereDate('delivery_date', '>=', $startDate);
+        } elseif ($endDate) {
+            $query->whereDate('delivery_date', '<=', $endDate);
+        }
+        $totalNotes = $query->count();
+        $notes = $query->skip($start)->take($limit)->get();
+
+        return response()->json([
+            'status' => 'success',
+            'total' => $totalNotes,
+            'page' => $page,
+            'last_page' => ceil($totalNotes / $limit),
+            'data' => $notes,
+        ], 200);
+    }
+
+
+    public function list_note_entries_revision(Request $request)
+    {
+        $page = max(0, $request->get('page', 0));
+        $limit = max(1, $request->get('limit', Note_Entrie::count()));
+        $start = $page * $limit;
+
+        $startDate = $request->input('start_date', '');
+        $endDate = $request->input('end_date', '');
+
+        $lastManagement = Management::orderByDesc('id')->first();
+
+        if (!$lastManagement) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'No se encontró ningún management.',
+            ], 404);
+        }
+        $query = Note_Entrie::with(['materials' => function ($query) {
+            $query->withPivot('amount_entries', 'cost_unit', 'cost_total')->withTrashed();
+        }, 'supplier'])
+            ->where('management_id', $lastManagement->id)
+            ->where('state', 'En Revision')
             ->orderByDesc('id');
 
         if ($startDate && $endDate) {
@@ -88,7 +133,7 @@ class NoteEntriesController extends Controller
                 'number_note' => $number_note,
                 'invoice_number' => $validateData['invoice_number'],
                 'delivery_date' => $validateData['date_entry'],
-                'state' => 'Creado',
+                'state' => 'En Revision',
                 'invoice_auth' => $validateData['authorization_number'],
                 'user_register' => $validateData['id_user'],
                 'observation' => 'Activo',
@@ -101,10 +146,10 @@ class NoteEntriesController extends Controller
 
             foreach ($validateData['materials'] as $materialData) {
 
-                $material = Material::find($materialData['id']);
-                $material->state = 'Habilitado';
-                $material->stock += $materialData['quantity'];
-                $material->save();
+                // $material = Material::find($materialData['id']);
+                // $material->state = 'Habilitado';
+                // $material->stock += $materialData['quantity'];
+                // $material->save();
 
                 $noteEntrie->materials()->attach($materialData['id'], [
                     'amount_entries' => $materialData['quantity'],
@@ -117,14 +162,13 @@ class NoteEntriesController extends Controller
                     'updated_at' => now(),
                 ]);
 
-                $averageCost = DB::table('entries_material')
-                    ->where('material_id', $materialData['id'])
-                    ->avg('cost_unit');
+                // $averageCost = DB::table('entries_material')
+                //     ->where('material_id', $materialData['id'])
+                //     ->avg('cost_unit');
 
-                $material->average_cost = $averageCost;
-                $material->save();
+                // $material->average_cost = $averageCost;
+                // $material->save();
             }
-            logger($noteEntrie->materials()->get());
             if ($noteEntrie->type_id == 2) {
                 $number_note = 0;
                 $noteRequest = NoteRequest::create([
