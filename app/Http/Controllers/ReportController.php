@@ -421,7 +421,7 @@ class ReportController extends Controller
 
         $latestManagement = Management::latest('id')->first();
 
-        $notesQuery = Note_Entrie::where('management_id', $latestManagement->id)->with(['materials' => function ($query) {
+        $notesQuery = Note_Entrie::where('management_id', $latestManagement->id)->where('state', 'Aceptado')->with(['materials' => function ($query) {
             $query->select('materials.id', 'materials.description', 'materials.code_material', 'materials.group_id', 'materials.unit_material');
         }, 'materials.group' => function ($query) {
             $query->select('groups.id', 'groups.name_group', 'groups.code');
@@ -557,7 +557,7 @@ class ReportController extends Controller
         $startDate = $request->input('start_date');
         $endDate = $request->input('end_date');
 
-        $notesQuery = Note_Entrie::with(['materials' => function ($query) {
+        $notesQuery = Note_Entrie::where('state', 'Aceptado')->with(['materials' => function ($query) {
             $query->select('materials.id', 'materials.description', 'materials.code_material', 'materials.group_id', 'materials.unit_material');
         }, 'materials.group' => function ($query) {
             $query->select('groups.id', 'groups.name_group', 'groups.code');
@@ -703,7 +703,7 @@ class ReportController extends Controller
             ->with(['materials.noteRequests' => function ($query) use ($latestManagementId) {
                 $query->where('management_id', $latestManagementId);
             }, 'materials.noteEntries' => function ($query) use ($latestManagementId) {
-                $query->where('management_id', $latestManagementId);
+                $query->where('management_id', $latestManagementId)->where('state', 'Aceptado');
             }])
             ->get()
             ->map(function ($group) {
@@ -966,9 +966,12 @@ class ReportController extends Controller
             ->where('state', 'like', 'En Revision')
             ->exists();
 
-        logger($pendingNotes);
+        $pendingNotes2 = Note_Entrie::where('management_id', $latestManagement->id)
+            ->where('state', 'like', 'En Revision')
+            ->exists();
 
-        if ($pendingNotes) {
+
+        if ($pendingNotes || $pendingNotes2) {
             return response()->json(['error' => 'No se puede cerrar la gestión. Existen notas de solicitud pendientes en estado "En Revisión".'], 400);
         }
 

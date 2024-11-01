@@ -156,7 +156,7 @@ class NoteRequestController extends Controller
                 $materialId = $material['id_material'];
                 $amountToDeliver = (int) $material['amount_to_deliver'];
                 $amount_to_be_reduced = $amountToDeliver;
-                $entries = Note_Entrie::whereHas('materials', function ($query) use ($materialId) {
+                $entries = Note_Entrie::where('state', 'Aceptado')->whereHas('materials', function ($query) use ($materialId) {
                     $query->where('materials.id', $materialId);
                 })
                     ->where('state', '!=', 'Eliminado')

@@ -197,7 +197,35 @@ class NoteEntriesController extends Controller
 
     public function aprovedded_note(Request $request)
     {
+        $note = Note_Entrie::with('materials')->find($request->noteEntryId);
 
+        $note->state = "Aceptado";
+        $note->save();
+
+        $materialsData = [];
+        foreach ($request->materials as $materialData) {
+            $material = Material::find($materialData['id_material']);
+            if ($material) {
+                $material->state = 'Habilitado';
+                $material->stock += $materialData['amount_entries'];
+                $material->save();
+                $averageCost = DB::table('entries_material')
+                    ->where('material_id', $materialData['id_material'])
+                    ->avg('cost_unit');
+
+                $material->average_cost = $averageCost;
+                $material->save();
+            }
+            $materialsData[$materialData['id_material']] = [
+                'amount_entries' => $materialData['amount_entries'],
+                'cost_unit' => $materialData['cost_unit'],
+                'cost_total' => $materialData['amount_entries'] * $materialData['cost_unit'],
+                'delivery_date_entry' => now(),
+            ];
+        }
+        $note->materials()->sync($materialsData);
+
+        return response()->json($note, 201);
     }
 
 
@@ -209,9 +237,7 @@ class NoteEntriesController extends Controller
 
         $materials = $note_entry->materials;
         foreach ($materials as $material) {
-            $material->stock -= $material->pivot->request;
-            $material->save();
-
+        
             $entryMaterial = Entrie_Material::where('note_id', $note_entry->id)->where('material_id', $material->id)->first();
 
             if ($entryMaterial) {
