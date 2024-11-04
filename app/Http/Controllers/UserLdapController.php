@@ -46,8 +46,6 @@ class UserLdapController extends Controller
         $username = $data[0]['username'] ?? null;
         $active = $data[0]['active'] ?? false;
         $role = $data[0]['roles'][0] ?? 'default_role';
-
-        logger($username);
         $request = DB::table('user_stores')->insert([]);
 
         if ($username) {
