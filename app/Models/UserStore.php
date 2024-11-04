@@ -10,9 +10,12 @@ class UserStore extends Model
 {
     use HasFactory, SoftDeletes;
 
+    protected $table = 'user_stores';
+
     protected $guarded = [
         'name_user',
-        'rol'
+        'rol',
+        'active',
     ];
 
     public function rolUsers()

@@ -24,11 +24,12 @@ class DatabaseSeeder extends Seeder
             MaterialTableSeerder::class,
             SupplierSeeder::class,
             RolStoreSeeder::class,
+            UserStoreSeeder::class,
             // NoteEntrieSeeder::class,
             // NoteRequestSeeder::class,
         ]);
 
-//        Note_Entrie::factory()->count(300)->create();
-//        NoteRequest::factory()->count(100)->create();
+        //        Note_Entrie::factory()->count(300)->create();
+        //        NoteRequest::factory()->count(100)->create();
     }
 }

@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name_user');
             $table->string('rol');
+            $table->boolean('active')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

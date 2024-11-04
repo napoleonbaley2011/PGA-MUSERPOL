@@ -19,26 +19,57 @@ class UserLdapController extends Controller
         $users = User::with(['roles.permissions', 'permissions'])
             ->where('active', '=', true)
             ->whereHas('roles', function ($query) {
-                $query->whereIn('name', ['almacenes', 'admin']);
+                $query->whereIn('name', ['almacenes']);
             })
             ->get();
-        $userstore = UserStore::all();
 
-        $userstoreNames = $userstore->pluck('name_user')->toArray();
+        $userStore = UserStore::all();
 
-        $filteredUsers = $users->filter(function ($user) use ($userstoreNames) {
-            return in_array($user->username, $userstoreNames);
-        });
+        $userStoreStatus = $userStore->pluck('active', 'name_user');
 
-        return response()->json($filteredUsers->map(function ($user) {
+        return response()->json($users->map(function ($user) use ($userStoreStatus) {
             return [
                 'id' => $user->id,
                 'username' => $user->username,
                 'position' => $user->position,
                 'roles' => $user->roles->pluck('name'),
                 'all_permissions' => $user->all_permissions,
+                'active' => $userStoreStatus->get($user->username, false),
             ];
         })->values());
+    }
+
+    public function list_user_new(Request $request)
+    {
+        $data = $request->all();
+
+        $username = $data[0]['username'] ?? null;
+        $active = $data[0]['active'] ?? false;
+        $role = $data[0]['roles'][0] ?? 'default_role';
+
+        logger($username);
+        $request = DB::table('user_stores')->insert([]);
+
+        if ($username) {
+            $userStore = DB::table('user_stores')->where('name_user', $username)->first();
+
+            if ($userStore) {
+                DB::table('user_stores')
+                    ->where('name_user', $username)
+                    ->update(['active' => $active]);
+                return true;
+            } else {
+                DB::table('user_stores')->insert([
+                    'name_user' => $username,
+                    'rol' => $role,
+                    'active' => $active,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+                return true;
+            }
+        }
+        return false;
     }
 
     public function list_users($userId)
