@@ -20,6 +20,11 @@ $dns = new DNS2D();
             margin: 1.5cm;
         }
 
+        body {
+            font-size: 12px;
+            /* Cambia según sea necesario */
+        }
+
         .scissors-rule {
             display: block;
             text-align: center;
@@ -61,6 +66,14 @@ $dns = new DNS2D();
 
         .p-l-5 {
             padding-left: 5px;
+        }
+
+        .text-xs {
+            font-size: 10px;
+        }
+
+        .text-xxxs {
+            font-size: 8px;
         }
     </style>
 </head>
@@ -146,6 +159,18 @@ $dns = new DNS2D();
                     <tr class="align-bottom text-center text-xxxs" style="height: 120px; vertical-align: bottom;">
                         <td class="rounded w-50">&nbsp;Recibi conforme</td>
                         <td class="rounded w-50">&nbsp;Entregado por</td>
+                    </tr>
+                </tbody>
+            </table>
+            <table class="table-info w-100 m-b-10 uppercase text-xs" style="margin-top: 10px;">
+                <thead>
+                    <tr>
+                        <th class="text-center bg-grey-darker text-white border-left-white">Comentario Encargado de Almacen</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="rounded w-50">{{ $comment }}</td>
                     </tr>
                 </tbody>
             </table>

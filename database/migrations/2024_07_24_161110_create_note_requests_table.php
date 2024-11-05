@@ -16,6 +16,7 @@ return new class extends Migration
             $table->integer('number_note')->nullable();
             $table->string('state');
             $table->string('observation')->nullable();
+            $table->string('observation_request')->nullable();
             $table->foreignId('user_register')->constrained('public.employees')->onDelete('restrict')->onUpdate('cascade');
             $table->date('request_date');
             $table->date('received_on_date')->nullable();

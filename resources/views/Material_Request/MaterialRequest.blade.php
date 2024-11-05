@@ -20,6 +20,11 @@ $dns = new DNS2D();
             margin: 1.5cm;
         }
 
+        body {
+            font-size: 12px;
+            /* Cambia según sea necesario */
+        }
+
         .scissors-rule {
             display: block;
             text-align: center;
@@ -61,6 +66,14 @@ $dns = new DNS2D();
 
         .p-l-5 {
             padding-left: 5px;
+        }
+
+        .text-xs {
+            font-size: 10px;
+        }
+
+        .text-xxxs {
+            font-size: 8px;
         }
     </style>
 </head>
@@ -121,6 +134,8 @@ $dns = new DNS2D();
                         <th class="text-center bg-grey-darker text-white border-left-white">DESCRIPCIÓN</th>
                         <th class="text-center bg-grey-darker text-white border-left-white">UNIDAD</th>
                         <th class="text-center bg-grey-darker text-white border-left-white">SOLICITADO</th>
+                        <th class="text-center bg-grey-darker text-white border-left-white">COSTO UNI</th>
+                        <th class="text-center bg-grey-darker text-white border-left-white">COSTO TOTAL</th>
                     </tr>
                 </thead>
                 <tbody class="table-striped">
@@ -130,13 +145,21 @@ $dns = new DNS2D();
                         <td class="text-center">{{$material['description']}}</td>
                         <td class="text-center">{{$material['unit_material']}}</td>
                         <td class="text-center">{{$material['amount_request']}}</td>
+                        <td class="text-center">{{$material['cost_unit']}}</td>
+                        <td class="text-center">{{ number_format($material['cost_unit'] * $material['amount_request'], 2) }}</td>
                     </tr>
                     @endforeach
+
+                    <!-- Nueva fila para la suma total -->
                     @for($i = sizeof($materials) + 1; $i <= $max_requests; $i++)
                         <tr>
-                        <td class="text-center" colspan="5">&nbsp;</td>
+                        <td class="text-center" colspan="6">&nbsp;</td>
                         </tr>
                         @endfor
+                        <tr>
+                            <td class="text-center" colspan="5"><strong>TOTAL</strong></td>
+                            <td class="text-center"><strong>{{ number_format($materials->sum(function($material) {return $material['cost_unit'] * $material['amount_request'];}), 2) }}</strong></td>
+                        </tr>
                 </tbody>
             </table>
             <table class="w-100" style="margin-top: 50px;">
@@ -145,6 +168,20 @@ $dns = new DNS2D();
                         <td class="rounded w-33">&nbsp;Solicitante</td>
                         <td class="rounded w-33">&nbsp;Inmediato Superior</td>
                         <td class="rounded w-33">&nbsp;Autorizado</td>
+                    </tr>
+                </tbody>
+            </table>
+            <table class="table-info w-100 m-b-10 uppercase text-xs" style="margin-top: 10px;">
+                <thead>
+                    <tr>
+                        <th class="text-center bg-grey-darker text-white border-left-white">Comentario Solicitante</th>
+                        <th class="text-center bg-grey-darker text-white border-left-white">Comentario Encargado de Almacen</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="rounded w-50">{{ $comment_request }}</td>
+                        <td class="rounded w-50">{{ $comment }}</td>
                     </tr>
                 </tbody>
             </table>

@@ -57,6 +57,7 @@ class NoteRequestController extends Controller
                 'state' => $noteRequest->state,
                 'request_date' => $noteRequest->request_date,
                 'observation' => $noteRequest->observation,
+                'observation_request' => $noteRequest->observation_request,
                 'employee' => $noteRequest->employee
                     ? "{$noteRequest->employee->first_name} {$noteRequest->employee->last_name} {$noteRequest->employee->mothers_last_name}"
                     : null,
@@ -114,6 +115,7 @@ class NoteRequestController extends Controller
 
     public function create_note_request(Request $request)
     {
+        logger($request);
         $number_note = 0;
         $period = Management::latest()->first();
 
@@ -122,6 +124,7 @@ class NoteRequestController extends Controller
             'state' => 'En Revision',
             'observation' => 'Ninguno',
             'user_register' => $request['id'],
+            'observation_request' => $request['comments'],
             'type_id' => 1,
             'request_date' => today()->toDateString(),
             'management_id' => $period->id,
@@ -216,6 +219,7 @@ class NoteRequestController extends Controller
 
     public function print_request(NoteRequest $note_request)
     {
+        logger($note_request);
         $user = User::where('employee_id', $note_request->user_register)->first();
         if ($user) {
             $position = $user->position;
@@ -225,6 +229,7 @@ class NoteRequestController extends Controller
                 return [
                     'description' => $material->description,
                     'unit_material' => $material->unit_material,
+                    'cost_unit' => $material->average_cost,
                     'amount_request' => $material->pivot->amount_request,
                 ];
             });
@@ -238,6 +243,8 @@ class NoteRequestController extends Controller
                     : null,
                 'position' => $user->position,
                 'materials' => $materials,
+                'comment_request' => $note_request->observation_request,
+                'comment' => $note_request->observation,
             ];
             $options = [
                 'page-width' => '216',
@@ -266,6 +273,7 @@ class NoteRequestController extends Controller
                     return [
                         'description' => $material->description,
                         'unit_material' => $material->unit_material,
+                        'cost_unit' => $material->average_cost,
                         'amount_request' => $material->pivot->amount_request,
                     ];
                 });
@@ -287,7 +295,6 @@ class NoteRequestController extends Controller
             }
         }
     }
-
 
     public function print_post_request(NoteRequest $note_request)
     {
@@ -314,6 +321,7 @@ class NoteRequestController extends Controller
                     : null,
                 'position' => $user->position,
                 'materials' => $materials,
+                'comment' => $note_request->observation,
             ];
             $options = [
                 'page-width' => '216',
