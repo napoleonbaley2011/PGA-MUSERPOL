@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use App\User;
 use App\Models\Employee;
 use App\Helpers\Ldap;
+use App\Models\UserStore;
 
 class AuthController extends Controller
 {
@@ -79,8 +80,12 @@ class AuthController extends Controller
             $user->permissions->pluck('name')->toArray()
         ));
 
-        if ($username === 'jcoca') {
-            $permissions[] = 'create-employee';
+        $usersActives = UserStore::where('active', true)->get();
+        foreach ($usersActives as $activeUser) {
+            if ($username === $activeUser->name_user) {
+                $permissions[] = 'create-employee';
+                break;
+            }
         }
         return response()->json([
             'token' => $token,

@@ -18,16 +18,16 @@ class UserLdapController extends Controller
     {
         $users = User::with(['roles.permissions', 'permissions'])
             ->where('active', '=', true)
+            ->where('username', 'not like', 'admin')
             ->whereHas('roles', function ($query) {
-                $query->whereIn('name', ['almacenes']);
+                $query->whereIn('name', ['almacenes', 'admin']);
             })
             ->get();
 
         $userStore = UserStore::all();
-
         $userStoreStatus = $userStore->pluck('active', 'name_user');
 
-        return response()->json($users->map(function ($user) use ($userStoreStatus) {
+        $sortedUsers = $users->map(function ($user) use ($userStoreStatus) {
             return [
                 'id' => $user->id,
                 'username' => $user->username,
@@ -36,7 +36,10 @@ class UserLdapController extends Controller
                 'all_permissions' => $user->all_permissions,
                 'active' => $userStoreStatus->get($user->username, false),
             ];
-        })->values());
+        })->sortByDesc('active')
+            ->values();
+
+        return response()->json($sortedUsers);
     }
 
     public function list_user_new(Request $request)
