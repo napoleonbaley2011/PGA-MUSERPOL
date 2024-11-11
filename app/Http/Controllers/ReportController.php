@@ -822,7 +822,7 @@ class ReportController extends Controller
 
     public function print_consolidated_valued_physical_inventory($idManagement)
     {
-        logger($idManagement);
+
         $latestManagement = Management::where('id', $idManagement)->latest('id')->first();
         $previousManagement = Management::where('id', '<', $latestManagement->id)->latest('id')->first();
 
@@ -960,7 +960,7 @@ class ReportController extends Controller
     public function management_closure()
     {
         $latestManagement = Management::latest('id')->first();
-        logger($latestManagement->id);
+
 
         $pendingNotes = NoteRequest::where('management_id', $latestManagement->id)
             ->where('state', 'like', 'En Revision')

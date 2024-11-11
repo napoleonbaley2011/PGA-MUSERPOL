@@ -47,7 +47,6 @@ class AuthController extends Controller
     private function handleLdapAuthentication($request)
     {
         $ldap = new Ldap();
-
         if ($ldap->connection && $ldap->verify_open_port()) {
             if ($ldap->bind($request['username'], $request['password'])) {
                 $user = User::where('username', $request['username'])->where('active', true)->first();

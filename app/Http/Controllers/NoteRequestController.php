@@ -115,7 +115,7 @@ class NoteRequestController extends Controller
 
     public function create_note_request(Request $request)
     {
-        logger($request);
+
         $number_note = 0;
         $period = Management::latest()->first();
 
@@ -219,7 +219,7 @@ class NoteRequestController extends Controller
 
     public function print_request(NoteRequest $note_request)
     {
-        logger($note_request);
+
         $user = User::where('employee_id', $note_request->user_register)->first();
         if ($user) {
             $position = $user->position;
@@ -261,12 +261,15 @@ class NoteRequestController extends Controller
         } else {
             $employee = Employee::where('id', $note_request->user_register)->first();
             if ($employee) {
-                $position = DB::select('select cp."name" 
-                                        from public.consultant_contracts cc, public.consultant_positions cp 
-                                        where cc.employee_id = ' . $note_request->user_register . '
-                                        and cp.id = cc.consultant_position_id 
-                                        order by cc.consultant_position_id desc 
-                                        limit 1');
+                $position = DB::selectOne('select cp."name" 
+                           from public.consultant_contracts cc, public.consultant_positions cp 
+                           where cc.employee_id = ? 
+                           and cp.id = cc.consultant_position_id 
+                           order by cc.consultant_position_id desc 
+                           limit 1', [$note_request->user_register]);
+
+                // Asigna solo el nombre de la posición o un valor nulo si no se encuentra
+                $positionName = $position ? $position->name : null;
                 $employee = Employee::find($note_request->user_register);
                 $file_title = 'SOLICITUD DE MATERIAL DE ALMACÉN';
                 $materials = $note_request->materials()->get()->map(function ($material) {
@@ -285,8 +288,10 @@ class NoteRequestController extends Controller
                     'employee' => $employee
                         ? "{$employee->first_name} {$employee->last_name} {$employee->mothers_last_name}"
                         : null,
-                    'position' => $position,
+                    'position' => $positionName,
                     'materials' => $materials,
+                    'comment_request' => $note_request->observation_request,
+                    'comment' => $note_request->observation,
                 ];
                 $pdf = Pdf::loadView('Material_Request.MaterialRequest', $data);
                 return $pdf->download('formulario_solicitud_de_material_de_almacén.pdf');
@@ -321,6 +326,7 @@ class NoteRequestController extends Controller
                     : null,
                 'position' => $user->position,
                 'materials' => $materials,
+                'comment_request' => $note_request->observation_request,
                 'comment' => $note_request->observation,
             ];
             $options = [
@@ -338,12 +344,15 @@ class NoteRequestController extends Controller
         } else {
             $employee = Employee::where('id', $note_request->user_register)->first();
             if ($employee) {
-                $position = DB::select('select cp."name" 
-                                        from public.consultant_contracts cc, public.consultant_positions cp 
-                                        where cc.employee_id = ' . $note_request->user_register . '
-                                        and cp.id = cc.consultant_position_id 
-                                        order by cc.consultant_position_id desc 
-                                        limit 1');
+                $position = DB::selectOne('select cp."name" 
+                           from public.consultant_contracts cc, public.consultant_positions cp 
+                           where cc.employee_id = ? 
+                           and cp.id = cc.consultant_position_id 
+                           order by cc.consultant_position_id desc 
+                           limit 1', [$note_request->user_register]);
+
+                // Asigna solo el nombre de la posición o un valor nulo si no se encuentra
+                $positionName = $position ? $position->name : null;
                 $employee = Employee::find($note_request->user_register);
                 $file_title = 'SOLICITUD DE MATERIAL DE ALMACÉN';
                 $materials = $note_request->materials()->get()->map(function ($material) {
@@ -362,8 +371,10 @@ class NoteRequestController extends Controller
                     'employee' => $employee
                         ? "{$employee->first_name} {$employee->last_name} {$employee->mothers_last_name}"
                         : null,
-                    'position' => $position[0]->name,
+                    'position' => $positionName,
                     'materials' => $materials,
+                    'comment_request' => $note_request->observation_request,
+                    'comment' => $note_request->observation,
                 ];
                 $options = [
                     'page-width' => '216',

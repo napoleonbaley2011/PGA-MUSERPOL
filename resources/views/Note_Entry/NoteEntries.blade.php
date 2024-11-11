@@ -74,7 +74,7 @@
 
     <div class="signature-container">
         <div class="signature-line"></div>
-        <p><strong>FIRMA ENCARGADO DE ALMACENES</strong></p>
+        <p><strong>FIRMA PROFESIONAL EN ACTIVOS FIJOS Y ALMACENES</strong></p>
     </div>
 
 </html>
