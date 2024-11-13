@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Material;
 use Illuminate\Http\Request;
 use App\Http\Requests\MaterialRequest;
+use App\Models\Group;
 
 class MaterialController extends Controller
 {
@@ -32,24 +33,66 @@ class MaterialController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(MaterialRequest $request)
+    public function store(Request $request)
     {
         try {
-            $data = $request->validated();
-            $material = new Material($data);
+            $data = $request->validate([
+                'group_id' => 'required|exists:groups,id',
+                'description' => 'required|string',
+                'unit_material' => 'required|string',
+                'barcode' => 'nullable|string',
+                'stock' => 'required|integer',
+                'state' => 'required|string',
+                'min' => 'required|integer',
+                'type' => 'required|string',
+            ]);
 
-            if ($material->save()) {
-                return response()->json([
-                    'status' => true,
-                    'message' => 'Material Creado Correctamente',
-                    'data' => $material,
-                ], 201);
-            } else {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'No se pudo crear el material.',
-                ], 403);
+            // Buscamos el grupo especificado
+            $group = Group::find($data['group_id']);
+
+            if (!$group) {
+                return response()->json(['error' => 'Group not found'], 404);
             }
+
+            // Obtenemos el último material que no sea de tipo "Caja Chica" y pertenece al grupo
+            $lastMaterial = Material::where('group_id', $data['group_id'])
+                ->where('type', '!=', 'Caja Chica')
+                ->orderBy('id', 'desc')
+                ->first();
+
+            // Determinamos el nuevo correlativo
+            if ($lastMaterial) {
+                // Extraemos el número del código de material anterior
+                $lastCorrelativo = (int) str_replace($group->code, '', $lastMaterial->code_material);
+
+                $newCorrelativo = $lastCorrelativo + 1;
+                logger($newCorrelativo);
+            } else {
+                // Si no hay materiales previos, comenzamos desde 1
+                $newCorrelativo = 1;
+            }
+
+            // Generamos el nuevo código de material
+            $newCodeMaterial = $group->code . $newCorrelativo;
+
+            $data['description'] = strtoupper($data['description']);
+
+            $material = Material::create([
+                'group_id' => $data['group_id'],
+                'code_material' => $newCodeMaterial,
+                'description' => $data['description'],
+                'unit_material' => $data['unit_material'],
+                'barcode' => $data['barcode'] ?? '0',
+                'stock' => $data['stock'],
+                'state' => $data['state'],
+                'min' => $data['min'],
+                'type' => $data['type'],
+            ]);
+
+            return response()->json([
+                'message' => 'Material created successfully',
+                'material' => $material,
+            ], 201);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,

@@ -9,6 +9,7 @@ use Tests\Helpers\AuthenticationHelper;
 
 uses(AuthenticationHelper::class, DatabaseTransactions::class);
 
+// Prueba para listar notas
 test('list_note_entries', function () {
     $this->authenticateUser();
     $response = $this->getJson('/api/auth/notes');
@@ -79,7 +80,7 @@ test('list_note_entries', function () {
         ]);
 });
 
-
+// Prueba para crear una nota
 test('create_note', function () {
     $this->authenticateUser();
     $supplier = Supplier::factory()->create();
@@ -109,10 +110,10 @@ test('create_note', function () {
             'number_note' => $number_note,
             'invoice_number' => $data['invoice_number'],
             'delivery_date' => $data['date_entry'],
-            'state' => 'Creado',
+            'state' => 'En Revision',
             'invoice_auth' => $data['authorization_number'],
             'user_register' => $data['id_user'],
-            'observation' => 'Creado recientemente',
+            'observation' => 'Activo',
             'type_id' => $data['type'],
             'suppliers_id' => $data['id_supplier'],
             'name_supplier' => $supplier->name,
@@ -127,4 +128,126 @@ test('create_note', function () {
             'name_material' => $material['name'],
         ]);
     }
+});
+
+// Prueba para listar notas en revisión
+test('list_note_entries_revision', function () {
+    $this->authenticateUser();
+    $response = $this->getJson('/api/auth/notesRevision');
+    $response->assertStatus(200)
+        ->assertJsonStructure([
+            'status',
+            'total',
+            'data' => [
+                '*' => [
+                    'id',
+                    'number_note',
+                    'state',
+                    'delivery_date',
+                    // otros campos relevantes
+                ]
+            ]
+        ]);
+});
+
+// Prueba para aprobar una nota
+// test('approve_note_entry', function () {
+//     $this->authenticateUser();
+//     $note = Note_Entrie::factory()->create(['state' => 'En Revision']);
+//     $materials = Material::factory()->count(2)->create();
+
+//     $materialsData = $materials->map(function ($material) {
+//         return [
+//             'id_material' => $material->id,
+//             'amount_entries' => 10,
+//             'cost_unit' => 15.5,
+//         ];
+//     })->toArray();
+
+//     $data = [
+//         'noteEntryId' => $note->id,
+//         'materials' => $materialsData,
+//     ];
+
+//     $response = $this->postJson('/api/auth/approvedNoteEntry', $data);
+//     $response->assertStatus(201)
+//         ->assertJson([
+//             'state' => 'Aceptado',
+//         ]);
+
+//     foreach ($materialsData as $material) {
+//         $this->assertDatabaseHas('materials', [
+//             'id' => $material['id_material'],
+//             'stock' => 10,
+//         ]);
+//     }
+// });
+test('approve_note_entry', function () {
+    $this->authenticateUser();
+    $note = Note_Entrie::factory()->create(['state' => 'En Revision']);
+    $materials = Material::factory()->count(2)->create();
+
+    $materialsData = $materials->map(function ($material) {
+        return [
+            'id_material' => $material->id,
+            'amount_entries' => 10, // cantidad que se agrega al stock actual
+            'cost_unit' => 15.5,
+        ];
+    })->toArray();
+
+    // Obtenemos los valores de stock iniciales para comparar luego
+    $initialStocks = $materials->pluck('stock', 'id');
+
+    $data = [
+        'noteEntryId' => $note->id,
+        'materials' => $materialsData,
+    ];
+
+    $response = $this->postJson('/api/auth/approvedNoteEntry', $data);
+    $response->assertStatus(201)
+        ->assertJson([
+            'state' => 'Aceptado',
+        ]);
+
+    // Comprobar que el stock se haya incrementado correctamente en lugar de ser exactamente igual a 10
+    foreach ($materialsData as $material) {
+        $expectedStock = $initialStocks[$material['id_material']] + $material['amount_entries'];
+        $this->assertDatabaseHas('materials', [
+            'id' => $material['id_material'],
+            'stock' => $expectedStock,
+        ]);
+    }
+});
+
+// Prueba para eliminar una nota
+test('delete_note_entry', function () {
+    $this->authenticateUser();
+    $note = Note_Entrie::factory()->create(['state' => 'En Revision']);
+
+    $response = $this->deleteJson("/api/auth/deleteNoteEntry/{$note->id}");
+
+    $response->assertStatus(200)
+        ->assertJson(['message' => 'Eliminado']);
+
+    $this->assertDatabaseHas('note_entries', [
+        'id' => $note->id,
+        'state' => 'Eliminado',
+        'observation' => 'Eliminado',
+    ]);
+});
+
+// Prueba para obtener una nota en PDF
+test('print_note_entry', function () {
+    $this->authenticateUser();
+    $note = Note_Entrie::factory()->create();
+    $material = Material::factory()->create();
+    $note->materials()->attach($material->id, [
+        'amount_entries' => 10,
+        'cost_unit' => 15.5,
+        'cost_total' => 155,
+    ]);
+
+    $response = $this->get("/api/auth/printNoteEntry/{$note->id}");
+    $response->assertStatus(200)
+        ->assertHeader('Content-Type', 'application/pdf');
 });

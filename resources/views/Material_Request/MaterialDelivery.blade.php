@@ -135,6 +135,8 @@ $dns = new DNS2D();
                         <th class="text-center bg-grey-darker text-white border-left-white">UNIDAD</th>
                         <th class="text-center bg-grey-darker text-white border-left-white">SOLICITADO</th>
                         <th class="text-center bg-grey-darker text-white border-left-white">ENTREGADO</th>
+                        <th class="text-center bg-grey-darker text-white border-left-white">COSTO UNI</th>
+                        <th class="text-center bg-grey-darker text-white border-left-white">COSTO TOTAL</th>
                     </tr>
                 </thead>
                 <tbody class="table-striped">
@@ -145,13 +147,19 @@ $dns = new DNS2D();
                         <td class="text-center">{{$material['unit_material']}}</td>
                         <td class="text-center">{{$material['amount_request']}}</td>
                         <td class="text-center">{{$material['delivered_quantity']}}</td>
+                        <td class="text-center">{{$material['cost_unit']}}</td>
+                        <td class="text-center">{{number_format($material['cost_unit'] * $material['delivered_quantity'], 2)}}</td>
                     </tr>
                     @endforeach
                     @for($i = sizeof($materials) + 1; $i <= $max_requests; $i++)
                         <tr>
-                        <td class="text-center" colspan="5">&nbsp;</td>
+                        <td class="text-center" colspan="7">&nbsp;</td>
                         </tr>
                         @endfor
+                        <tr>
+                            <td class="text-center" colspan="6"><strong>TOTAL</strong></td>
+                            <td class="text-center"><strong>{{ number_format($materials->sum(function($material) {return $material['cost_unit'] * $material['delivered_quantity'];}), 2) }}</strong></td>
+                        </tr>
                 </tbody>
             </table>
             <table class="w-100" style="margin-top: 50px;">

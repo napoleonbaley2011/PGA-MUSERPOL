@@ -139,7 +139,6 @@ class NoteRequestController extends Controller
         return response()->json($noteRequest->load('materials'), 201);
     }
 
-
     public function delivered_of_material(Request $request)
     {
         if ($request->status == "Approved") {
@@ -222,7 +221,30 @@ class NoteRequestController extends Controller
 
         $user = User::where('employee_id', $note_request->user_register)->first();
         if ($user) {
-            $position = $user->position;
+            // $position = $user->position;
+            $cargo = DB::table('public.contracts as c')
+                ->join('public.positions as p', 'c.position_id', '=', 'p.id')
+                ->join('public.employees as e', 'c.employee_id', '=', 'e.id')
+                ->join('public.position_groups as pg', 'p.position_group_id', '=', 'pg.id')
+                ->select('c.employee_id', 'e.first_name', 'e.last_name', 'e.mothers_last_name', 'p.name as position_name', 'pg.name as group_name', 'pg.id as group_id')
+                ->where('c.active', true)
+                ->whereNull('c.deleted_at')
+                ->whereIn('pg.id', [7, 8, 9, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21])
+                ->where('c.employee_id', $note_request->user_register)
+                ->unionAll(
+                    DB::table('public.consultant_contracts as cc')
+                        ->join('public.consultant_positions as cp', 'cc.consultant_position_id', '=', 'cp.id')
+                        ->join('public.employees as e', 'cc.employee_id', '=', 'e.id')
+                        ->join('public.position_groups as pg', 'cp.position_group_id', '=', 'pg.id')
+                        ->select('cc.employee_id', 'e.first_name', 'e.last_name', 'e.mothers_last_name', 'cp.name as position_name', 'pg.name as group_name', 'pg.id as group_id')
+                        ->where('cc.active', true)
+                        ->whereNull('cc.deleted_at')
+                        ->whereIn('pg.id', [7, 8, 9, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21])
+                        ->where('cc.employee_id', $note_request->user_register)
+                )
+                ->get();
+            $positionName = isset($cargo[0]) ? $cargo[0]->position_name : null;
+            logger($positionName);
             $employee = Employee::find($note_request->user_register);
             $file_title = 'SOLICITUD DE MATERIAL DE ALMACÉN';
             $materials = $note_request->materials()->get()->map(function ($material) {
@@ -241,7 +263,7 @@ class NoteRequestController extends Controller
                 'employee' => $employee
                     ? "{$employee->first_name} {$employee->last_name} {$employee->mothers_last_name}"
                     : null,
-                'position' => $user->position,
+                'position' => $positionName,
                 'materials' => $materials,
                 'comment_request' => $note_request->observation_request,
                 'comment' => $note_request->observation,
@@ -305,7 +327,29 @@ class NoteRequestController extends Controller
     {
         $user = User::where('employee_id', $note_request->user_register)->first();
         if ($user) {
-            $position = $user->position;
+            // $position = $user->position;
+            $cargo = DB::table('public.contracts as c')
+                ->join('public.positions as p', 'c.position_id', '=', 'p.id')
+                ->join('public.employees as e', 'c.employee_id', '=', 'e.id')
+                ->join('public.position_groups as pg', 'p.position_group_id', '=', 'pg.id')
+                ->select('c.employee_id', 'e.first_name', 'e.last_name', 'e.mothers_last_name', 'p.name as position_name', 'pg.name as group_name', 'pg.id as group_id')
+                ->where('c.active', true)
+                ->whereNull('c.deleted_at')
+                ->whereIn('pg.id', [7, 8, 9, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21])
+                ->where('c.employee_id', $note_request->user_register)
+                ->unionAll(
+                    DB::table('public.consultant_contracts as cc')
+                        ->join('public.consultant_positions as cp', 'cc.consultant_position_id', '=', 'cp.id')
+                        ->join('public.employees as e', 'cc.employee_id', '=', 'e.id')
+                        ->join('public.position_groups as pg', 'cp.position_group_id', '=', 'pg.id')
+                        ->select('cc.employee_id', 'e.first_name', 'e.last_name', 'e.mothers_last_name', 'cp.name as position_name', 'pg.name as group_name', 'pg.id as group_id')
+                        ->where('cc.active', true)
+                        ->whereNull('cc.deleted_at')
+                        ->whereIn('pg.id', [7, 8, 9, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21])
+                        ->where('cc.employee_id', $note_request->user_register)
+                )
+                ->get();
+            $positionName = isset($cargo[0]) ? $cargo[0]->position_name : null;
             $employee = Employee::find($note_request->user_register);
             $file_title = 'SOLICITUD DE MATERIAL DE ALMACÉN';
             $materials = $note_request->materials()->get()->map(function ($material) {
@@ -313,6 +357,7 @@ class NoteRequestController extends Controller
                     'description' => $material->description,
                     'unit_material' => $material->unit_material,
                     'amount_request' => $material->pivot->amount_request,
+                    'cost_unit' => $material->average_cost,
                     'delivered_quantity' => $material->pivot->delivered_quantity,
                 ];
             });
@@ -324,7 +369,7 @@ class NoteRequestController extends Controller
                 'employee' => $employee
                     ? "{$employee->first_name} {$employee->last_name} {$employee->mothers_last_name}"
                     : null,
-                'position' => $user->position,
+                'position' => $positionName,
                 'materials' => $materials,
                 'comment_request' => $note_request->observation_request,
                 'comment' => $note_request->observation,
@@ -360,6 +405,7 @@ class NoteRequestController extends Controller
                         'description' => $material->description,
                         'unit_material' => $material->unit_material,
                         'amount_request' => $material->pivot->amount_request,
+                        'cost_unit' => $material->average_cost,
                         'delivered_quantity' => $material->pivot->delivered_quantity,
                     ];
                 });

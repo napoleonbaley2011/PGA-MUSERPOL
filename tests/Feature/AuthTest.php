@@ -17,8 +17,8 @@ test('can login a user via database authentication', function () {
     // ]);
 
     $response = $this->postJson('/api/auth/login', [
-        'username' => 'aguisbert',
-        'password' => '123456',
+        'username' => 'wnavia',
+        'password' => 'Sesamo123.',
     ]);
 
     $response->assertStatus(200)
@@ -68,8 +68,8 @@ it('can login a user via LDAP authentication', function () {
     $this->instance(Ldap::class, $ldapMock);
 
     $response = $this->postJson('/api/auth/login', [
-        'username' => 'aguisbert',
-        'password' => '123456',
+        'username' => 'wnavia',
+        'password' => 'Sesamo123.',
     ]);
 
     $response->assertStatus(200)
@@ -104,7 +104,7 @@ test('fails login with wrong LDAP credentials', function () {
         ->assertJson([
             'message' => 'No autorizado',
             'errors' => [
-                'type' => ['Contraseña incorrecta'],
+                'type' => ['Usuario o contraseña incorrectos'],
             ],
         ]);
 });

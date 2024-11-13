@@ -10,6 +10,11 @@
             size: letter;
             margin: 1.5cm;
         }
+
+        /* Nueva clase para centrar contenido en celdas td */
+        .td-center {
+            text-align: center !important;
+        }
     </style>
 </head>
 
@@ -53,13 +58,13 @@
                 <tbody>
                     @foreach ($materials as $index => $material)
                     <tr>
-                        <td>{{ $index + 1 }}</td>
+                        <td class="td-center">{{ $index + 1 }}</td>
                         <td>{{ $material['code_material'] }}</td>
                         <td>{{ $material['unit_material'] }}</td>
                         <td>{{ $material['description'] }}</td>
-                        <td>{{ $material['amount_entries'] }}</td>
-                        <td>{{ $material['cost_unit'] }}</td>
-                        <td>{{ $material['cost_total'] }}</td>
+                        <td class="td-center">{{ $material['amount_entries'] }}</td>
+                        <td class="td-center">{{ $material['cost_unit'] }}</td>
+                        <td class="td-center">{{ $material['cost_total'] }}</td>
                     </tr>
                     @endforeach
                     <tr class="total-row">
