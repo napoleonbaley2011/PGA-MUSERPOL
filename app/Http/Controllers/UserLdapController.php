@@ -75,7 +75,6 @@ class UserLdapController extends Controller
 
     public function list_users($userId)
     {
-        logger($userId);
         $startDate = request()->query('start_date');
         $endDate = request()->query('end_date');
         $period = Management::latest()->first();

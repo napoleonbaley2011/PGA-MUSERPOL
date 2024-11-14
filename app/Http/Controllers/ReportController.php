@@ -14,134 +14,148 @@ use Illuminate\Support\Facades\DB;
 
 class ReportController extends Controller
 {
-    
-    // public function kardex($materialId)
-    // {
-    //     try {
-    //         $latestManagement = Management::latest('id')->first();
-    //         $material = Material::findOrFail($materialId);
-    //         $group_material = $material->group()->first()->name_group;
+
+    public function kardex($materialId)
+    {
+        try {
+            $endDate = request()->query('end_date');
+            $latestManagement = Management::latest('id')->first();
+            $material = Material::findOrFail($materialId);
+            $group_material = $material->group()->first()->name_group;
 
 
-    //         $kardex = [];
-    //         $stock = 0;
-    //         $totalValuation = 0;
-    //         $max_total = 0;
+            $kardex = [];
+            $stock = 0;
+            $totalValuation = 0;
+            $max_total = 0;
 
-    //         $entries = $material->noteEntries()->where('management_id', $latestManagement->id)->orderBy('delivery_date', 'asc')->get();
-    //         $requests = $material->noteRequests()->where('management_id', $latestManagement->id)->where('state', '=', 'Aceptado')->orderBy('received_on_date', 'asc')->get();
-    //         $movements = [];
-    //         foreach ($entries as $entry) {
-    //             $movements[] = [
-    //                 'date' => $entry->pivot->delivery_date_entry,
-    //                 'type' => 'entry',
-    //                 'description' => $entry->name_supplier . ' - Nota de Entrada #' . $entry->number_note,
-    //                 'quantity' => $entry->pivot->amount_entries,
-    //                 'cost_unit' => number_format($entry->pivot->cost_unit, 2),
-    //             ];
-    //         }
+            // $entries = $material->noteEntries()->where('management_id', $latestManagement->id)->orderBy('delivery_date', 'asc')->get();
+            // $requests = $material->noteRequests()->where('management_id', $latestManagement->id)->where('state', '=', 'Aceptado')->orderBy('received_on_date', 'asc')->get();
+            $entries = $material->noteEntries()
+                ->where('management_id', $latestManagement->id)
+                ->where('delivery_date', '<=', $endDate)
+                ->orderBy('delivery_date', 'asc')
+                ->get();
 
-    //         foreach ($requests as $request) {
-    //             $employee = Employee::find($request->user_register);
-    //             $movements[] = [
-    //                 'date' => $request->pivot->created_at,
-    //                 'type' => 'exit',
-    //                 'description' => ucwords(strtolower("{$employee->first_name} {$employee->last_name} {$employee->mothers_last_name}")) . ' - Solicitud #' . $request->id,
-    //                 'quantity' => $request->pivot->delivered_quantity,
-    //                 'cost_unit' => null,
-    //             ];
-    //         }
-    //         usort($movements, function ($a, $b) {
-    //             return strtotime($a['date']) - strtotime($b['date']);
-    //         });
-    //         logger($movements);
+            $requests = $material->noteRequests()
+                ->where('management_id', $latestManagement->id)
+                ->where('state', '=', 'Aceptado')
+                ->where('received_on_date', '<=', $endDate)
+                ->orderBy('received_on_date', 'asc')
+                ->get();
 
-    //         $fifoQueue = [];
+            $movements = [];
+            foreach ($entries as $entry) {
+                $movements[] = [
+                    'date' => $entry->pivot->delivery_date_entry,
+                    'type' => 'entry',
+                    'description' => $entry->name_supplier . ' - Nota de Entrada #' . $entry->number_note,
+                    'quantity' => $entry->pivot->amount_entries,
+                    'cost_unit' => number_format($entry->pivot->cost_unit, 2),
+                ];
+            }
 
-    //         foreach ($movements as $movement) {
-    //             if ($movement['type'] === 'entry') {
-    //                 $fifoQueue[] = [
-    //                     'quantity' => $movement['quantity'],
-    //                     'cost_unit' => $movement['cost_unit'],
-    //                 ];
-    //                 $stock += $movement['quantity'];
-    //                 $totalValuation = $movement['quantity'] * $movement['cost_unit'];
-    //                 $max_total = $max_total + $totalValuation;
+            foreach ($requests as $request) {
+                $employee = Employee::find($request->user_register);
+                $movements[] = [
+                    'date' => $request->pivot->created_at,
+                    'type' => 'exit',
+                    'description' => ucwords(strtolower("{$employee->first_name} {$employee->last_name} {$employee->mothers_last_name}")) . ' - Solicitud #' . $request->id,
+                    'quantity' => $request->pivot->delivered_quantity,
+                    'cost_unit' => null,
+                ];
+            }
+            usort($movements, function ($a, $b) {
+                return strtotime($a['date']) - strtotime($b['date']);
+            });
 
-    //                 $kardex[] = [
-    //                     'date' => date('Y-m-d', strtotime($movement['date'])),
-    //                     'description' => $movement['description'],
-    //                     'entradas' => $movement['quantity'],
-    //                     'salidas' => 0,
-    //                     'stock_fisico' => $stock,
-    //                     'cost_unit' => number_format($movement['cost_unit'], 2),
-    //                     'cost_total' => number_format($max_total, 2),
-    //                 ];
-    //             } elseif ($movement['type'] === 'exit') {
-    //                 $quantityToDeliver = $movement['quantity'];
-    //                 $costTotal = 0;
+            $fifoQueue = [];
 
-    //                 while ($quantityToDeliver > 0 && count($fifoQueue) > 0) {
-    //                     $fifoItem = array_shift($fifoQueue);
+            foreach ($movements as $movement) {
+                if ($movement['type'] === 'entry') {
+                    $fifoQueue[] = [
+                        'quantity' => $movement['quantity'],
+                        'cost_unit' => $movement['cost_unit'],
+                    ];
+                    $stock += $movement['quantity'];
+                    $totalValuation = $movement['quantity'] * $movement['cost_unit'];
+                    $max_total = $max_total + $totalValuation;
 
-    //                     if ($fifoItem['quantity'] > $quantityToDeliver) {
-    //                         $costUnit = $fifoItem['cost_unit'];
-    //                         $costTotal = $quantityToDeliver * $costUnit;
-    //                         $max_total = $max_total - $costTotal;
+                    $kardex[] = [
+                        'date' => date('Y-m-d', strtotime($movement['date'])),
+                        'description' => $movement['description'],
+                        'entradas' => $movement['quantity'],
+                        'salidas' => 0,
+                        'stock_fisico' => $stock,
+                        'cost_unit' => number_format($movement['cost_unit'], 2),
+                        'cost_total' => number_format($max_total, 2),
+                    ];
+                } elseif ($movement['type'] === 'exit') {
+                    $quantityToDeliver = $movement['quantity'];
+                    $costTotal = 0;
 
-    //                         $kardex[] = [
-    //                             'date' => date('Y-m-d', strtotime($movement['date'])),
-    //                             'description' => $movement['description'],
-    //                             'entradas' => 0,
-    //                             'salidas' => $quantityToDeliver,
-    //                             'stock_fisico' => $stock - $quantityToDeliver,
-    //                             'cost_unit' => number_format($costUnit, 2),
-    //                             'cost_total' => number_format($max_total, 2),
-    //                         ];
+                    while ($quantityToDeliver > 0 && count($fifoQueue) > 0) {
+                        $fifoItem = array_shift($fifoQueue);
 
-    //                         $fifoItem['quantity'] -= $quantityToDeliver;
-    //                         array_unshift($fifoQueue, $fifoItem);
-    //                         $stock -= $quantityToDeliver;
-    //                         $totalValuation = max($totalValuation - $costTotal, 0);
-    //                         $quantityToDeliver = 0;
-    //                     } else {
-    //                         $costUnit = $fifoItem['cost_unit'];
-    //                         $costTotal = $fifoItem['quantity'] * $costUnit;
-    //                         $max_total = $max_total - $costTotal;
+                        if ($fifoItem['quantity'] > $quantityToDeliver) {
+                            $costUnit = $fifoItem['cost_unit'];
+                            $costTotal = $quantityToDeliver * $costUnit;
+                            $max_total = $max_total - $costTotal;
 
-    //                         $kardex[] = [
-    //                             'date' => date('Y-m-d', strtotime($movement['date'])),
-    //                             'description' => $movement['description'],
-    //                             'entradas' => 0,
-    //                             'salidas' => $fifoItem['quantity'],
-    //                             'stock_fisico' => $stock - $fifoItem['quantity'],
-    //                             'cost_unit' => number_format($costUnit, 2),
-    //                             'cost_total' => number_format($max_total, 2),
-    //                         ];
+                            $kardex[] = [
+                                'date' => date('Y-m-d', strtotime($movement['date'])),
+                                'description' => $movement['description'],
+                                'entradas' => 0,
+                                'salidas' => $quantityToDeliver,
+                                'stock_fisico' => $stock - $quantityToDeliver,
+                                'cost_unit' => number_format($costUnit, 2),
+                                'cost_total' => number_format($max_total, 2),
+                            ];
 
-    //                         $quantityToDeliver -= $fifoItem['quantity'];
-    //                         $stock -= $fifoItem['quantity'];
-    //                         $totalValuation = max($totalValuation - $costTotal, 0);
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //         return response()->json([
-    //             'code_material' => $material->code_material,
-    //             'description' => $material->description,
-    //             'unit_material' => $material->unit_material,
-    //             'group' => strtoupper($group_material),
-    //             'kardex_de_existencia' => $kardex
-    //         ]);
-    //     } catch (\Exception $e) {
-    //         return response()->json(['error' => 'No se pudo generar el Kardex'], 500);
-    //     }
-    // }
+                            $fifoItem['quantity'] -= $quantityToDeliver;
+                            array_unshift($fifoQueue, $fifoItem);
+                            $stock -= $quantityToDeliver;
+                            $totalValuation = max($totalValuation - $costTotal, 0);
+                            $quantityToDeliver = 0;
+                        } else {
+                            $costUnit = $fifoItem['cost_unit'];
+                            $costTotal = $fifoItem['quantity'] * $costUnit;
+                            $max_total = $max_total - $costTotal;
+
+                            $kardex[] = [
+                                'date' => date('Y-m-d', strtotime($movement['date'])),
+                                'description' => $movement['description'],
+                                'entradas' => 0,
+                                'salidas' => $fifoItem['quantity'],
+                                'stock_fisico' => $stock - $fifoItem['quantity'],
+                                'cost_unit' => number_format($costUnit, 2),
+                                'cost_total' => number_format($max_total, 2),
+                            ];
+
+                            $quantityToDeliver -= $fifoItem['quantity'];
+                            $stock -= $fifoItem['quantity'];
+                            $totalValuation = max($totalValuation - $costTotal, 0);
+                        }
+                    }
+                }
+            }
+            return response()->json([
+                'code_material' => $material->code_material,
+                'description' => $material->description,
+                'unit_material' => $material->unit_material,
+                'group' => strtoupper($group_material),
+                'kardex_de_existencia' => $kardex
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'No se pudo generar el Kardex'], 500);
+        }
+    }
 
     public function print_kardex($materialId)
     {
 
         try {
+            $endDate = request()->query('end_date');
             $latestManagement = Management::latest('id')->first();
             $material = Material::findOrFail($materialId);
             $group_material = $material->group()->first()->name_group;
@@ -151,8 +165,18 @@ class ReportController extends Controller
             $totalValuation = 0;
             $max_total = 0;
 
-            $entries = $material->noteEntries()->where('management_id', $latestManagement->id)->orderBy('delivery_date', 'asc')->get();
-            $requests = $material->noteRequests()->where('management_id', $latestManagement->id)->where('state', '=', 'Aceptado')->orderBy('received_on_date', 'asc')->get();
+            $entries = $material->noteEntries()
+                ->where('management_id', $latestManagement->id)
+                ->where('delivery_date', '<=', $endDate)
+                ->orderBy('delivery_date', 'asc')
+                ->get();
+
+            $requests = $material->noteRequests()
+                ->where('management_id', $latestManagement->id)
+                ->where('state', '=', 'Aceptado')
+                ->where('received_on_date', '<=', $endDate)
+                ->orderBy('received_on_date', 'asc')
+                ->get();
 
             $movements = [];
 

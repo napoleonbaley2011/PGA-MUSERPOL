@@ -363,7 +363,7 @@ class MaterialTableSeerder extends Seeder
                 'stock' => 0,
                 'min' => 5,
                 'barcode' => '1033',
-                'type' => 'Caja Chica',
+                'type' => 'Caja Chica, Fondo de Avance, Reposiciones',
                 'group_id' => 1
             ],
             [
@@ -374,7 +374,7 @@ class MaterialTableSeerder extends Seeder
                 'stock' => 0,
                 'min' => 5,
                 'barcode' => '1034',
-                'type' => 'Caja Chica',
+                'type' => 'Caja Chica, Fondo de Avance, Reposiciones',
                 'group_id' => 2
             ],
             [
@@ -385,7 +385,7 @@ class MaterialTableSeerder extends Seeder
                 'stock' => 0,
                 'min' => 5,
                 'barcode' => '1035',
-                'type' => 'Caja Chica',
+                'type' => 'Caja Chica, Fondo de Avance, Reposiciones',
                 'group_id' => 3
             ],
             [
@@ -396,7 +396,7 @@ class MaterialTableSeerder extends Seeder
                 'stock' => 0,
                 'min' => 5,
                 'barcode' => '1036',
-                'type' => 'Caja Chica',
+                'type' => 'Caja Chica, Fondo de Avance, Reposiciones',
                 'group_id' => 4
             ],
             [
@@ -407,7 +407,7 @@ class MaterialTableSeerder extends Seeder
                 'stock' => 0,
                 'min' => 5,
                 'barcode' => '1037',
-                'type' => 'Caja Chica',
+                'type' => 'Caja Chica, Fondo de Avance, Reposiciones',
                 'group_id' => 5
             ],
             [
@@ -418,7 +418,7 @@ class MaterialTableSeerder extends Seeder
                 'stock' => 0,
                 'min' => 5,
                 'barcode' => '1038',
-                'type' => 'Caja Chica',
+                'type' => 'Caja Chica, Fondo de Avance, Reposiciones',
                 'group_id' => 6
             ],
             [
@@ -429,7 +429,7 @@ class MaterialTableSeerder extends Seeder
                 'stock' => 0,
                 'min' => 5,
                 'barcode' => '1039',
-                'type' => 'Caja Chica',
+                'type' => 'Caja Chica, Fondo de Avance, Reposiciones',
                 'group_id' => 7
             ],
             [
@@ -440,7 +440,7 @@ class MaterialTableSeerder extends Seeder
                 'stock' => 0,
                 'min' => 5,
                 'barcode' => '1040',
-                'type' => 'Caja Chica',
+                'type' => 'Caja Chica, Fondo de Avance, Reposiciones',
                 'group_id' => 8
             ],
             [
@@ -451,7 +451,7 @@ class MaterialTableSeerder extends Seeder
                 'stock' => 0,
                 'min' => 5,
                 'barcode' => '1041',
-                'type' => 'Caja Chica',
+                'type' => 'Caja Chica, Fondo de Avance, Reposiciones',
                 'group_id' => 9
             ],
             [
@@ -462,7 +462,7 @@ class MaterialTableSeerder extends Seeder
                 'stock' => 0,
                 'min' => 5,
                 'barcode' => '1042',
-                'type' => 'Caja Chica',
+                'type' => 'Caja Chica, Fondo de Avance, Reposiciones',
                 'group_id' => 10
             ],
             [
@@ -473,7 +473,7 @@ class MaterialTableSeerder extends Seeder
                 'stock' => 0,
                 'min' => 5,
                 'barcode' => '1043',
-                'type' => 'Caja Chica',
+                'type' => 'Caja Chica, Fondo de Avance, Reposiciones',
                 'group_id' => 11
             ],
             [
@@ -484,7 +484,7 @@ class MaterialTableSeerder extends Seeder
                 'stock' => 0,
                 'min' => 5,
                 'barcode' => '1044',
-                'type' => 'Caja Chica',
+                'type' => 'Caja Chica, Fondo de Avance, Reposiciones',
                 'group_id' => 12
             ],
             [
@@ -495,7 +495,7 @@ class MaterialTableSeerder extends Seeder
                 'stock' => 0,
                 'min' => 5,
                 'barcode' => '1045',
-                'type' => 'Caja Chica',
+                'type' => 'Caja Chica, Fondo de Avance, Reposiciones',
                 'group_id' => 13
             ],
             [
@@ -506,7 +506,7 @@ class MaterialTableSeerder extends Seeder
                 'stock' => 0,
                 'min' => 5,
                 'barcode' => '1046',
-                'type' => 'Caja Chica',
+                'type' => 'Caja Chica, Fondo de Avance, Reposiciones',
                 'group_id' => 14
             ],
             [
@@ -517,7 +517,7 @@ class MaterialTableSeerder extends Seeder
                 'stock' => 0,
                 'min' => 5,
                 'barcode' => '1047',
-                'type' => 'Caja Chica',
+                'type' => 'Caja Chica, Fondo de Avance, Reposiciones',
                 'group_id' => 15
             ],
             [
@@ -528,7 +528,7 @@ class MaterialTableSeerder extends Seeder
                 'stock' => 0,
                 'min' => 5,
                 'barcode' => '1048',
-                'type' => 'Caja Chica',
+                'type' => 'Caja Chica, Fondo de Avance, Reposiciones',
                 'group_id' => 16
             ],
             [
@@ -539,7 +539,7 @@ class MaterialTableSeerder extends Seeder
                 'stock' => 0,
                 'min' => 5,
                 'barcode' => '1049',
-                'type' => 'Caja Chica',
+                'type' => 'Caja Chica, Fondo de Avance, Reposiciones',
                 'group_id' => 17
             ],
             [
@@ -550,7 +550,7 @@ class MaterialTableSeerder extends Seeder
                 'stock' => 0,
                 'min' => 5,
                 'barcode' => '1050',
-                'type' => 'Caja Chica',
+                'type' => 'Caja Chica, Fondo de Avance, Reposiciones',
                 'group_id' => 18
             ],
             [
@@ -561,7 +561,7 @@ class MaterialTableSeerder extends Seeder
                 'stock' => 0,
                 'min' => 5,
                 'barcode' => '1051',
-                'type' => 'Caja Chica',
+                'type' => 'Caja Chica, Fondo de Avance, Reposiciones',
                 'group_id' => 19
             ],
             [
@@ -572,7 +572,7 @@ class MaterialTableSeerder extends Seeder
                 'stock' => 0,
                 'min' => 5,
                 'barcode' => '1052',
-                'type' => 'Caja Chica',
+                'type' => 'Caja Chica, Fondo de Avance, Reposiciones',
                 'group_id' => 20
             ],
             [
@@ -583,7 +583,7 @@ class MaterialTableSeerder extends Seeder
                 'stock' => 0,
                 'min' => 5,
                 'barcode' => '1053',
-                'type' => 'Caja Chica',
+                'type' => 'Caja Chica, Fondo de Avance, Reposiciones',
                 'group_id' => 21
             ],
             [
@@ -594,7 +594,7 @@ class MaterialTableSeerder extends Seeder
                 'stock' => 0,
                 'min' => 5,
                 'barcode' => '1054',
-                'type' => 'Caja Chica',
+                'type' => 'Caja Chica, Fondo de Avance, Reposiciones',
                 'group_id' => 22
             ],
             [
@@ -605,7 +605,7 @@ class MaterialTableSeerder extends Seeder
                 'stock' => 0,
                 'min' => 5,
                 'barcode' => '1055',
-                'type' => 'Caja Chica',
+                'type' => 'Caja Chica, Fondo de Avance, Reposiciones',
                 'group_id' => 23
             ],
             [
@@ -616,7 +616,7 @@ class MaterialTableSeerder extends Seeder
                 'stock' => 0,
                 'min' => 5,
                 'barcode' => '1056',
-                'type' => 'Caja Chica',
+                'type' => 'Caja Chica, Fondo de Avance, Reposiciones',
                 'group_id' => 24
             ],
             [
@@ -627,7 +627,7 @@ class MaterialTableSeerder extends Seeder
                 'stock' => 0,
                 'min' => 5,
                 'barcode' => '1057',
-                'type' => 'Caja Chica',
+                'type' => 'Caja Chica, Fondo de Avance, Reposiciones',
                 'group_id' => 25
             ],
             [
@@ -638,7 +638,7 @@ class MaterialTableSeerder extends Seeder
                 'stock' => 0,
                 'min' => 5,
                 'barcode' => '1058',
-                'type' => 'Caja Chica',
+                'type' => 'Caja Chica, Fondo de Avance, Reposiciones',
                 'group_id' => 26
             ],
             [
@@ -649,7 +649,7 @@ class MaterialTableSeerder extends Seeder
                 'stock' => 0,
                 'min' => 5,
                 'barcode' => '1059',
-                'type' => 'Caja Chica',
+                'type' => 'Caja Chica, Fondo de Avance, Reposiciones',
                 'group_id' => 27
             ],
             [
@@ -660,7 +660,7 @@ class MaterialTableSeerder extends Seeder
                 'stock' => 0,
                 'min' => 5,
                 'barcode' => '1060',
-                'type' => 'Caja Chica',
+                'type' => 'Caja Chica, Fondo de Avance, Reposiciones',
                 'group_id' => 28
             ],
             [
@@ -671,7 +671,7 @@ class MaterialTableSeerder extends Seeder
                 'stock' => 0,
                 'min' => 5,
                 'barcode' => '1061',
-                'type' => 'Caja Chica',
+                'type' => 'Caja Chica, Fondo de Avance, Reposiciones',
                 'group_id' => 29
             ],
             [
@@ -682,7 +682,7 @@ class MaterialTableSeerder extends Seeder
                 'stock' => 0,
                 'min' => 5,
                 'barcode' => '1062',
-                'type' => 'Caja Chica',
+                'type' => 'Caja Chica, Fondo de Avance, Reposiciones',
                 'group_id' => 30
             ],
             [
@@ -693,7 +693,7 @@ class MaterialTableSeerder extends Seeder
                 'stock' => 0,
                 'min' => 5,
                 'barcode' => '1063',
-                'type' => 'Caja Chica',
+                'type' => 'Caja Chica, Fondo de Avance, Reposiciones',
                 'group_id' => 31
             ]
 

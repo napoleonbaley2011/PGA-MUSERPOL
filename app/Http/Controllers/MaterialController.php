@@ -56,7 +56,7 @@ class MaterialController extends Controller
 
             // Obtenemos el último material que no sea de tipo "Caja Chica" y pertenece al grupo
             $lastMaterial = Material::where('group_id', $data['group_id'])
-                ->where('type', '!=', 'Caja Chica')
+                ->where('type', '!=', '%Caja Chica%')
                 ->orderBy('id', 'desc')
                 ->first();
 

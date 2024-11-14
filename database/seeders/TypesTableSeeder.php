@@ -20,15 +20,10 @@ class TypesTableSeeder extends Seeder
                 'state'=>1
             ],
             [
-                'name_type' => 'Caja Chica',
+                'name_type' => 'Caja Chica, Fonde en Avance, Reposiciones',
                 'balance' => 2000,
                 'state'=>1
             ],
-            [
-                'name_type' => 'Fondo de Avance',
-                'balance' => 0,
-                'state'=>1
-            ]
         ];
 
         foreach ($types as $typeData) {

@@ -28,7 +28,7 @@ class MaterialFactory extends Factory
             'stock' => $this->faker->randomElement(['0', '10']),
             'min' => $this->faker->randomElement(['5', '10']),
             'barcode' => $this->faker->numerify('####'),
-            'type' => $this->faker->randomElement(['Almacen', 'Caja Chica']),
+            'type' => $this->faker->randomElement(['Almacen', 'Caja Chica, Fondo en Avance, Reposiciones']),
             'group_id' => $group->id,
         ];
     }

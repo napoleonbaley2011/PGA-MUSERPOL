@@ -21,7 +21,7 @@ return new class extends Migration
             $table->decimal('average_cost', 10, 2)->default(0.00)->nullable();
             $table->integer('min')->nullable();
             $table->string('barcode')->nullable();
-            $table->enum('type', ['Caja Chica', 'Almacen', 'Fondo de Avance']);
+            $table->enum('type', ['Caja Chica, Fondo de Avance, Reposiciones', 'Almacen']);
             $table->foreignId('group_id')->constrained('groups')->onUpdate('cascade')->onDelete('restrict');
             $table->timestamps();
             $table->softDeletes();
