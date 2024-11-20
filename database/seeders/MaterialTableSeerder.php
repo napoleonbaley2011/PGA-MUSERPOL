@@ -685,17 +685,6 @@ class MaterialTableSeerder extends Seeder
                 'type' => 'Caja Chica, Fondo de Avance, Reposiciones',
                 'group_id' => 30
             ],
-            [
-                'code_material' => '399901',
-                'description' => '39990 - OTROS MATERIALES Y SUMINISTROS (CAJA CHICA)',
-                'unit_material' => 'GLOBAL',
-                'state' => 'Inhabilitado',
-                'stock' => 0,
-                'min' => 5,
-                'barcode' => '1063',
-                'type' => 'Caja Chica, Fondo de Avance, Reposiciones',
-                'group_id' => 31
-            ]
 
         ];
 

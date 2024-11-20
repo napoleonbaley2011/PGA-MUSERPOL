@@ -84,7 +84,7 @@ class UserLdapController extends Controller
             ->where('state', 'like', 'Aceptado')
             ->where('user_register', $userId);
         if ($startDate && $endDate) {
-            $query->whereBetween('received_on_date', [$startDate, $endDate])->where('management_id', '=', $period);
+            $query->whereBetween('received_on_date', [$startDate, $endDate])->where('management_id', '=', $period->id);
         }
 
         $noteRequests = $query->get();
@@ -156,13 +156,14 @@ class UserLdapController extends Controller
         $startDate = request()->query('start_date');
         $endDate = request()->query('end_date');
 
+        logger($endDate);
         $period = Management::latest()->first();
 
         $query = NoteRequest::with(['employee', 'materials'])
             ->where('state', 'like', 'Aceptado')
             ->where('user_register', $userId);
         if ($startDate && $endDate) {
-            $query->whereBetween('received_on_date', [$startDate, $endDate])->where('management_id', '=', $period);
+            $query->whereBetween('received_on_date', [$startDate, $endDate])->where('management_id', '=', $period->id);
         }
 
         $noteRequests = $query->get();

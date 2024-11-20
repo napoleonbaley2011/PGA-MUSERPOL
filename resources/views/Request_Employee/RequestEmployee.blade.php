@@ -120,16 +120,35 @@ $dns = new DNS2D();
                 </tr>
             </thead>
             <tbody class="table-striped">
+                @php
+                $totalAmountRequested = 0;
+                $totalDeliveredQuantity = 0;
+                $totalCost = 0;
+                @endphp
                 @foreach ($result['materials'] as $material)
+                @php
+                $totalAmountRequested += $material['amount_requested'];
+                $totalDeliveredQuantity += $material['delivered_quantity'];
+                $totalCost += $material['delivered_quantity'] * $material['cost'];
+                @endphp
                 <tr>
-                    <td class="text-center">{{ $material['name_material'] }}</td>
+                    <td class="text-left">{{ $material['name_material'] }}</td>
                     <td class="text-center border-left-white">{{ $material['amount_requested'] }}</td>
                     <td class="text-center border-left-white">{{ $material['delivered_quantity'] }}</td>
                     <td class="text-center border-left-white">{{ $material['unit_material'] }}</td>
-                    <td class="text-center border-left-white">{{ ($material['delivered_quantity'] *$material['cost'])}}</td>
+                    <td class="text-center border-left-white">{{ $material['delivered_quantity'] * $material['cost'] }}</td>
                 </tr>
                 @endforeach
+                <!-- Fila de sumatoria -->
+                <tr>
+                    <td class="text-center bg-grey-darker text-white">TOTAL</td>
+                    <td class="text-center bg-grey-darker text-white border-left-white">{{ $totalAmountRequested }}</td>
+                    <td class="text-center bg-grey-darker text-white border-left-white">{{ $totalDeliveredQuantity }}</td>
+                    <td class="text-center bg-grey-darker text-white border-left-white">-</td>
+                    <td class="text-center bg-grey-darker text-white border-left-white">{{ $totalCost }}</td>
+                </tr>
             </tbody>
+
         </table>
     </div>
     <table>

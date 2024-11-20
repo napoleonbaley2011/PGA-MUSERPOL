@@ -115,15 +115,31 @@ $dns = new DNS2D();
                 </tr>
             </thead>
             <tbody class="table-striped">
+                @php
+                $totalAmountRequested = 0;
+                $totalCost = 0;
+                @endphp
                 @foreach ($materials as $material)
+                @php
+                $totalAmountRequested += $material['total_amount_requested'];
+                $totalCost += $material['cost'];
+                @endphp
                 <tr>
-                    <td class="text-rigth">{{ $material['material_name']}}</td>
-                    <td class="text-center border-left-white">{{ $material['total_amount_requested']}}</td>
-                    <td class="text-center border-left-white">{{ $material['unit_material']}}</td>
-                    <td class="text-center border-left-white">{{ $material['cost']}}</td>
+                    <td class="text-left">{{ $material['material_name'] }}</td>
+                    <td class="text-center border-left-white">{{ $material['total_amount_requested'] }}</td>
+                    <td class="text-center border-left-white">{{ $material['unit_material'] }}</td>
+                    <td class="text-center border-left-white">{{ $material['cost'] }}</td>
                 </tr>
                 @endforeach
+                <!-- Fila de sumatoria -->
+                <tr>
+                    <td class="text-center bg-grey-darker text-white">TOTAL</td>
+                    <td class="text-center bg-grey-darker text-white border-left-white">{{ $totalAmountRequested }}</td>
+                    <td class="text-center bg-grey-darker text-white border-left-white">-</td>
+                    <td class="text-center bg-grey-darker text-white border-left-white">{{ $totalCost }}</td>
+                </tr>
             </tbody>
+
         </table>
     </div>
     <table>
