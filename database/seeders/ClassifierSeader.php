@@ -48,6 +48,46 @@ class ClassifierSeader extends Seeder
                 menor médico-quirúrgico, útiles de escritorio, de oficina y enseñanza, materiales eléctricos,
                 repuestos y accesorios en general.'
             ],
+            [
+                'code_class' => '21000',
+                'nombre' => 'Servicios Basicos',
+                'description' => 'Gastos por comunicaciones y servicios necesarios para el funcionamiento de las entidades, proporcionados o producidos por empresas del sector público o privado.'
+            ],
+
+            [
+                'code_class' => '22000',
+                'nombre' => 'Servicios de Transporte y Seguros',
+                'description' => 'Gastos por transporte de bienes al interior y exterior del país, transporte de personal, gastos de pasajes y viáticos para personal permanente, eventual y consultores individuales de línea, de acuerdo a contrato establecido, cuando corresponda, facultados por autoridad competente, así como gastos de instalación y retorno de funcionarios destinados en el exterior del país, incluye gastos por contratación de seguros.'
+            ],
+
+            [
+                'code_class' => '23000',
+                'nombre' => 'Alquileres',
+                'description' => 'Gastos por alquileres de bienes muebles, inmuebles, equipos, maquinarias y otros de propiedad de terceros.'
+            ],
+
+            [
+                'code_class' => '24000',
+                'nombre' => 'Instalación, Mantenimiento y Reparaciones',
+                'description' => 'Asignaciones destinadas a la conservación de edificios, equipos, vías de comunicación y otros bienes de uso público, así como la conversión de vehículos a gas natural, ejecutados por terceros.'
+            ],
+            [
+                'code_class' => '25000',
+                'nombre' => 'Servicios Profesionales y Comerciales',
+                'description' => 'Gastos por servicios profesionales de asesoramiento especializado, por estudios e investigaciones específicas de acuerdo a normativa vigente. Comprende pagos de comisiones y gastos bancarios, excepto los relativos a la deuda pública. Se incluyen gastos por servicios sanitarios, médicos, sociales, de lavandería, publicidad e imprenta, ejecutados por terceros.'
+            ],
+
+            [
+                'code_class' => '26000',
+                'nombre' => 'Otros Servicios No Personales',
+                'description' => 'Otros Servicios No Personales.'
+            ],
+
+            [
+                'code_class' => '85000',
+                'nombre' => 'Tasas, Multas y Otros',
+                'description' => 'Gastos realizados por las instituciones públicas destinados al pago por concepto de tasas, derechos, multas, intereses penales, acuotaciones y otros.'
+            ],
 
         ];
 

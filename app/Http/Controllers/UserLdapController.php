@@ -354,6 +354,8 @@ class UserLdapController extends Controller
         $startDate = request()->query('start_date');
         $endDate = request()->query('end_date');
 
+        logger($startDate);
+        logger($endDate);
         $period = Management::latest()->first();
         if (!$period) {
             return response()->json(['error' => 'No management period found'], 404);

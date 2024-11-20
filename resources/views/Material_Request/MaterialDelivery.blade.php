@@ -5,6 +5,9 @@ use \Milon\Barcode\DNS2D;
 $max_requests = 10;
 
 $dns = new DNS2D();
+$hasCajaChica = collect($materials)->contains(function ($material) {
+    return str_contains(strtoupper($material['description']), 'CAJA CHICA');
+});
 ?>
 
 <!DOCTYPE html>
@@ -165,8 +168,12 @@ $dns = new DNS2D();
             <table class="w-100" style="margin-top: 50px;">
                 <tbody>
                     <tr class="align-bottom text-center text-xxxs" style="height: 120px; vertical-align: bottom;">
+                        @if($hasCajaChica)
+                        <td class="rounded w-100">&nbsp;Entregado por:</td>
+                        @else
                         <td class="rounded w-50">&nbsp;Recibi conforme</td>
-                        <td class="rounded w-50">&nbsp;Entregado por</td>
+                        <td class="rounded w-50">&nbsp;Entregado por:</td>
+                        @endif
                     </tr>
                 </tbody>
             </table>

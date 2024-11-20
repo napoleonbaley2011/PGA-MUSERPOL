@@ -218,9 +218,146 @@ class GroupTableSeeder extends Seeder
                 'state' => 'active',
                 'classifier_id' => 5
             ],
+
+            [
+                'code' => '21100',
+                'name_group' => 'Comunicaciones',
+                'state' => 'active',
+                'classifier_id' => 6
+            ],
+            [
+                'code' => '21200',
+                'name_group' => 'Energía Eléctrica',
+                'state' => 'active',
+                'classifier_id' => 6
+            ],
+            [
+                'code' => '21300',
+                'name_group' => 'Agua',
+                'state' => 'active',
+                'classifier_id' => 6
+            ],
+            [
+                'code' => '21400',
+                'name_group' => 'Telefonía',
+                'state' => 'active',
+                'classifier_id' => 6
+            ],
+            [
+                'code' => '21500',
+                'name_group' => 'Gas Domiciliario',
+                'state' => 'active',
+                'classifier_id' => 6
+            ],
+            [
+                'code' => '21600',
+                'name_group' => 'Internet',
+                'state' => 'active',
+                'classifier_id' => 6
+            ],
+            [
+                'code' => '22300',
+                'name_group' => 'Fletes y Almacenamiento',
+                'state' => 'active',
+                'classifier_id' => 7
+            ],
+            [
+                'code' => '22500',
+                'name_group' => 'Seguros',
+                'state' => 'active',
+                'classifier_id' => 7
+            ],
+            [
+                'code' => '22600',
+                'name_group' => 'Transporte de Personal',
+                'state' => 'active',
+                'classifier_id' => 7
+            ],
+            [
+                'code' => '23200',
+                'name_group' => 'Alquiler de Equipos y Maquinarias',
+                'state' => 'active',
+                'classifier_id' => 8
+            ],
+            [
+                'code' => '23400',
+                'name_group' => 'Otros Alquileres',
+                'state' => 'active',
+                'classifier_id' => 8
+            ],
+            [
+                'code' => '24120',
+                'name_group' => 'Mantenimiento y Reparación de Vehículos, Maquinaria y Equipos',
+                'state' => 'active',
+                'classifier_id' => 9
+            ],
+            [
+                'code' => '24130',
+                'name_group' => 'Mantenimiento y Reparación de Muebles y Enseres',
+                'state' => 'active',
+                'classifier_id' => 9
+            ],
+            [
+                'code' => '24300',
+                'name_group' => 'Otros Gastos por Concepto de Instalación, Mantenimiento y Reparación',
+                'state' => 'active',
+                'classifier_id' => 9
+            ],
+            // Classifier ID 10
+            [
+                'code' => '25400',
+                'name_group' => 'Lavandería, Limpieza e Higiene',
+                'state' => 'active',
+                'classifier_id' => 10
+            ],
+            [
+                'code' => '25500',
+                'name_group' => 'Publicidad',
+                'state' => 'active',
+                'classifier_id' => 10
+            ],
+            [
+                'code' => '25600',
+                'name_group' => 'Servicios de Imprenta, Fotocopiado y Fotográficos',
+                'state' => 'active',
+                'classifier_id' => 10
+            ],
+            [
+                'code' => '25900',
+                'name_group' => 'Servicios Manuales',
+                'state' => 'active',
+                'classifier_id' => 10
+            ],
+            // Classifier ID 11
+            [
+                'code' => '26200',
+                'name_group' => 'Gastos Judiciales',
+                'state' => 'active',
+                'classifier_id' => 11
+            ],
+            [
+                'code' => '26990',
+                'name_group' => 'Otros',
+                'state' => 'active',
+                'classifier_id' => 11
+            ],
+            // Classifier ID 12
+            [
+                'code' => '85100',
+                'name_group' => 'Tasas',
+                'state' => 'active',
+                'classifier_id' => 12
+            ],
+            [
+                'code' => '86100',
+                'name_group' => 'Patentes',
+                'state' => 'active',
+                'classifier_id' => 12
+            ],
+
         ];
 
-        foreach ($groups as $groupData){
+        foreach ($groups as $groupData) {
             Group::firstOrCreate(
                 ['code' => $groupData['code']],
                 ['name_group' => $groupData['name_group'], 'state' => $groupData['state'], 'classifier_id' => $groupData['classifier_id']]
