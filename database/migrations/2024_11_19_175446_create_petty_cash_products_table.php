@@ -19,7 +19,6 @@ return new class extends Migration
             $table->integer('number_invoice')->nullable();
             $table->string('name_product');
             $table->string('supplier')->nullable();
-            $table->string('cost_object')->nullable();
             $table->string('costDetails')->nullable();
             $table->string('costFinal')->nullable();
             $table->softDeletes();
@@ -32,6 +31,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('petty_cash__products');
+        Schema::dropIfExists('petty_cash_products');
     }
 };

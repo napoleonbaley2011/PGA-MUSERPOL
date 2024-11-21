@@ -6,6 +6,7 @@ use App\Http\Controllers\LdapController;
 use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\NoteEntriesController;
 use App\Http\Controllers\NoteRequestController;
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\TypeController;
@@ -20,8 +21,11 @@ Route::group([
     Route::post('/login', [App\Http\Controllers\Auth\AuthController::class, 'login']);
     Route::get('/index', [App\Http\Controllers\Auth\AuthController::class, 'index']);
     Route::get('/pva_list_material', [MaterialController::class, 'list_materials_pva']);
-
     Route::get('/list_ldap', [LdapController::class, 'list_persons_ldap']);
+
+    Route::get('/list_product', [ProductController::class, 'list_petty_cash']);
+    Route::post('/createproduct', [ProductController::class, 'create_product']);
+
     Route::get('/prueba_note', [NoteEntriesController::class, 'services_note']);
     //Notas de Solicitud
     Route::get('/noteRequest', [NoteRequestController::class, 'list_note_request']);

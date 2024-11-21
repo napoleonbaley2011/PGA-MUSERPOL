@@ -15,7 +15,7 @@ class PettyCash extends Model
 
     public function products()
     {
-        return $this->belongsToMany(Product::class, 'petty_cash_products', 'petty_cash_id', 'product_id')->withPivot('amount_request', 'number_invoice', 'name_product', 'supplier', 'cost_object', 'costDetails', 'costFinal')->withTimestamps();
+        return $this->belongsToMany(Product::class, 'petty_cash_products', 'petty_cash_id', 'product_id')->withPivot('amount_request', 'number_invoice', 'name_product', 'supplier', 'costDetails', 'costFinal')->withTimestamps();
     }
     public function employee()
     {

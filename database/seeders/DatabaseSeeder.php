@@ -25,6 +25,7 @@ class DatabaseSeeder extends Seeder
             SupplierSeeder::class,
             RolStoreSeeder::class,
             UserStoreSeeder::class,
+            ProductSeeder::class,
             // NoteEntrieSeeder::class,
             // NoteRequestSeeder::class,
         ]);
