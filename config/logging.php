@@ -89,7 +89,7 @@ return [
             'handler_with' => [
                 'host' => env('PAPERTRAIL_URL'),
                 'port' => env('PAPERTRAIL_PORT'),
-                'connectionString' => 'tls://'.env('PAPERTRAIL_URL').':'.env('PAPERTRAIL_PORT'),
+                'connectionString' => 'tls://' . env('PAPERTRAIL_URL') . ':' . env('PAPERTRAIL_PORT'),
             ],
             'processors' => [PsrLogMessageProcessor::class],
         ],
@@ -127,6 +127,27 @@ return [
             'path' => storage_path('logs/laravel.log'),
         ],
 
+        'ip_logs' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/ip_logs.log'),
+            'level' => 'info',
+        ],
+        'critical_errors' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/critical_errors.log'),
+            'level' => 'critical',
+        ],
+
+        'db_queries' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/db_queries.log'),
+            'level' => 'debug',
+        ],
+        'http_logs' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/http_logs.log'),
+            'level' => 'info',
+        ],
     ],
 
 ];
