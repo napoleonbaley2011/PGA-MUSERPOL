@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
             RolStoreSeeder::class,
             UserStoreSeeder::class,
             ProductSeeder::class,
+            FundSeeder::class,
             // NoteEntrieSeeder::class,
             // NoteRequestSeeder::class,
         ]);

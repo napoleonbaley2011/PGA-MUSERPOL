@@ -21,6 +21,12 @@ class GroupTableSeeder extends Seeder
                 'classifier_id' => 1
             ],
             [
+                'code' => '31120',
+                'name_group' => 'Gastos por Alimentación y Otros Similares',
+                'state' => 'active',
+                'classifier_id' => 1
+            ],
+            [
                 'code' => '31200',
                 'name_group' => ' Alimentos para Animales',
                 'state' => 'active',
@@ -136,6 +142,12 @@ class GroupTableSeeder extends Seeder
             ],
             [
                 'code' => '34600',
+                'name_group' => 'Productos Metálicos',
+                'state' => 'active',
+                'classifier_id' => 4
+            ],
+            [
+                'code' => '34700',
                 'name_group' => 'Minerales',
                 'state' => 'active',
                 'classifier_id' => 4

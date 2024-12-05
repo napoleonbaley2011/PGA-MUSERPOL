@@ -244,7 +244,6 @@ class NoteRequestController extends Controller
                 )
                 ->get();
             $positionName = isset($cargo[0]) ? $cargo[0]->position_name : null;
-            logger($positionName);
             $employee = Employee::find($note_request->user_register);
             $file_title = 'SOLICITUD DE MATERIAL DE ALMACÉN';
             $materials = $note_request->materials()->get()->map(function ($material) {

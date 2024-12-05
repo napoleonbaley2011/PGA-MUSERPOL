@@ -90,7 +90,6 @@ class MaterialController extends Controller
             ]);
 
             return response()->json([
-                'message' => 'Material created successfully',
                 'material' => $material,
             ], 201);
         } catch (\Exception $e) {

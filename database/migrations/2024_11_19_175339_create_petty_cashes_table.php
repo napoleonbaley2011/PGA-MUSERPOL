@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('state');
             $table->foreignId('user_register')->constrained('public.employees')->onDelete('restrict')->onUpdate('cascade');
             $table->foreignId('management_id')->constrained('management')->onDelete('restrict')->onUpdate('cascade');
+            $table->foreignId('fund_id')->constrained('funds')->onDelete('restrict')->onUpdate('cascade');
             $table->timestamps();
             $table->softDeletes();
         });

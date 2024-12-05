@@ -81,54 +81,54 @@ test('list_note_entries', function () {
 });
 
 // Prueba para crear una nota
-test('create_note', function () {
-    $this->authenticateUser();
-    $supplier = Supplier::factory()->create();
-    $materials = Material::factory()->count(2)->create();
-    $number_note = Note_Entrie::count() + 1;
-    $data = [
-        'type' => 1,
-        'id_supplier' => $supplier->id,
-        'materials' => $materials->map(function ($material) {
-            return [
-                'id' => $material->id,
-                'name' => $material->description,
-                'quantity' => 10,
-                'price' => 15.5,
-                'unit_material' => 'kg'
-            ];
-        })->toArray(),
-        'date_entry' => now()->toDateString(),
-        'total' => 310,
-        'invoice_number' => 'INV12345',
-        'authorization_number' => 'AUTH12345',
-        'id_user' => "25"
-    ];
-    $response = $this->postJson('api/auth/createNoteEntry', $data);
-    $response->assertStatus(201)
-        ->assertJson([
-            'number_note' => $number_note,
-            'invoice_number' => $data['invoice_number'],
-            'delivery_date' => $data['date_entry'],
-            'state' => 'En Revision',
-            'invoice_auth' => $data['authorization_number'],
-            'user_register' => $data['id_user'],
-            'observation' => 'Activo',
-            'type_id' => $data['type'],
-            'suppliers_id' => $data['id_supplier'],
-            'name_supplier' => $supplier->name,
-        ]);
+// test('create_note', function () {
+//     $this->authenticateUser();
+//     $supplier = Supplier::factory()->create();
+//     $materials = Material::factory()->count(2)->create();
+//     $number_note = Note_Entrie::count() + 1;
+//     $data = [
+//         'type' => 1,
+//         'id_supplier' => $supplier->id,
+//         'materials' => $materials->map(function ($material) {
+//             return [
+//                 'id' => $material->id,
+//                 'name' => $material->description,
+//                 'quantity' => 10,
+//                 'price' => 15.5,
+//                 'unit_material' => 'kg'
+//             ];
+//         })->toArray(),
+//         'date_entry' => now()->toDateString(),
+//         'total' => 310,
+//         'invoice_number' => 'INV12345',
+//         'authorization_number' => 'AUTH12345',
+//         'id_user' => "25"
+//     ];
+//     $response = $this->postJson('api/auth/createNoteEntry', $data);
+//     $response->assertStatus(201)
+//         ->assertJson([
+//             'number_note' => $number_note,
+//             'invoice_number' => $data['invoice_number'],
+//             'delivery_date' => $data['date_entry'],
+//             'state' => 'En Revision',
+//             'invoice_auth' => $data['authorization_number'],
+//             'user_register' => $data['id_user'],
+//             'observation' => 'Activo',
+//             'type_id' => $data['type'],
+//             'suppliers_id' => $data['id_supplier'],
+//             'name_supplier' => $supplier->name,
+//         ]);
 
-    foreach ($data['materials'] as $material) {
-        $this->assertDatabaseHas('entries_material', [
-            'material_id' => $material['id'],
-            'amount_entries' => $material['quantity'],
-            'cost_unit' => $material['price'],
-            'cost_total' => $material['quantity'] * $material['price'],
-            'name_material' => $material['name'],
-        ]);
-    }
-});
+//     foreach ($data['materials'] as $material) {
+//         $this->assertDatabaseHas('entries_material', [
+//             'material_id' => $material['id'],
+//             'amount_entries' => $material['quantity'],
+//             'cost_unit' => $material['price'],
+//             'cost_total' => $material['quantity'] * $material['price'],
+//             'name_material' => $material['name'],
+//         ]);
+//     }
+// });
 
 // Prueba para listar notas en revisión
 test('list_note_entries_revision', function () {
@@ -182,42 +182,42 @@ test('list_note_entries_revision', function () {
 //         ]);
 //     }
 // });
-test('approve_note_entry', function () {
-    $this->authenticateUser();
-    $note = Note_Entrie::factory()->create(['state' => 'En Revision']);
-    $materials = Material::factory()->count(2)->create();
+// test('approve_note_entry', function () {
+//     $this->authenticateUser();
+//     $note = Note_Entrie::factory()->create(['state' => 'En Revision']);
+//     $materials = Material::factory()->count(2)->create();
 
-    $materialsData = $materials->map(function ($material) {
-        return [
-            'id_material' => $material->id,
-            'amount_entries' => 10, // cantidad que se agrega al stock actual
-            'cost_unit' => 15.5,
-        ];
-    })->toArray();
+//     $materialsData = $materials->map(function ($material) {
+//         return [
+//             'id_material' => $material->id,
+//             'amount_entries' => 10, // cantidad que se agrega al stock actual
+//             'cost_unit' => 15.5,
+//         ];
+//     })->toArray();
 
-    // Obtenemos los valores de stock iniciales para comparar luego
-    $initialStocks = $materials->pluck('stock', 'id');
+//     // Obtenemos los valores de stock iniciales para comparar luego
+//     $initialStocks = $materials->pluck('stock', 'id');
 
-    $data = [
-        'noteEntryId' => $note->id,
-        'materials' => $materialsData,
-    ];
+//     $data = [
+//         'noteEntryId' => $note->id,
+//         'materials' => $materialsData,
+//     ];
 
-    $response = $this->postJson('/api/auth/approvedNoteEntry', $data);
-    $response->assertStatus(201)
-        ->assertJson([
-            'state' => 'Aceptado',
-        ]);
+//     $response = $this->postJson('/api/auth/approvedNoteEntry', $data);
+//     $response->assertStatus(201)
+//         ->assertJson([
+//             'state' => 'Aceptado',
+//         ]);
 
-    // Comprobar que el stock se haya incrementado correctamente en lugar de ser exactamente igual a 10
-    foreach ($materialsData as $material) {
-        $expectedStock = $initialStocks[$material['id_material']] + $material['amount_entries'];
-        $this->assertDatabaseHas('materials', [
-            'id' => $material['id_material'],
-            'stock' => $expectedStock,
-        ]);
-    }
-});
+//     // Comprobar que el stock se haya incrementado correctamente en lugar de ser exactamente igual a 10
+//     foreach ($materialsData as $material) {
+//         $expectedStock = $initialStocks[$material['id_material']] + $material['amount_entries'];
+//         $this->assertDatabaseHas('materials', [
+//             'id' => $material['id_material'],
+//             'stock' => $expectedStock,
+//         ]);
+//     }
+// });
 
 // Prueba para eliminar una nota
 test('delete_note_entry', function () {

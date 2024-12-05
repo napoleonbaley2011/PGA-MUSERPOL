@@ -10,11 +10,6 @@ use Tests\Helpers\AuthenticationHelper;
 uses(AuthenticationHelper::class, DatabaseTransactions::class);
 
 test('can login a user via database authentication', function () {
-    // $user = User::create([
-    //     'username' => 'testuser',
-    //     'password' => Hash::make('password'),
-    //     'active' => true,
-    // ]);
 
     $response = $this->postJson('/api/auth/login', [
         'username' => 'wnavia',
@@ -36,11 +31,6 @@ test('can login a user via database authentication', function () {
 
 
 test('fails login for inactive users', function () {
-    // $user = User::factory()->create([
-    //     'username' => 'testuser',
-    //     'password' => Hash::make('password'),
-    //     'active' => false,
-    // ]);
 
     $response = $this->postJson('/api/auth/login', [
         'username' => 'bquispe-',

@@ -47,7 +47,7 @@ class ReportController extends Controller
             $movements = [];
             foreach ($entries as $entry) {
                 $movements[] = [
-                    'date' => $entry->pivot->delivery_date_entry,
+                    'date' => $entry->pivot->created_at,
                     'type' => 'entry',
                     'description' => $entry->name_supplier . ' - Nota de Entrada #' . $entry->number_note,
                     'quantity' => $entry->pivot->amount_entries,
@@ -182,7 +182,7 @@ class ReportController extends Controller
 
             foreach ($entries as $entry) {
                 $movements[] = [
-                    'date' => $entry->pivot->delivery_date_entry,
+                    'date' => $entry->pivot->created_at,
                     'type' => 'entry',
                     'description' => $entry->name_supplier . ' - Nota de Entrada #' . $entry->number_note,
                     'quantity' => $entry->pivot->amount_entries,

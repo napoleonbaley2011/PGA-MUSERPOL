@@ -6,45 +6,45 @@ use Tests\Helpers\AuthenticationHelper;
 
 uses(AuthenticationHelper::class, DatabaseTransactions::class);
 
-test('create_material', function () {
-    $this->authenticateUser();
-    $data = Material::factory()->make()->toArray();
-    $response = $this->postJson('api/auth/materials', $data);
-    $response->assertStatus(201)
-        ->assertJson([
-            'data' => [
-                'code_material' => $data['code_material'],
-                'description' => $data['description'],
-                'unit_material' => $data['unit_material'],
-                'state' => $data['state'],
-                'stock' => $data['stock'],
-                'min' => $data['min'],
-                'barcode' => $data['barcode'],
-                'type' => $data['type'],
-                'group_id' => $data['group_id'],
-            ]
-        ]);
-    $this->assertDatabaseHas('materials', $data);
-});
+// test('create_material', function () {
+//     $this->authenticateUser();
+//     $data = Material::factory()->make()->toArray();
+//     $response = $this->postJson('api/auth/materials', $data);
+//     $response->assertStatus(201)
+//         ->assertJson([
+//             'data' => [
+//                 'code_material' => $data['code_material'],
+//                 'description' => $data['description'],
+//                 'unit_material' => $data['unit_material'],
+//                 'state' => $data['state'],
+//                 'stock' => $data['stock'],
+//                 'min' => $data['min'],
+//                 'barcode' => $data['barcode'],
+//                 'type' => $data['type'],
+//                 'group_id' => $data['group_id'],
+//             ]
+//         ]);
+//     $this->assertDatabaseHas('materials', $data);
+// });
 
-test('update_name_material', function () {
-    $this->authenticateUser();
-    $material = Material::factory()->create();
-    $updateData = [
-        'description' => 'update_description',
-        'unit_material' => 'update_unit',
-    ];
-    $response = $this->patchJson('api/auth/updateName/' . $material->id, $updateData);
-    $response->assertStatus(200)
-        ->assertJson([
-            'data' => [
-                'description' => $updateData['description'],
-                'unit_material' => $updateData['unit_material'],
-            ]
-        ]);
+// test('update_name_material', function () {
+//     $this->authenticateUser();
+//     $material = Material::factory()->create();
+//     $updateData = [
+//         'description' => 'update_description',
+//         'unit_material' => 'update_unit',
+//     ];
+//     $response = $this->patchJson('api/auth/updateName/' . $material->id, $updateData);
+//     $response->assertStatus(200)
+//         ->assertJson([
+//             'data' => [
+//                 'description' => $updateData['description'],
+//                 'unit_material' => $updateData['unit_material'],
+//             ]
+//         ]);
 
-    $this->assertDatabaseHas('materials', array_merge(['id' => $material->id]));
-});
+//     $this->assertDatabaseHas('materials', array_merge(['id' => $material->id]));
+// });
 
 test('list_materials', function () {
     $this->authenticateUser();

@@ -6,6 +6,7 @@ use App\Http\Controllers\LdapController;
 use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\NoteEntriesController;
 use App\Http\Controllers\NoteRequestController;
+use App\Http\Controllers\PettycashController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SupplierController;
@@ -25,6 +26,17 @@ Route::group([
 
     Route::get('/list_product', [ProductController::class, 'list_petty_cash']);
     Route::post('/createproduct', [ProductController::class, 'create_product']);
+    Route::post('/createNotePettyCash', [ProductController::class, 'create_note']);
+    Route::get('/notePettyCash/{id_user}', [ProductController::class, 'list_petty_cash_user']);
+    Route::post('/verifyPettyCash', [ProductController::class, 'verify']);
+    Route::get('/printPettCash/{notepettyCash}', [ProductController::class, 'print_Petty_Cash']);
+    Route::get('/printPettCashDischarge/{notepettyCash}', [ProductController::class, 'print_Petty_Cash_discharge']);
+    Route::get('/list_group', [ProductController::class, 'list_group']);
+    Route::post('/savePettyCashDetails', [ProductController::class, 'save_petty_cash']);
+
+
+    Route::get('/AccountabilitySheet2', [PettycashController::class, 'Print_Accountability_sheet']);
+
 
     Route::get('/prueba_note', [NoteEntriesController::class, 'services_note']);
     //Notas de Solicitud
@@ -76,6 +88,11 @@ Route::group([
         Route::get('/listEmployeesRequest', [UserLdapController::class, 'list_user_request']);
         Route::get('/listRequestDirections/{direction}', [UserLdapController::class, 'list_users_direction']);
         Route::get('/printListRequestDirections/{direction}', [UserLdapController::class, 'list_direction_print']);
+
+
+        Route::get('/printAccountabilitySheet', [PettycashController::class, 'Accountability_sheet']);
+        Route::get('/AccountabilitySheet', [PettycashController::class, 'Print_Accountability_sheet']);
+        Route::get('/RecordBook', [PettycashController::class, 'Petty_Cash_Record_Book']);
 
         Route::get('/listManagement', [ReportController::class, 'list_mangement']);
 

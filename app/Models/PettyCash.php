@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+
 class PettyCash extends Model
 {
     use HasFactory, SoftDeletes;
@@ -24,5 +25,9 @@ class PettyCash extends Model
     public function management()
     {
         return $this->belongsTo(Management::class);
+    }
+    public function fund()
+    {
+        return $this->belongsTo(Fund::class, 'fund_id');
     }
 }
