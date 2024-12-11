@@ -237,7 +237,7 @@ class NoteEntriesController extends Controller
 
         $materials = $note_entry->materials;
         foreach ($materials as $material) {
-        
+
             $entryMaterial = Entrie_Material::where('note_id', $note_entry->id)->where('material_id', $material->id)->first();
 
             if ($entryMaterial) {

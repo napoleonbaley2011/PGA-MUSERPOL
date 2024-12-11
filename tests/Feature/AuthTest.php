@@ -94,7 +94,7 @@ test('fails login with wrong LDAP credentials', function () {
         ->assertJson([
             'message' => 'No autorizado',
             'errors' => [
-                'type' => ['Usuario o contraseña incorrectos'],
+                'type' => ['Contraseña incorrecta'],
             ],
         ]);
 });

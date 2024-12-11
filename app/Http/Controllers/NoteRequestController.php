@@ -221,7 +221,6 @@ class NoteRequestController extends Controller
 
         $user = User::where('employee_id', $note_request->user_register)->first();
         if ($user) {
-            // $position = $user->position;
             $cargo = DB::table('public.contracts as c')
                 ->join('public.positions as p', 'c.position_id', '=', 'p.id')
                 ->join('public.employees as e', 'c.employee_id', '=', 'e.id')
@@ -495,6 +494,7 @@ class NoteRequestController extends Controller
                 }),
             ];
         });
+        
 
         return response()->json([
             'status' => 'success',
