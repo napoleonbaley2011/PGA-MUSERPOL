@@ -17,6 +17,7 @@ return new class extends Migration
             $table->date('discharge_date')->nullable();
             $table->decimal('received_amount', 10, 2);
             $table->decimal('current_amount', 10, 2);
+            $table->string('name_responsible');
             $table->timestamps();
             $table->softDeletes();
         });

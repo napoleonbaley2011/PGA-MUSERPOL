@@ -17,6 +17,7 @@ class FundSeeder extends Seeder
             [
                 'received_amount' => 15000,
                 'current_amount' => 15000,
+                'name_responsible' => 'WILLIAM ITURRALDE QUISBERT',
             ]
         );
     }

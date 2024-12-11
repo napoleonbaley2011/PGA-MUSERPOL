@@ -159,7 +159,7 @@ $dns = new DNS2D();
         <tbody class="table-striped">
             @foreach ($products as $product)
             <tr>
-                <td class="text-left">{{$product['delivery_date']}}</td>
+                <td class="text-center">{{$product['delivery_date']}}</td>
                 <td class="text-center border-left-white">{{ $product['number_invoice'] }}</td>
                 <td class="text-center border-left-white">{{ $product['code'] }}</td>
                 <td class="text-center border-left-white">{{ $product['description'] }}</td>

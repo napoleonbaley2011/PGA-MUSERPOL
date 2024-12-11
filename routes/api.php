@@ -33,6 +33,7 @@ Route::group([
     Route::get('/printPettCashDischarge/{notepettyCash}', [ProductController::class, 'print_Petty_Cash_discharge']);
     Route::get('/list_group', [ProductController::class, 'list_group']);
     Route::post('/savePettyCashDetails', [ProductController::class, 'save_petty_cash']);
+    Route::post('/personal_transpor_tickets', [ProductController::class, 'create_note_tickets']);
 
 
     Route::get('/AccountabilitySheet2', [PettycashController::class, 'Print_Accountability_sheet']);
@@ -93,6 +94,7 @@ Route::group([
         Route::get('/printAccountabilitySheet', [PettycashController::class, 'Accountability_sheet']);
         Route::get('/AccountabilitySheet', [PettycashController::class, 'Print_Accountability_sheet']);
         Route::get('/RecordBook', [PettycashController::class, 'Petty_Cash_Record_Book']);
+        Route::get('/PrintRecordBook', [PettycashController::class, 'Print_Petty_Cash_Record_Book']);
 
         Route::get('/listManagement', [ReportController::class, 'list_mangement']);
 

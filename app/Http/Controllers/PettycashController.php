@@ -145,4 +145,68 @@ class PettycashController extends Controller
         });
         return response()->json($formatted);
     }
+
+
+
+    public function Print_Petty_Cash_Record_Book()
+    {
+        $pettyCashes = PettyCash::where('state', 'Finalizado')
+            ->with(['products' => function ($query) {
+                $query->select('products.id', 'description', 'group_id', 'cost_object');
+            }])
+            ->get(['id', 'user_register', 'number_note', 'request_date', 'approximate_cost', 'replacement_cost']);
+
+        $formatted = $pettyCashes->map(function ($pettyCash) {
+            $employee = Employee::find($pettyCash->user_register);
+            return [
+                'user_register' => $employee
+                    ? "{$employee->first_name} {$employee->last_name} {$employee->mothers_last_name}"
+                    : null,
+                'number_note' => $pettyCash->number_note,
+                'date_delivery' => $pettyCash->request_date,
+                'approximate_cost' => $pettyCash->approximate_cost,
+                'replacement_cost' => $pettyCash->replacement_cost,
+                'products' => $pettyCash->products->map(function ($product) {
+                    $group = Group::where('id', $product->group_id)->first();
+                    $codeGroup = $group ? $group->code : null;
+                    return [
+                        'id' => $product->id,
+                        'description' => $product->description,
+                        'object_cost' => $product->cost_object,
+                        'code' => $codeGroup,
+                        'supplier' => $product->pivot->supplier,
+                        'invoce_number' => $product->pivot->number_invoice,
+                        'costDetail' => number_format($product->pivot->costDetails, 2),
+                        'costFinal' => number_format($product->pivot->costFinal, 2),
+                    ];
+                }),
+            ];
+        });
+        $replacementCostTotal = $formatted->sum('replacement_cost');
+
+        $fund = Fund::latest()->first();
+
+
+        $balance_total = $fund->received_amount - $replacementCostTotal;
+        $dataPettyCash = [
+            'amount' => $fund->received_amount,
+            'date_recived' => $fund->reception_date,
+            'name_responsibility' => $fund->name_responsible,
+            'concept' => 'ASIGNACIÓN DE FONDOS DE CAJA CHICA',
+            'balance' => number_format($balance_total, 2),
+        ];
+
+
+        $data = [
+            'title' => 'LIBRO DE REGISTRO DE CAJA CHICA',
+            'name' => 'WILLIAM ITURRALDE QUISBERT',
+            'area' => 'UNIDAD ADMINISTRATIVA',
+            'date' => Carbon::now()->format('Y-m-d'),
+            'dataPettyCash' => $dataPettyCash,
+            'book_diary' => $formatted,
+        ];
+
+        $pdf = Pdf::loadView('NotePettyCash.PettyCashRecordBook', $data);
+        return $pdf->download('Libro_Diario.pdf');
+    }
 }

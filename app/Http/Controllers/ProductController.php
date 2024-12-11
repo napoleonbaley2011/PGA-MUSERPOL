@@ -26,7 +26,7 @@ class ProductController extends Controller
 
     public function list_petty_cash()
     {
-        $query = Product::all();
+        $query = Product::where('description', '!=', 'PASAJES')->get();
         return $query;
     }
 
@@ -94,6 +94,63 @@ class ProductController extends Controller
     }
 
 
+    public function create_note_tickets(Request $request)
+    {
+        $request_tickest = DB::select(
+            "SELECT d.created_at, d.code, e.id, CONCAT(e.first_name, ' ', e.last_name, ' ', e.mothers_last_name) AS full_name
+             FROM public.departures d, public.employees e
+             WHERE d.id = :requestId AND d.employee_id = e.id",
+            ['requestId' => $request->requestId]
+        );
+
+        if ($request_tickest) {
+
+            $formattedDate = isset($request_tickest[0]->created_at)
+                ? Carbon::parse($request_tickest[0]->created_at)->format('Y-m-d')
+                : null;
+            $lastNoteNumber = PettyCash::max('number_note');
+            $number_note = $lastNoteNumber ? $lastNoteNumber + 1 : 1;
+            $period = Management::latest()->first();
+            $fund = Fund::latest()->first();
+            $totalCost = 0;
+            if (isset($request->transfers) && is_array($request->transfers)) {
+                $totalCost = array_sum(array_column($request->transfers, 'cost'));
+            }
+
+            $notePettyCash = PettyCash::create([
+                'number_note' => $number_note,
+                'concept' => 'TRANSPORTE PERSONAL',
+                'request_date' => $formattedDate,
+                'delivery_date' => $formattedDate,
+                'approximate_cost' => $totalCost,
+                'replacement_cost' => $totalCost,
+                'state' => 'Finalizado',
+                'user_register' => $request_tickest[0]->id,
+                'management_id' => $period->id,
+                'fund_id' => $fund->id,
+            ]);
+            $product = Product::where('description', 'PASAJES')->first();
+            if ($product) {
+                $notePettyCash->products()->attach($product->id, [
+                    'amount_request' => 1,
+                    'number_invoice' => $request_tickest[0]->code,
+                    'name_product' => $product->cost_object,
+                    'supplier' => null,
+                    'costDetails' => $totalCost,
+                    'costFinal' => $totalCost,
+                ]);
+                $product->update([
+                    'group_id' => 42,
+                ]);
+            }
+
+            return response()->json(['message' => 'Petty cash updated successfully.'], 200);
+        } else {
+            return false;
+        }
+    }
+
+
     public function print_Petty_Cash(PettyCash $notepettyCash)
     {
         $user = User::where('employee_id', $notepettyCash->user_register)->first();
@@ -158,8 +215,6 @@ class ProductController extends Controller
                            and cp.id = cc.consultant_position_id 
                            order by cc.consultant_position_id desc 
                            limit 1', [$notepettyCash->user_register]);
-
-                // Asigna solo el nombre de la posición o un valor nulo si no se encuentra
                 $positionName = $position ? $position->name : null;
                 $employee = Employee::find($notepettyCash->user_register);
 

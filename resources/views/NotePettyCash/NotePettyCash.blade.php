@@ -44,7 +44,7 @@ function convertirNumeroALetras($numero)
     ];
     $centenas = [
         '',
-        'cien',
+        'ciento',
         'doscientos',
         'trescientos',
         'cuatrocientos',
