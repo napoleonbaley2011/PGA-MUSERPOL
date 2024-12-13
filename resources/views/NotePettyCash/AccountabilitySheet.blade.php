@@ -25,7 +25,6 @@ $dns = new DNS2D();
 
         body {
             font-size: 12px;
-            /* Cambia según sea necesario */
         }
 
         .scissors-rule {
@@ -166,15 +165,10 @@ $dns = new DNS2D();
                 <td class="text-center border-left-white">{{ number_format($product['amount'], 2) }}</td>
             </tr>
             @endforeach
-            @for($i = sizeof($products) + 1; $i <= sizeof($products) + 5; $i++)
-                <tr>
-                <td class="text-center" colspan="6">&nbsp;</td>
-                </tr>
-                @endfor
-                <tr>
-                    <td class="text-left" colspan="4"><strong>VALOR TOTAL BS.</strong></td>
-                    <td class="text-center"><strong>{{ number_format($products->sum(function($product) {return $product['amount'];}), 2) }}</strong></td>
-                </tr>
+            <tr>
+                <td class="text-left" colspan="4"><strong>VALOR TOTAL BS.</strong></td>
+                <td class="text-center"><strong>{{ number_format($products->sum(function($product) {return $product['amount'];}), 2) }}</strong></td>
+            </tr>
         </tbody>
     </table>
 

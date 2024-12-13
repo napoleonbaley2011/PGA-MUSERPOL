@@ -128,7 +128,6 @@ $dns = new DNS2D();
                     <th class="text-center bg-grey-darker text-white border-left-white">BENEFICIARIO</th>
                     <th class="text-center bg-grey-darker text-white border-left-white">N° VALE</th>
                     <th class="text-center bg-grey-darker text-white border-left-white">ENTREGADO</th>
-                    <th class="text-center bg-grey-darker text-white border-left-white">N° RECIBO</th>
                     <th class="text-center bg-grey-darker text-white border-left-white">PROVEEDOR</th>
                     <th class="text-center bg-grey-darker text-white border-left-white">N° FACTURA</th>
                     <th class="text-center bg-grey-darker text-white border-left-white">CONCEPTO DE GASTO</th>
@@ -146,7 +145,6 @@ $dns = new DNS2D();
                     <td class="text-center">---</td>
                     <td class="text-center">---</td>
                     <td class="text-center">---</td>
-                    <td class="text-center">---</td>
                     <td class="text-left">{{ $dataPettyCash['concept'] }}</td>
                     <td class="text-center">---</td>
                     <td class="text-center">---</td>
@@ -154,15 +152,15 @@ $dns = new DNS2D();
                 </tr>
                 @foreach($book_diary as $entry)
                 @php
+
                 $ingresos = $entry['approximate_cost'] - $entry['replacement_cost'];
                 @endphp
                 <tr>
-                    <td class="text-center"></td>
+                    <td class="text-center">{{ $loop->iteration + 1 }}</td>
                     <td class="text-center">{{$entry['date_delivery']}}</td>
                     <td class="text-left">{{ $entry['user_register'] }}</td>
                     <td class="text-center">{{ $entry['number_note'] }}</td>
                     <td class="text-center">{{ $entry['approximate_cost'] }}</td>
-                    <td></td>
                     <td class="text-left">{{ $entry['products'][0]['supplier'] ?? '' }}</td>
                     <td class="text-center">{{ $entry['products'][0]['invoce_number'] ?? '' }}</td>
                     <td class="text-center">{{ $entry['products'][0]['object_cost'] ?? '' }}</td>
@@ -178,13 +176,12 @@ $dns = new DNS2D();
                     <td class="text-left"></td>
                     <td class="text-center"></td>
                     <td class="text-center"></td>
-                    <td class="text-center"></td>
                     <td class="text-left">{{ $product['supplier'] }}</td>
                     <td class="text-center">{{ $product['invoce_number'] }}</td>
                     <td class="text-center">{{ $product['object_cost'] }}</td>
                     <td class="text-center">{{ $product['code'] }}</td>
                     <td class="text-center">{{ $product['costFinal'] }}</td>
-                    <td></td>
+                    <td>---</td>
                 </tr>
                 @endif
                 @endforeach

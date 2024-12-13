@@ -95,6 +95,9 @@ Route::group([
         Route::get('/AccountabilitySheet', [PettycashController::class, 'Print_Accountability_sheet']);
         Route::get('/RecordBook', [PettycashController::class, 'Petty_Cash_Record_Book']);
         Route::get('/PrintRecordBook', [PettycashController::class, 'Print_Petty_Cash_Record_Book']);
+        Route::get('/DatesPettyCash', [PettycashController::class, 'Petty_Cash_Record_Book_Dates']);
+        Route::post('/fullDischarge', [PettycashController::class, 'FullDischarge']);
+        Route::get('/paymentOrder', [PettycashController::class, 'PaymentOrder']);
 
         Route::get('/listManagement', [ReportController::class, 'list_mangement']);
 

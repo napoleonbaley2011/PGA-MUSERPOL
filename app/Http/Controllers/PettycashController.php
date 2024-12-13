@@ -209,4 +209,92 @@ class PettycashController extends Controller
         $pdf = Pdf::loadView('NotePettyCash.PettyCashRecordBook', $data);
         return $pdf->download('Libro_Diario.pdf');
     }
+
+
+    public function Petty_Cash_Record_Book_Dates()
+    {
+        $pettyCashes = PettyCash::where('state', 'Finalizado')
+            ->with(['products' => function ($query) {
+                $query->select('products.id', 'description', 'group_id', 'cost_object');
+            }])
+            ->get(['id', 'user_register', 'number_note', 'request_date', 'approximate_cost', 'replacement_cost']);
+
+        $formatted = $pettyCashes->map(function ($pettyCash) {
+            $employee = Employee::find($pettyCash->user_register);
+            return [
+                'user_register' => $employee
+                    ? "{$employee->first_name} {$employee->last_name} {$employee->mothers_last_name}"
+                    : null,
+                'number_note' => $pettyCash->number_note,
+                'date_delivery' => $pettyCash->request_date,
+                'approximate_cost' => $pettyCash->approximate_cost,
+                'replacement_cost' => $pettyCash->replacement_cost,
+                'products' => $pettyCash->products->map(function ($product) {
+                    $group = Group::where('id', $product->group_id)->first();
+                    $codeGroup = $group ? $group->code : null;
+                    return [
+                        'id' => $product->id,
+                        'description' => $product->description,
+                        'object_cost' => $product->cost_object,
+                        'code' => $codeGroup,
+                        'supplier' => $product->pivot->supplier,
+                        'invoce_number' => $product->pivot->number_invoice,
+                        'costDetail' => number_format($product->pivot->costDetails, 2),
+                        'costFinal' => number_format($product->pivot->costFinal, 2),
+                    ];
+                }),
+            ];
+        });
+        $replacementCostTotal = $formatted->sum('replacement_cost');
+
+        $fund = Fund::latest()->first();
+
+
+        $balance_total = $fund->received_amount - $replacementCostTotal;
+        $dataPettyCash = [
+            'amount' => number_format($fund->received_amount, 2),
+            'date_recived' => $fund->reception_date,
+            'name_responsibility' => $fund->name_responsible,
+            'concept' => 'ASIGNACIÓN DE FONDOS DE CAJA CHICA',
+            'balance' => number_format($balance_total, 2),
+            'total' => number_format(($fund->received_amount - $balance_total), 2),
+        ];
+
+
+        $data = [
+            'date' => Carbon::now()->format('Y-m-d'),
+            'dataPettyCash' => $dataPettyCash,
+            'book_diary' => $formatted,
+        ];
+
+
+        return $data;
+    }
+
+
+    public function FullDischarge(Request $request)
+    {
+        logger($request);
+    }
+
+    public function PaymentOrder(Request $request)
+    {
+        $fund = Fund::latest()->first();
+        $date_day = Carbon::now()->format('Y-m-d');
+        $date_send = Carbon::parse($date_day)->locale('es')->isoFormat('DD [de] MMMM [de] YYYY');
+        $date = Carbon::parse($fund->reception_date)->locale('es')->isoFormat('DD [de] MMMM [de] YYYY');
+        logger($date_send); 
+
+        $data = [
+            'title' => 'ORDEN DE PAGO',
+            'number_note' => $fund->id,
+            'amount' => $request->total,
+            'responsible' => $request->responsible,
+            'date_recived' => $date,
+            'date_send' => $date_send,
+        ];
+
+        $pdf = Pdf::loadView('NotePettyCash.PaymentOrder', $data);
+        return $pdf->download('Orden_de_Pago.pdf');
+    }
 }
