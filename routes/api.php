@@ -98,6 +98,8 @@ Route::group([
         Route::get('/DatesPettyCash', [PettycashController::class, 'Petty_Cash_Record_Book_Dates']);
         Route::post('/fullDischarge', [PettycashController::class, 'FullDischarge']);
         Route::get('/paymentOrder', [PettycashController::class, 'PaymentOrder']);
+        Route::get('/createDischarge', [PettycashController::class, 'CreateDischarge']);
+
 
         Route::get('/listManagement', [ReportController::class, 'list_mangement']);
 

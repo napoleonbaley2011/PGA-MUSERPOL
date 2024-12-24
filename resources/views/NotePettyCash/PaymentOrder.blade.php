@@ -272,7 +272,7 @@ $total_literal = convertirNumeroALetras($amount);
             <tr>
                 <td rowspan="3" style="height: 80px;"></td>
                 <td rowspan="3" style="height: 80px;"></td>
-                <td rowspan="3" style="height: 80px;"></td>
+                <td rowspan="3" style="height: 80px;"doce></td>
             </tr>
         </tbody>
     </table>

@@ -150,7 +150,6 @@ class ProductController extends Controller
         }
     }
 
-
     public function print_Petty_Cash(PettyCash $notepettyCash)
     {
         $user = User::where('employee_id', $notepettyCash->user_register)->first();
@@ -301,15 +300,21 @@ class ProductController extends Controller
         return $groups;
     }
 
-
     public function save_petty_cash(Request $request)
     {
         try {
+            $fund = Fund::latest()->first();
             $pettyCash = PettyCash::find($request['requestId']);
 
             if (!$pettyCash) {
                 return response()->json(['error' => 'PettyCash not found.'], 404);
             }
+
+
+            if ($pettyCash->fund_id != $fund->id) {
+                $pettyCash->fund_id = $fund->id;
+            }
+
             $sum_product = 0;
 
             foreach ($request['products'] as $productData) {

@@ -56,9 +56,9 @@ class PettycashController extends Controller
         ];
     }
 
-    public function Print_Accountability_sheet()
+    public function Print_Accountability_sheet(Request $request)
     {
-        $pettyCashes = PettyCash::where('state', 'Finalizado')
+        $pettyCashes = PettyCash::where('state', 'Finalizado')->where('fund_id', $request->idFund)
             ->with('products')
             ->get();
 
@@ -109,7 +109,6 @@ class PettycashController extends Controller
         return $pdf->download('Planilla_de_rendicion_de_cuentas.pdf');
     }
 
-
     public function Petty_Cash_Record_Book()
     {
         $pettyCashes = PettyCash::where('state', 'Finalizado')
@@ -146,11 +145,9 @@ class PettycashController extends Controller
         return response()->json($formatted);
     }
 
-
-
-    public function Print_Petty_Cash_Record_Book()
+    public function Print_Petty_Cash_Record_Book(Request $request)
     {
-        $pettyCashes = PettyCash::where('state', 'Finalizado')
+        $pettyCashes = PettyCash::where('state', 'Finalizado')->where('fund_id', $request->idFund)
             ->with(['products' => function ($query) {
                 $query->select('products.id', 'description', 'group_id', 'cost_object');
             }])
@@ -210,10 +207,10 @@ class PettycashController extends Controller
         return $pdf->download('Libro_Diario.pdf');
     }
 
-
     public function Petty_Cash_Record_Book_Dates()
     {
-        $pettyCashes = PettyCash::where('state', 'Finalizado')
+        $fund = Fund::latest()->first();
+        $pettyCashes = PettyCash::where('state', 'Finalizado')->where('fund_id', $fund->id)
             ->with(['products' => function ($query) {
                 $query->select('products.id', 'description', 'group_id', 'cost_object');
             }])
@@ -246,10 +243,6 @@ class PettycashController extends Controller
             ];
         });
         $replacementCostTotal = $formatted->sum('replacement_cost');
-
-        $fund = Fund::latest()->first();
-
-
         $balance_total = $fund->received_amount - $replacementCostTotal;
         $dataPettyCash = [
             'amount' => number_format($fund->received_amount, 2),
@@ -260,17 +253,22 @@ class PettycashController extends Controller
             'total' => number_format(($fund->received_amount - $balance_total), 2),
         ];
 
+        $Allfund = Fund::all();
+        $filteredData = $Allfund->map(function ($fund) {
+            return [
+                'id' => $fund->id,
+                'received_amount' => $fund->received_amount,
+            ];
+        });
 
         $data = [
             'date' => Carbon::now()->format('Y-m-d'),
             'dataPettyCash' => $dataPettyCash,
             'book_diary' => $formatted,
+            'discharges' => $filteredData,
         ];
-
-
         return $data;
     }
-
 
     public function FullDischarge(Request $request)
     {
@@ -283,7 +281,7 @@ class PettycashController extends Controller
         $date_day = Carbon::now()->format('Y-m-d');
         $date_send = Carbon::parse($date_day)->locale('es')->isoFormat('DD [de] MMMM [de] YYYY');
         $date = Carbon::parse($fund->reception_date)->locale('es')->isoFormat('DD [de] MMMM [de] YYYY');
-        logger($date_send); 
+        logger($date_send);
 
         $data = [
             'title' => 'ORDEN DE PAGO',
@@ -296,5 +294,24 @@ class PettycashController extends Controller
 
         $pdf = Pdf::loadView('NotePettyCash.PaymentOrder', $data);
         return $pdf->download('Orden_de_Pago.pdf');
+    }
+
+
+    public function CreateDischarge(Request $request)
+    {
+        $fund = Fund::latest()->first();
+        $balance = str_replace(',', '', $request->balance);
+        $fund->discharge_date = today()->toDateString();
+        $fund->current_amount = $balance;
+        $fund->save();
+
+        $newFund = Fund::create([
+            'reception_date' => today()->toDateString(),
+            'received_amount' => $balance,
+            'current_amount' => $balance,
+            'name_responsible' => $request->responsable,
+        ]);
+
+        return response()->json($newFund, 201);
     }
 }
