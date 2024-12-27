@@ -18,6 +18,7 @@ return new class extends Migration
             $table->decimal('received_amount', 10, 2);
             $table->decimal('current_amount', 10, 2);
             $table->string('name_responsible');
+            $table->string('username_responsible');
             $table->timestamps();
             $table->softDeletes();
         });

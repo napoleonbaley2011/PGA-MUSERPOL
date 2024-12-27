@@ -6,10 +6,11 @@ use Carbon\Carbon;
 use App\Helpers\Util;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Laravel\Sanctum\HasApiTokens;
 
 class Employee extends Model
 {
-  use HasFactory;
+  use HasFactory, HasApiTokens;
   protected $dates = ['deleted_at'];
   public $timestamps = true;
   public $guarded = ['id'];

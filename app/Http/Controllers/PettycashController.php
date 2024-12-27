@@ -181,7 +181,7 @@ class PettycashController extends Controller
         });
         $replacementCostTotal = $formatted->sum('replacement_cost');
 
-        $fund = Fund::latest()->first();
+        $fund = Fund::where('id', $request->idFund)->first();
 
 
         $balance_total = $fund->received_amount - $replacementCostTotal;
@@ -310,6 +310,7 @@ class PettycashController extends Controller
             'received_amount' => $balance,
             'current_amount' => $balance,
             'name_responsible' => $request->responsable,
+            'username_responsible' => $request->username,
         ]);
 
         return response()->json($newFund, 201);

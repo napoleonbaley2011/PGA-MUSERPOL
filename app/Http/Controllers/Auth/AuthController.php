@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use App\User;
 use App\Models\Employee;
 use App\Helpers\Ldap;
+use App\Models\Fund;
 use App\Models\UserStore;
 
 class AuthController extends Controller
@@ -18,8 +19,29 @@ class AuthController extends Controller
      */
     public function login(AuthForm $request)
     {
-        $user = User::whereUsername($request['username'])->first();
 
+        $lastFund = Fund::orderBy('id', 'desc')->first();
+
+        if ($lastFund && $lastFund->username_responsible === $request['username']) {
+
+            $nameParts = explode(' ', $lastFund->name_responsible);
+            if (count($nameParts) >= 3) {
+                $firstName = $nameParts[0];
+                $lastName = $nameParts[1];
+                $mothersLastName = $nameParts[2];
+                $employee = Employee::where('first_name', $firstName)
+                    ->where(function ($query) use ($lastName, $mothersLastName) {
+                        $query->where('last_name', $lastName)
+                            ->orWhere('mothers_last_name', $mothersLastName);
+                    })
+                    ->first();
+
+                if ($employee) {
+                    return $this->respondWithFundToken($employee->createToken('api')->plainTextToken, $employee->id, $request['username']);
+                }
+            }
+        }
+        $user = User::whereUsername($request['username'])->first();
         if (!$user) {
             return $this->unauthorizedResponse('Usuario no encontrado');
         }
@@ -118,5 +140,19 @@ class AuthController extends Controller
                 'type' => ['Error de conexión'],
             ],
         ], 500);
+    }
+
+    private function respondWithFundToken($token, $id, $username)
+    {
+        return response()->json([
+            'token' => $token,
+            'token_type' => 'Bearer',
+            'expires_in' => config('sanctum.expiration') ? now()->addMinutes(config('sanctum.expiration'))->timestamp : null,
+            'id' => $id,
+            'user' => $username,
+            'role' => 'Encargado de Caja Chica',
+            'permissions' => ['operation_pettycash'],
+            'message' => 'Autenticación directa para Encargado de caja chica',
+        ], 200);
     }
 }
