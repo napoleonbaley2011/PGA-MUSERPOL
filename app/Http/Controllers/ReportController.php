@@ -1129,7 +1129,7 @@ class ReportController extends Controller
                     $newNote = Note_Entrie::create([
                         'number_note' => $this->generateNoteNumber(),
                         'invoice_number' => $note->invoice_number,
-                        'delivery_date' => now()->format('Y-m-d'),
+                        'delivery_date' => $note->delivery_date,
                         'state' => 'Aceptado',
                         'invoice_auth' => $note->invoice_auth,
                         'user_register' => $note->user_register,
