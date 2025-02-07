@@ -22,7 +22,6 @@ $dns = new DNS2D();
 
         body {
             font-size: 12px;
-            /* Cambia según sea necesario */
         }
 
         .scissors-rule {
@@ -150,7 +149,6 @@ $dns = new DNS2D();
                     </tr>
                     @endforeach
 
-                    <!-- Nueva fila para la suma total -->
                     @for($i = sizeof($materials) + 1; $i <= $max_requests; $i++)
                         <tr>
                         <td class="text-center" colspan="6">&nbsp;</td>

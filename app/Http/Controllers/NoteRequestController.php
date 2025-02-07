@@ -324,9 +324,11 @@ class NoteRequestController extends Controller
 
     public function print_post_request(NoteRequest $note_request)
     {
+
+        logger($note_request);
+
         $user = User::where('employee_id', $note_request->user_register)->first();
         if ($user) {
-            // $position = $user->position;
             $cargo = DB::table('public.contracts as c')
                 ->join('public.positions as p', 'c.position_id', '=', 'p.id')
                 ->join('public.employees as e', 'c.employee_id', '=', 'e.id')
@@ -356,7 +358,7 @@ class NoteRequestController extends Controller
                     'description' => $material->description,
                     'unit_material' => $material->unit_material,
                     'amount_request' => $material->pivot->amount_request,
-                    'cost_unit' => $material->average_cost,
+                    'cost_unit' => number_format($material->pivot->costDetails / $material->pivot->delivered_quantity, 2, '.', ''),
                     'delivered_quantity' => $material->pivot->delivered_quantity,
                 ];
             });
@@ -394,8 +396,6 @@ class NoteRequestController extends Controller
                            and cp.id = cc.consultant_position_id 
                            order by cc.consultant_position_id desc 
                            limit 1', [$note_request->user_register]);
-
-                // Asigna solo el nombre de la posición o un valor nulo si no se encuentra
                 $positionName = $position ? $position->name : null;
                 $employee = Employee::find($note_request->user_register);
                 $file_title = 'SOLICITUD DE MATERIAL DE ALMACÉN';
@@ -404,7 +404,7 @@ class NoteRequestController extends Controller
                         'description' => $material->description,
                         'unit_material' => $material->unit_material,
                         'amount_request' => $material->pivot->amount_request,
-                        'cost_unit' => $material->average_cost,
+                        'cost_unit' => number_format($material->pivot->costDetails / $material->pivot->delivered_quantity, 2, '.', ''),
                         'delivered_quantity' => $material->pivot->delivered_quantity,
                     ];
                 });

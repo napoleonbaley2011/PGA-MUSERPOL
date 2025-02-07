@@ -25,7 +25,6 @@ $hasCajaChica = collect($materials)->contains(function ($material) {
 
         body {
             font-size: 12px;
-            /* Cambia según sea necesario */
         }
 
         .scissors-rule {
@@ -165,7 +164,7 @@ $hasCajaChica = collect($materials)->contains(function ($material) {
                         </tr>
                 </tbody>
             </table>
-            <table class="w-100" style="margin-top: 50px;">
+            <table class="w-100" style="margin-top: 70px;">
                 <tbody>
                     <tr class="align-bottom text-center text-xxxs" style="height: 120px; vertical-align: bottom;">
                         @if($hasCajaChica)
