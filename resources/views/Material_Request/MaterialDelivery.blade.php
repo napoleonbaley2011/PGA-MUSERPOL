@@ -2,7 +2,7 @@
 
 use \Milon\Barcode\DNS2D;
 
-$max_requests = 10;
+$max_requests = 14;
 
 $dns = new DNS2D();
 $hasCajaChica = collect($materials)->contains(function ($material) {
@@ -20,11 +20,13 @@ $hasCajaChica = collect($materials)->contains(function ($material) {
     <style>
         @page {
             size: letter;
-            margin: 1.5cm;
+            margin: 1.5cm 1.5cm 1.5cm 1.5cm;
         }
 
         body {
             font-size: 12px;
+            margin-top: 0.5cm;
+            margin-bottom: 0.5cm;
         }
 
         .scissors-rule {
@@ -82,7 +84,7 @@ $hasCajaChica = collect($materials)->contains(function ($material) {
 
 <body style="border: 0; border-radius: 0;">
     @for($it = 0; $it<2; $it++)
-        <table class="w-100 uppercase" >
+        <table class="w-100 uppercase">
         <tr>
             <th class="w-25 text-left no-paddings no-margins align-middle">
                 <div class="text-left">
@@ -164,7 +166,7 @@ $hasCajaChica = collect($materials)->contains(function ($material) {
                         </tr>
                 </tbody>
             </table>
-            <table class="w-100" style="margin-top: 70px;">
+            <table class="w-100" style="margin-top: 50px;">
                 <tbody>
                     <tr class="align-bottom text-center text-xxxs" style="height: 120px; vertical-align: bottom;">
                         @if($hasCajaChica)
