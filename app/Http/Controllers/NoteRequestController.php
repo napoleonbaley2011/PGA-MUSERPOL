@@ -77,7 +77,6 @@ class NoteRequestController extends Controller
             ];
         });
 
-        logger($response);
 
         return response()->json([
             'status' => 'success',
@@ -206,8 +205,6 @@ class NoteRequestController extends Controller
                 $material = Material::find($materialId);
                 $material->stock -= $amount_to_be_reduced;
                 $material->save();
-
-                logger($costDetailsStr);
             }
             $number_note = NoteRequest::where('state', 'Aceptado')->count() + 1;
             $noteRequest = NoteRequest::find($noteRequestId);
@@ -332,9 +329,6 @@ class NoteRequestController extends Controller
 
     public function print_post_request(NoteRequest $note_request)
     {
-
-        logger($note_request);
-
         $user = User::where('employee_id', $note_request->user_register)->first();
         if ($user) {
             $cargo = DB::table('public.contracts as c')
