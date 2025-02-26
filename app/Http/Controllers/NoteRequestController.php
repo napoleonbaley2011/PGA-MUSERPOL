@@ -480,55 +480,6 @@ class NoteRequestController extends Controller
         ], 200);
     }
 
-    public function arreglar_error()
-    {
-        $note_request = NoteRequest::with(['materials:id,code_material,description'])
-            ->where('type_id', 2)
-            ->where('state', "Aceptado")
-            ->get(['id', 'number_note']);
-
-        $note_entrie = Note_Entrie::with(['materials:id,code_material,description'])
-            ->where('type_id', 2)
-            ->get(['id', 'number_note']);
-
-        $data = [
-            'notas_recibidas' => $note_entrie,
-            'notas_entregas' => $note_request,
-        ];
-        $mapping = [
-            159 => 53,
-            160 => 54,
-            161 => 77,
-            162 => 85,
-        ];
-
-        foreach ($data['notas_recibidas'] as &$nota_recibida) {
-            $recibida_id = $nota_recibida->id;
-            $entregada_id = $mapping[$recibida_id] ?? null;
-
-            if ($entregada_id) {
-                $nota_entregada = collect($data['notas_entregas'])->firstWhere('id', $entregada_id);
-
-                if ($nota_entregada) {
-                    foreach ($nota_recibida->materials as &$material_recibido) {
-                        $material_id = $material_recibido->id;
-
-                        $material_entregado = collect($nota_entregada->materials)->firstWhere('id', $material_id);
-
-                        if ($material_entregado && isset($material_entregado->pivot->costDetails)) {
-                            $new_cost = $material_recibido->pivot->cost_total;
-                            $material_entregado->pivot->costDetails = $new_cost;
-                            Request_Material::where('note_id', $entregada_id)
-                                ->where('material_id', $material_id)
-                                ->update(['costDetails' => $new_cost]);
-                        }
-                    }
-                }
-            }
-        }
-        return response()->json($data);
-    }
-
     public function titlePerson($idPersona)
     {
         $ldap = new Ldap();

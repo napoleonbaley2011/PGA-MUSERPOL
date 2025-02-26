@@ -38,9 +38,6 @@ Route::group([
 
     Route::get('/AccountabilitySheet2', [PettycashController::class, 'Print_Accountability_sheet']);
 
-    Route::get('/Arreglar', [NoteRequestController::class, 'arreglar_error']);
-
-
     Route::get('/prueba_note', [NoteEntriesController::class, 'services_note']);
     //Notas de Solicitud
     Route::get('/noteRequest', [NoteRequestController::class, 'list_note_request']);
