@@ -190,8 +190,6 @@ class MaterialController extends Controller
             $query->where('state', $stateFilter);
         }
 
-        logger($query->get());
-
         $totalMaterials = $query->count();
 
         $materials = $query->skip($start)->take($limit)->get();
