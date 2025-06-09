@@ -9,6 +9,7 @@ use App\Models\Material;
 use App\Models\Note_Entrie;
 use App\Models\NoteRequest;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -17,7 +18,8 @@ class ReportController extends Controller
     public function kardex($materialId)
     {
         try {
-            $endDate = request()->query('end_date');
+            $startDate = request()->query('start_date');
+            $endDate = Carbon::parse(request()->query('end_date'))->addDay()->toDateString();
             $latestManagement = Management::latest('id')->first();
             $material = Material::findOrFail($materialId);
             $group_material = $material->group()->first()->name_group;
@@ -25,6 +27,7 @@ class ReportController extends Controller
             $kardex = [];
             $stock = 0;
             $max_total = 0;
+            $fifoQueue = [];
 
             $entries = $material->noteEntries()
                 ->where('management_id', $latestManagement->id)
@@ -64,8 +67,6 @@ class ReportController extends Controller
 
             usort($movements, fn($a, $b) => strtotime($a['date']) <=> strtotime($b['date']));
 
-            $fifoQueue = [];
-
             foreach ($movements as $movement) {
                 $fecha = date('Y-m-d', strtotime($movement['date']));
 
@@ -78,45 +79,48 @@ class ReportController extends Controller
                     $importeEntrada = $movement['quantity'] * $movement['cost_unit'];
                     $max_total += $importeEntrada;
 
-                    $kardex[] = [
-                        'date' => $fecha,
-                        'description' => $movement['description'],
-                        'entradas' => $movement['quantity'],
-                        'salidas' => 0,
-                        'stock_fisico' => $stock,
-                        'cost_unit' => round($movement['cost_unit'], 2),
-                        'importe_entrada' => round($importeEntrada, 2),
-                        'importe_salida' => 0,
-                        'importe_saldo' => round($max_total, 2),
-                    ];
+                    if (!$startDate || $fecha >= $startDate) {
+                        $kardex[] = [
+                            'date' => $fecha,
+                            'description' => $movement['description'],
+                            'entradas' => $movement['quantity'],
+                            'salidas' => 0,
+                            'stock_fisico' => $stock,
+                            'cost_unit' => round($movement['cost_unit'], 2),
+                            'importe_entrada' => round($importeEntrada, 2),
+                            'importe_salida' => 0,
+                            'importe_saldo' => round($max_total, 2),
+                        ];
+                    }
                 } else {
                     $quantityToDeliver = $movement['quantity'];
                     $importeSalidaTotal = 0;
 
                     while ($quantityToDeliver > 0 && count($fifoQueue) > 0) {
                         $fifoItem = array_shift($fifoQueue);
-
                         $usedQuantity = min($quantityToDeliver, $fifoItem['quantity']);
                         $costUnit = $fifoItem['cost_unit'];
                         $importeSalida = $usedQuantity * $costUnit;
                         $importeSalidaTotal += $importeSalida;
                         $max_total -= $importeSalida;
-
                         $stock -= $usedQuantity;
 
-                        $kardex[] = [
-                            'date' => $fecha,
-                            'description' => $movement['description'],
-                            'entradas' => 0,
-                            'salidas' => $usedQuantity,
-                            'stock_fisico' => $stock,
-                            'cost_unit' => round($costUnit, 2),
-                            'importe_entrada' => 0,
-                            'importe_salida' => round($importeSalida, 2),
-                            'importe_saldo' => round($max_total, 2),
-                        ];
+                        if (!$startDate || $fecha >= $startDate) {
+                            $kardex[] = [
+                                'date' => $fecha,
+                                'description' => $movement['description'],
+                                'entradas' => 0,
+                                'salidas' => $usedQuantity,
+                                'stock_fisico' => $stock,
+                                'cost_unit' => round($costUnit, 2),
+                                'importe_entrada' => 0,
+                                'importe_salida' => round($importeSalida, 2),
+                                'importe_saldo' => round($max_total, 2),
+                            ];
+                        }
 
                         $quantityToDeliver -= $usedQuantity;
+
                         if ($fifoItem['quantity'] > $usedQuantity) {
                             $fifoItem['quantity'] -= $usedQuantity;
                             array_unshift($fifoQueue, $fifoItem);
@@ -124,23 +128,41 @@ class ReportController extends Controller
                     }
                 }
             }
+            $totalEntradas = collect($kardex)->sum('entradas');
+            $totalSalidas = collect($kardex)->sum('salidas');
+            $totalStock = collect($kardex)->last()['stock_fisico'] ?? 0;
+            $totalImporteEntrada = collect($kardex)->sum('importe_entrada');
+            $totalImporteSalida = collect($kardex)->sum('importe_salida');
+            $totalImporteSaldo = collect($kardex)->last()['importe_saldo'] ?? 0;
 
+            $totales = [
+                'entradas' => $totalEntradas,
+                'salidas' => $totalSalidas,
+                'stock_fisico' => $totalStock,
+                'importe_entrada' => round($totalImporteEntrada, 2),
+                'importe_salida' => round($totalImporteSalida, 2),
+                'importe_saldo' => round($totalImporteSaldo, 2),
+            ];
             return response()->json([
                 'code_material' => $material->code_material,
                 'description' => $material->description,
                 'unit_material' => $material->unit_material,
                 'group' => strtoupper($group_material),
-                'kardex_de_existencia' => $kardex
+                'kardex_de_existencia' => $kardex,
+                'totales' => $totales
             ]);
         } catch (\Exception $e) {
             logger($e->getMessage());
             return response()->json(['error' => 'No se pudo generar el Kardex'], 500);
         }
     }
+
     public function print_kardex($materialId)
     {
         try {
-            $endDate = request()->query('end_date');
+            $startDate = request()->query('start_date');
+            $endDate = Carbon::parse(request()->query('end_date'))->addDay()->toDateString();
+            $dateof = request()->query('end_date');
             $latestManagement = Management::latest('id')->first();
             $material = Material::findOrFail($materialId);
             $group_material = $material->group()->first()->name_group;
@@ -148,6 +170,7 @@ class ReportController extends Controller
             $kardex = [];
             $stock = 0;
             $max_total = 0;
+            $fifoQueue = [];
 
             $entries = $material->noteEntries()
                 ->where('management_id', $latestManagement->id)
@@ -187,8 +210,6 @@ class ReportController extends Controller
 
             usort($movements, fn($a, $b) => strtotime($a['date']) <=> strtotime($b['date']));
 
-            $fifoQueue = [];
-
             foreach ($movements as $movement) {
                 $fecha = date('Y-m-d', strtotime($movement['date']));
 
@@ -201,45 +222,48 @@ class ReportController extends Controller
                     $importeEntrada = $movement['quantity'] * $movement['cost_unit'];
                     $max_total += $importeEntrada;
 
-                    $kardex[] = [
-                        'date' => $fecha,
-                        'description' => $movement['description'],
-                        'entradas' => $movement['quantity'],
-                        'salidas' => 0,
-                        'stock_fisico' => $stock,
-                        'cost_unit' => round($movement['cost_unit'], 2),
-                        'importe_entrada' => round($importeEntrada, 2),
-                        'importe_salida' => 0,
-                        'importe_saldo' => round($max_total, 2),
-                    ];
+                    if (!$startDate || $fecha >= $startDate) {
+                        $kardex[] = [
+                            'date' => $fecha,
+                            'description' => $movement['description'],
+                            'entradas' => $movement['quantity'],
+                            'salidas' => 0,
+                            'stock_fisico' => $stock,
+                            'cost_unit' => round($movement['cost_unit'], 2),
+                            'importe_entrada' => round($importeEntrada, 2),
+                            'importe_salida' => 0,
+                            'importe_saldo' => round($max_total, 2),
+                        ];
+                    }
                 } else {
                     $quantityToDeliver = $movement['quantity'];
                     $importeSalidaTotal = 0;
 
                     while ($quantityToDeliver > 0 && count($fifoQueue) > 0) {
                         $fifoItem = array_shift($fifoQueue);
-
                         $usedQuantity = min($quantityToDeliver, $fifoItem['quantity']);
                         $costUnit = $fifoItem['cost_unit'];
                         $importeSalida = $usedQuantity * $costUnit;
                         $importeSalidaTotal += $importeSalida;
                         $max_total -= $importeSalida;
-
                         $stock -= $usedQuantity;
 
-                        $kardex[] = [
-                            'date' => $fecha,
-                            'description' => $movement['description'],
-                            'entradas' => 0,
-                            'salidas' => $usedQuantity,
-                            'stock_fisico' => $stock,
-                            'cost_unit' => round($costUnit, 2),
-                            'importe_entrada' => 0,
-                            'importe_salida' => round($importeSalida, 2),
-                            'importe_saldo' => round($max_total, 2),
-                        ];
+                        if (!$startDate || $fecha >= $startDate) {
+                            $kardex[] = [
+                                'date' => $fecha,
+                                'description' => $movement['description'],
+                                'entradas' => 0,
+                                'salidas' => $usedQuantity,
+                                'stock_fisico' => $stock,
+                                'cost_unit' => round($costUnit, 2),
+                                'importe_entrada' => 0,
+                                'importe_salida' => round($importeSalida, 2),
+                                'importe_saldo' => round($max_total, 2),
+                            ];
+                        }
 
                         $quantityToDeliver -= $usedQuantity;
+
                         if ($fifoItem['quantity'] > $usedQuantity) {
                             $fifoItem['quantity'] -= $usedQuantity;
                             array_unshift($fifoQueue, $fifoItem);
@@ -247,6 +271,21 @@ class ReportController extends Controller
                     }
                 }
             }
+            $totalEntradas = collect($kardex)->sum('entradas');
+            $totalSalidas = collect($kardex)->sum('salidas');
+            $totalStock = collect($kardex)->last()['stock_fisico'] ?? 0;
+            $totalImporteEntrada = collect($kardex)->sum('importe_entrada');
+            $totalImporteSalida = collect($kardex)->sum('importe_salida');
+            $totalImporteSaldo = collect($kardex)->last()['importe_saldo'] ?? 0;
+
+            $totales = [
+                'entradas' => $totalEntradas,
+                'salidas' => $totalSalidas,
+                'stock_fisico' => $totalStock,
+                'importe_entrada' => round($totalImporteEntrada, 2),
+                'importe_salida' => round($totalImporteSalida, 2),
+                'importe_saldo' => round($totalImporteSaldo, 2),
+            ];
 
             $data = [
                 'title' => 'KARDEX DE EXISTENCIAS',
@@ -254,12 +293,16 @@ class ReportController extends Controller
                 'description' => $material->description,
                 'unit_material' => $material->unit_material,
                 'group' => strtoupper($group_material),
-                'kardex_de_existencia' => $kardex
+                'kardex_de_existencia' => $kardex,
+                'totales' => $totales,
+                'start_date' => $startDate,
+                'end_date' => $dateof,
             ];
 
             $pdf = Pdf::loadView('Report_Kardex.ReportKardex', $data)->setPaper('letter', 'landscape');
             return $pdf->stream('Kardex de Existencia.pdf');
         } catch (\Exception $e) {
+            logger($e->getMessage());
             return response()->json(['error' => 'No se pudo generar el Kardex'], 500);
         }
     }
