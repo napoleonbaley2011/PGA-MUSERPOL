@@ -48,7 +48,7 @@ Route::group([
     Route::post('/createNoteRequest', [NoteRequestController::class, 'create_note_request']);
     Route::get('/printRequest/{note_request}', [NoteRequestController::class, 'print_request']);
 
-    
+
 
 
     Route::group(['middleware' => ['auth:sanctum']], function () {
@@ -76,6 +76,7 @@ Route::group([
         //Reportes
         Route::get('/ReportPrintKardex/{material}', [ReportController::class, 'kardex']);
         Route::get('/PrintKardex/{material}', [ReportController::class, 'print_kardex']);
+        Route::get('/PrintKardexExcel/{material}', [ReportController::class, 'print_kardex_excel']);
         Route::get('/ReportPrintValuedPhysical', [ReportController::class, 'ValuedPhysical']);
 
 

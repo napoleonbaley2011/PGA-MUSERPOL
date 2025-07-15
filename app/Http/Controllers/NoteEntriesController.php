@@ -18,12 +18,14 @@ use Illuminate\Support\Facades\DB;
 
 class NoteEntriesController extends Controller
 {
+
     public function list_note_entries(Request $request)
     {
         $page = max(0, $request->get('page', 0));
         $limit = max(1, $request->get('limit', Note_Entrie::count()));
-        $start = $page * $limit;
+        $search = $request->get('search', '');
 
+        // Pagina con el método paginate()
         $startDate = $request->input('start_date', '');
         $endDate = $request->input('end_date', '');
 
@@ -35,9 +37,15 @@ class NoteEntriesController extends Controller
                 'message' => 'No se encontró ningún management.',
             ], 404);
         }
-        $query = Note_Entrie::with(['materials' => function ($query) {
-            $query->withPivot('amount_entries', 'cost_unit', 'cost_total')->withTrashed();
-        }, 'supplier'])
+
+        $query = Note_Entrie::with([
+            'materials' => function ($query) {
+                $query->withPivot('amount_entries', 'cost_unit', 'cost_total')->withTrashed();
+            },
+            'suppliers' => function ($query) {
+                $query->withPivot('invoice_number');
+            }
+        ])
             ->where('management_id', $lastManagement->id)
             ->where('state', 'Aceptado')
             ->orderByDesc('id');
@@ -49,17 +57,23 @@ class NoteEntriesController extends Controller
         } elseif ($endDate) {
             $query->whereDate('delivery_date', '<=', $endDate);
         }
-        $totalNotes = $query->count();
-        $notes = $query->skip($start)->take($limit)->get();
+
+        if ($search != null) {
+            $query->where('number_note', $search);
+        }
+
+        $notes = $query->paginate($limit);
 
         return response()->json([
             'status' => 'success',
-            'total' => $totalNotes,
-            'page' => $page,
-            'last_page' => ceil($totalNotes / $limit),
-            'data' => $notes,
+            'total' => $notes->total(),
+            'page' => $notes->currentPage() - 1, 
+            'last_page' => $notes->lastPage(),
+            'data' => $notes->items(),
         ], 200);
     }
+
+
 
 
     public function list_note_entries_revision(Request $request)
@@ -79,9 +93,15 @@ class NoteEntriesController extends Controller
                 'message' => 'No se encontró ningún management.',
             ], 404);
         }
-        $query = Note_Entrie::with(['materials' => function ($query) {
-            $query->withPivot('amount_entries', 'cost_unit', 'cost_total')->withTrashed();
-        }, 'supplier'])
+
+        $query = Note_Entrie::with([
+            'materials' => function ($query) {
+                $query->withPivot('amount_entries', 'cost_unit', 'cost_total')->withTrashed();
+            },
+            'suppliers' => function ($query) {
+                $query->withPivot('invoice_number');
+            }
+        ])
             ->where('management_id', $lastManagement->id)
             ->where('state', 'En Revision')
             ->orderByDesc('id');
@@ -108,10 +128,11 @@ class NoteEntriesController extends Controller
     public function create_note(Request $request)
     {
         try {
-
             $validateData = $request->validate([
                 'type' => 'required|integer',
-                'id_supplier' => 'required|integer',
+                'suppliers' => 'required|array',
+                'suppliers.*.supplierId' => 'required|exists:suppliers,id',
+                'suppliers.*.invoiceNumber' => 'required|string',
                 'materials' => 'required|array',
                 'materials.*.id' => 'required|exists:materials,id',
                 'materials.*.name' => 'required|string',
@@ -120,30 +141,31 @@ class NoteEntriesController extends Controller
                 'materials.*.unit_material' => 'required|string',
                 'date_entry' => 'required|date',
                 'total' => 'required|numeric',
-                'invoice_number' => 'required|string',
                 'authorization_number' => 'required|string',
                 'id_user' => 'required|string'
             ]);
-
-            $supplier_note = Supplier::find($request['id_supplier']);
             $period = Management::latest()->first();
 
             $number_note = $this->generateNoteNumber();
+
             $noteEntrie = Note_Entrie::create([
                 'number_note' => $number_note,
-                'invoice_number' => $validateData['invoice_number'],
                 'delivery_date' => $validateData['date_entry'],
                 'state' => 'En Revision',
                 'invoice_auth' => $validateData['authorization_number'],
                 'user_register' => $validateData['id_user'],
                 'observation' => 'Activo',
                 'type_id' => $validateData['type'],
-                'suppliers_id' => $validateData['id_supplier'],
-                'name_supplier' => $supplier_note->name,
                 'management_id' => $period->id,
             ]);
 
-
+            foreach ($validateData['suppliers'] as $supplierData) {
+                $noteEntrie->suppliers()->attach($supplierData['supplierId'], [
+                    'invoice_number' => $supplierData['invoiceNumber'],
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
             foreach ($validateData['materials'] as $materialData) {
 
                 $noteEntrie->materials()->attach($materialData['id'], [
@@ -219,26 +241,50 @@ class NoteEntriesController extends Controller
 
     public function destroy(Note_Entrie $note_entry)
     {
-        $note_entry->state = "Eliminado";
-        $note_entry->observation = "Eliminado";
-        $note_entry->save();
+        DB::beginTransaction();
 
-        $materials = $note_entry->materials;
-        foreach ($materials as $material) {
+        try {
+            // Marcar como eliminado
+            $note_entry->state = "Eliminado";
+            $note_entry->observation = "Eliminado";
+            $note_entry->save();
 
-            $entryMaterial = Entrie_Material::where('note_id', $note_entry->id)->where('material_id', $material->id)->first();
+            // Eliminar relaciones con materiales (pivot entries_material)
+            foreach ($note_entry->materials as $material) {
+                $entryMaterial = Entrie_Material::where('note_id', $note_entry->id)
+                    ->where('material_id', $material->id)
+                    ->first();
 
-            if ($entryMaterial) {
-                $entryMaterial->delete();
+                if ($entryMaterial) {
+                    $entryMaterial->delete();
+                }
             }
+
+            // Eliminar relaciones con proveedores (pivot note_entrie_supplier)
+            // Eliminacion logica
+            $note_entry->suppliers()->detach();
+
+            // Eliminar la nota (soft delete)
+            $note_entry->delete();
+
+            DB::commit();
+            return response()->json(['message' => 'Eliminado correctamente'], 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['error' => 'Error al eliminar la nota: ' . $e->getMessage()], 500);
         }
-        $note_entry->delete();
-        return response()->json(['message' => 'Eliminado'], 200);
     }
+
 
     public function print_note_entry(Note_Entrie $note_entry)
     {
         $file_title = 'NOTA DE INGRESO ALMACÉN';
+        $suppliers = $note_entry->suppliers()->get()->map(function ($supplier) {
+            return [
+                'invoice_number' => $supplier->pivot->invoice_number,
+                'supplier_name' => $supplier->name,
+            ];
+        });
         $materials = $note_entry->materials()->get()->map(function ($material) {
             return [
                 'code_material' => $material->code_material,
@@ -267,6 +313,7 @@ class NoteEntriesController extends Controller
             'invoice_number' => $note_entry->invoice_number,
             'delivery_date' => $note_entry->delivery_date,
             'materials' => $materials,
+            'suppliers' => $suppliers,
             'total_cost' => number_format($total_cost, 2),
         ];
 
