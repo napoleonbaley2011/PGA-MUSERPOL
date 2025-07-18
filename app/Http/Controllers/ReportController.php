@@ -13,6 +13,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Exports\KardexExport;
+use App\Exports\ValuedPhysicalExport;
 use Maatwebsite\Excel\Facades\Excel;
 
 class ReportController extends Controller
@@ -856,6 +857,12 @@ class ReportController extends Controller
         ]);
     }
 
+    public function exportValuedInventoryExcel(Request $request)
+    {
+        $jsonData = $this->ValuedPhysical($request)->getData(true);
+        return Excel::download(new ValuedPhysicalExport($jsonData['data']), 'inventario_valorado.xlsx');
+    }
+
     public function PrintValuedPhysical(Request $request)
     {
         $startDate = $request->input('start_date');
@@ -1327,7 +1334,6 @@ class ReportController extends Controller
         return response()->json($result);
     }
 
-
     public function print_consolidated_valued_physical_inventory($idManagement)
     {
 
@@ -1592,6 +1598,7 @@ class ReportController extends Controller
                 $query->select('groups.id', 'groups.name_group', 'groups.code');
             }]);
 
+
         $notesQuery->chunk(100, function ($notes) use (&$groupTotals) {
             foreach ($notes as $note) {
                 foreach ($note->materials as $material) {
@@ -1707,7 +1714,9 @@ class ReportController extends Controller
                 'total_cantidad' => $data['total_cantidad'],
                 'total_presupuesto' => number_format($data['total_presupuesto'], 2),
                 'cantidad_entregada' => $data['cantidad_entregada'],
-                'suma_cost_detail' => number_format($data['suma_cost_detail'], 2)
+                'suma_cost_detail' => number_format($data['suma_cost_detail'], 2),
+                'saldos_gestion_actual' => number_format(($data['total_presupuesto_anterior'] + $data['total_presupuesto'] - $data['suma_cost_detail']), 2),
+
             ];
         }, array_keys($groupTotals), $groupTotals);
 

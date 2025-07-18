@@ -39,6 +39,13 @@ $dns = new DNS2D();
             display: flex;
             flex-direction: column;
             min-height: 100vh;
+            font-size: 9px;
+        }
+
+        table,
+        th,
+        td {
+            font-size: 9px;
         }
 
         .content {
@@ -64,6 +71,26 @@ $dns = new DNS2D();
             background-color: #f2f2f2;
             font-weight: bold;
             border-top: 2px solid #000;
+        }
+
+        .text-xs {
+            font-size: 8px !important;
+        }
+
+        .text-sm {
+            font-size: 9px !important;
+        }
+
+        .text-md {
+            font-size: 10px !important;
+        }
+
+        .text-lg {
+            font-size: 11px !important;
+        }
+
+        .text-xl {
+            font-size: 12px !important;
         }
     </style>
 </head>
@@ -178,22 +205,18 @@ $dns = new DNS2D();
                             <td class="text-left" style="border-bottom: none;"></td>
                             @endif
 
-                            {{-- SALDO ANTERIOR --}}
                             <td class="text-center">{{ $sa['cantidad_restante'] !== '' ? $sa['cantidad_restante'] : '' }}</td>
                             <td class="text-right">{{ $sa['precio_unitario'] !== '' ? number_format($sa['precio_unitario'], 2) : '' }}</td>
                             <td class="text-right">{{ $sa['valor_restante'] !== '' ? number_format($sa['valor_restante'], 2) : '' }}</td>
 
-                            {{-- ENTRADAS --}}
                             <td class="text-center">{{ $cantidadEntradas }}</td>
                             <td class="text-right">{{ $precioUnitario !== '' ? number_format($precioUnitario, 2) : '' }}</td>
                             <td class="text-right">{{ $cantidad_1 !== '' ? number_format($cantidad_1, 2) : '' }}</td>
 
-                            {{-- CANTIDADES --}}
                             <td class="text-center">{{ is_numeric($cantidadEntradas) && is_numeric($cantidadRestante) ? $cantidadEntradas - $cantidadRestante : '' }}</td>
                             <td class="text-right">{{ $precioUnitario !== '' ? number_format($precioUnitario, 2) : '' }}</td>
                             <td class="text-right">{{ $cantidad_2 !== '' ? number_format($cantidad_2, 2) : '' }}</td>
 
-                            {{-- SALDOS --}}
                             <td class="text-center">{{ $cantidadRestante }}</td>
                             <td class="text-right">{{ $precioUnitario !== '' ? number_format($precioUnitario, 2) : '' }}</td>
                             <td class="text-right">{{ $cantidad_3 !== '' ? number_format($cantidad_3, 2) : '' }}</td>

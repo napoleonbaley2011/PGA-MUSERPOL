@@ -48,6 +48,8 @@ Route::group([
     Route::post('/createNoteRequest', [NoteRequestController::class, 'create_note_request']);
     Route::get('/printRequest/{note_request}', [NoteRequestController::class, 'print_request']);
 
+    Route::get('/materialCorrect', [MaterialController::class, 'NameMaterialCorrect']);
+
 
 
 
@@ -57,6 +59,7 @@ Route::group([
         Route::get('/listgroup/{id_classifier}', [GroupsController::class, 'list_groups']);
         Route::resource('suppliers', SupplierController::class);
         Route::resource('materials', MaterialController::class);
+        Route::get('fixMaterialDuplicate', [MaterialController::class, 'fixDuplicatedCodes']);
         Route::patch('/updateName/{material}/', [MaterialController::class, 'updateName']);
         Route::resource('types', TypeController::class);
         //Nota de entrada
@@ -84,6 +87,7 @@ Route::group([
 
 
         Route::get('/PrintValuedPhysical', [ReportController::class, 'PrintValuedPhysical']);
+        Route::get('/PrintValuedPhysicalExcel', [ReportController::class, 'exportValuedInventoryExcel']);
 
         Route::get('/PrintValuedPhysicalConsolidated/{management}', [ReportController::class, 'print_consolidated_valued_physical_inventory']);
         Route::get('/ManagementClosure', [ReportController::class, 'management_closure']);
@@ -109,18 +113,6 @@ Route::group([
         Route::get('/paymentOrder', [PettycashController::class, 'PaymentOrder']);
         Route::get('/createDischarge', [PettycashController::class, 'CreateDischarge']);
 
-
         Route::get('/listManagement', [ReportController::class, 'list_mangement']);
-
-
-
-        Route::get('/php-config', function () {
-            return response()->json([
-                'memory_limit' => ini_get('memory_limit'),
-                'max_execution_time' => ini_get('max_execution_time'),
-                'upload_max_filesize' => ini_get('upload_max_filesize'),
-                'post_max_size' => ini_get('post_max_size'),
-            ]);
-        });
     });
 });
